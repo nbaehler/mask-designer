@@ -2,23 +2,10 @@ import torch
 import numpy as np
 import math
 
-from slm_controller.hardware import (
-    SLMDevices,
-    SLMParam,
-    slm_devices,
-)
-
-from slm_designer.hardware import (
-    physical_params,
-    PhysicalParams,
-)
-
 import slm_designer.neural_holography.utils as utils
 
-slm_device = SLMDevices.HOLOEYE_LC_2012.value
 
-
-def __compute_H():
+def __compute_H(prop_dist, wavelength, slm_shape, slm_pitch):
     """
     https://github.com/computational-imaging/neural-holography/blob/d2e399014aa80844edffd98bca34d2df80a69c84/propagation_ASM.py
 
@@ -38,14 +25,11 @@ def __compute_H():
         H (#TODO probably for homography)
     """
 
-    prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
-    wavelength = physical_params[PhysicalParams.WAVELENGTH]
-
     # number of pixels
-    num_y, num_x = slm_devices[slm_device][SLMParam.SLM_SHAPE]
+    num_y, num_x = slm_shape
 
     # sampling interval size
-    dy, dx = slm_devices[slm_device][SLMParam.CELL_DIM]
+    dy, dx = slm_pitch
 
     # size of the field
     y, x = (dy * float(num_y), dx * float(num_x))
@@ -87,7 +71,7 @@ def __compute_H():
     return H
 
 
-def lens_to_lensless(holoeye_slm_field):
+def lens_to_lensless(holoeye_slm_field, prop_dist, wavelength, slm_shape, slm_pitch):
     """
     Transform from the lens setting (holoeye) to the lensless setting (neural
     holography).
@@ -103,7 +87,7 @@ def lens_to_lensless(holoeye_slm_field):
         The transformed phase map
     """
 
-    H = __compute_H()
+    H = __compute_H(prop_dist, wavelength, slm_shape, slm_pitch)
 
     return utils.fftshift(
         torch.fft.ifftn(
@@ -119,7 +103,9 @@ def lens_to_lensless(holoeye_slm_field):
     )
 
 
-def lensless_to_lens(neural_holography_slm_field):
+def lensless_to_lens(
+    neural_holography_slm_field, prop_dist, wavelength, slm_shape, slm_pitch
+):
     """
     Transform from the lensless setting (neural holography) to the lens setting
     (holoeye).
@@ -134,7 +120,7 @@ def lensless_to_lens(neural_holography_slm_field):
     torch.Tensor
         The transformed phase map
     """
-    H = __compute_H()
+    H = __compute_H(prop_dist, wavelength, slm_shape, slm_pitch)
 
     return torch.fft.ifftn(
         torch.fft.ifftn(

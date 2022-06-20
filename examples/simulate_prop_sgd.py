@@ -12,9 +12,9 @@ from slm_controller.hardware import (
     SLMParam,
     slm_devices,
 )
-from slm_designer.hardware import (
-    physical_params,
+from physical_params import (
     PhysicalParams,
+    physical_params,
 )
 from slm_designer.neural_holography.modules import SGD
 from slm_designer.neural_holography.augmented_image_loader import ImageLoader
@@ -65,7 +65,9 @@ def simulate_prop_sgd():
     neural_holography_slm_field = extend_to_complex(angles)
 
     # Transform the results to the hardware setting using a lens
-    temp = lensless_to_lens(neural_holography_slm_field)
+    temp = lensless_to_lens(
+        neural_holography_slm_field, distance, wavelength, slm_res, feature_size
+    )
 
     # Simulate the propagation in the lens setting and show the results
     slm_field = temp[0, 0, :, :]
@@ -74,7 +76,12 @@ def simulate_prop_sgd():
 
     # Simulate the propagation in the lensless setting and show the results
     slm_field = neural_holography_slm_field[0, 0, :, :]
-    propped_slm_field = lensless_prop(neural_holography_slm_field)[0, 0, :, :]
+    propped_slm_field = lensless_prop(
+        neural_holography_slm_field,
+        physical_params[PhysicalParams.PROPAGATION_DISTANCE],
+        physical_params[PhysicalParams.WAVELENGTH],
+        slm_devices[slm_device][SLMParam.CELL_DIM],
+    )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Neural Holography SGD without lens")
 
 

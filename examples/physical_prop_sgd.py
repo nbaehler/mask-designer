@@ -11,9 +11,9 @@ from slm_controller.hardware import (
     slm_devices,
 )
 
-from slm_designer.hardware import (
-    physical_params,
+from physical_params import (
     PhysicalParams,
+    physical_params,
 )
 from slm_designer.transform_fields import lensless_to_lens
 from slm_designer.neural_holography.modules import SGD
@@ -77,7 +77,9 @@ def physical_prop_sgd(show_time):
     extended = extend_to_complex(angles)
 
     # Transform the results to the hardware setting using a lens
-    final_phase_sgd = lensless_to_lens(extended).angle()
+    final_phase_sgd = lensless_to_lens(
+        extended, distance, wavelength, slm_res, feature_size
+    ).angle()
 
     # Quantize the the angles, aka phase values, to a bit values
     phase_out_8bit = phasemap_8bit(final_phase_sgd)

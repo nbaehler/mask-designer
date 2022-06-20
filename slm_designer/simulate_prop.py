@@ -1,15 +1,5 @@
 import torch
 
-from slm_controller.hardware import (
-    SLMDevices,
-    SLMParam,
-    slm_devices,
-)
-
-from slm_designer.hardware import (
-    physical_params,
-    PhysicalParams,
-)
 import slm_designer.neural_holography.utils as utils
 from slm_designer.neural_holography.propagation_ASM import propagation_ASM
 from waveprop.fraunhofer import fraunhofer
@@ -30,9 +20,6 @@ from waveprop.spherical import spherical_prop
 from waveprop.util import ift2
 
 
-slm_device = SLMDevices.HOLOEYE_LC_2012.value
-
-
 def lens_prop(slm_field):
     """
     Simulated propagation with a lens (holoeye setting) between slm and target plane.
@@ -47,10 +34,12 @@ def lens_prop(slm_field):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    return utils.fftshift(torch.fft.fftn(slm_field, dim=(-2, -1), norm="ortho"))
+    return utils.fftshift(slm_field)  # TODO no wavelengthgth etc???
+    # return utils.fftshift(torch.fft.fftn(slm_field, dim=(-2, -1),
+    # norm="ortho")) #TODO check this
 
 
-def lensless_prop(slm_field):
+def lensless_prop(slm_field, prop_dist, wavelength, slm_pitch):
     """
     Simulated propagation with a no lens (neural holography setting) between slm and target plane.
 
@@ -67,36 +56,36 @@ def lensless_prop(slm_field):
     return utils.propagate_field(
         slm_field,
         propagation_ASM,
-        physical_params[PhysicalParams.PROPAGATION_DISTANCE],
-        physical_params[PhysicalParams.WAVELENGTH],
-        slm_devices[slm_device][SLMParam.CELL_DIM],
+        prop_dist,
+        wavelength,
+        slm_pitch,
         "ASM",
         torch.float32,
         None,
     )
 
 
-def wave_prop_fraunhofer(slm_field):
+def wave_prop_fraunhofer(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = fraunhofer(
         u_in=slm_field.numpy(),
-        wv=physical_params[PhysicalParams.WAVELENGTH],
-        d1=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        dz=physical_params[PhysicalParams.PROPAGATION_DISTANCE],
+        wv=wavelength,
+        d1=slm_pitch[0],
+        dz=prop_dist,
     )
 
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def wave_prop_angular_spectrum(slm_field):
+def wave_prop_angular_spectrum(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = angular_spectrum(  # TODO flipped
         u_in=slm_field.numpy(),
-        wv=physical_params[PhysicalParams.WAVELENGTH],
-        d1=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        dz=physical_params[PhysicalParams.PROPAGATION_DISTANCE],
+        wv=wavelength,
+        d1=slm_pitch[0],
+        dz=prop_dist,
         # out_shift=1,  # TODO check this
     )
 
@@ -104,40 +93,40 @@ def wave_prop_angular_spectrum(slm_field):
     # return torch.from_numpy(res)[None, None, :, :]
 
 
-def wave_prop_angular_spectrum_np(slm_field):
+def wave_prop_angular_spectrum_np(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = angular_spectrum_np(
         u_in=slm_field.numpy(),
-        wv=physical_params[PhysicalParams.WAVELENGTH],
-        d1=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        dz=physical_params[PhysicalParams.PROPAGATION_DISTANCE],
+        wv=wavelength,
+        d1=slm_pitch[0],
+        dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_fft_di(slm_field):
+def wave_prop_fft_di(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = fft_di(
         u_in=slm_field.numpy(),
-        wv=physical_params[PhysicalParams.WAVELENGTH],
-        d1=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        dz=physical_params[PhysicalParams.PROPAGATION_DISTANCE],
+        wv=wavelength,
+        d1=slm_pitch[0],
+        dz=prop_dist,
     )
 
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def wave_prop_direct_integration(slm_field):
+def wave_prop_direct_integration(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res = direct_integration(
         u_in=slm_field.numpy(),
-        wv=physical_params[PhysicalParams.WAVELENGTH],
-        d1=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        dz=physical_params[PhysicalParams.PROPAGATION_DISTANCE],
+        wv=wavelength,
+        d1=slm_pitch[0],
+        dz=prop_dist,
         x=[0],  # TODO wrong
         y=[0],  # TODO wrong
     )
@@ -145,81 +134,81 @@ def wave_prop_direct_integration(slm_field):
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def wave_prop_fresnel_one_step(slm_field):
+def wave_prop_fresnel_one_step(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = fresnel_one_step(  # TODO Too small
         u_in=slm_field.numpy(),
-        wv=physical_params[PhysicalParams.WAVELENGTH],
-        d1=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        dz=physical_params[PhysicalParams.PROPAGATION_DISTANCE],
+        wv=wavelength,
+        d1=slm_pitch[0],
+        dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_fresnel_two_step(slm_field):
+def wave_prop_fresnel_two_step(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = fresnel_two_step(
         u_in=slm_field.numpy(),
-        wv=physical_params[PhysicalParams.WAVELENGTH],
-        d1=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        d2=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        dz=physical_params[PhysicalParams.PROPAGATION_DISTANCE],
+        wv=wavelength,
+        d1=slm_pitch[0],
+        d2=slm_pitch[0],
+        dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_fresnel_multi_step(slm_field):
+def wave_prop_fresnel_multi_step(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = fresnel_multi_step(
         u_in=slm_field.numpy(),
-        wv=physical_params[PhysicalParams.WAVELENGTH],
-        delta1=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        deltan=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        z=physical_params[PhysicalParams.PROPAGATION_DISTANCE],
+        wv=wavelength,
+        delta1=slm_pitch[0],
+        deltan=slm_pitch[0],
+        z=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_fresnel_conv(slm_field):
+def wave_prop_fresnel_conv(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = fresnel_conv(
         u_in=slm_field.numpy(),
-        wv=physical_params[PhysicalParams.WAVELENGTH],
-        d1=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        dz=physical_params[PhysicalParams.PROPAGATION_DISTANCE],
+        wv=wavelength,
+        d1=slm_pitch[0],
+        dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_shifted_fresnel(slm_field):
+def wave_prop_shifted_fresnel(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = shifted_fresnel(
         u_in=slm_field.numpy(),
-        wv=physical_params[PhysicalParams.WAVELENGTH],
-        d1=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        dz=physical_params[PhysicalParams.PROPAGATION_DISTANCE],
+        wv=wavelength,
+        d1=slm_pitch[0],
+        dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_spherical(slm_field):
+def wave_prop_spherical(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = spherical_prop(
         u_in=slm_field.numpy(),
-        wv=physical_params[PhysicalParams.WAVELENGTH],
-        d1=slm_devices[slm_device][SLMParam.CELL_DIM][0],
-        dz=physical_params[PhysicalParams.PROPAGATION_DISTANCE],
+        wv=wavelength,
+        d1=slm_pitch[0],
+        dz=prop_dist,
     )
 
     return torch.from_numpy(res)[None, None, :, :]

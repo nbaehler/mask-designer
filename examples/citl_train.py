@@ -2,6 +2,11 @@ import click
 from slm_designer.neural_holography.train_model import train_model
 from slm_designer.neural_holography.utils import str2bool
 
+from physical_params import (
+    PhysicalParams,
+    physical_params,
+)
+
 
 @click.command()
 @click.option("--channel", type=int, default=1, help="red:0, green:1, blue:2, rgb:3")
@@ -51,6 +56,8 @@ def citl_train(
     batch_size,
     step_lr,
     experiment,
+    prop_dist=physical_params[PhysicalParams.PROPAGATION_DISTANCE],  # TODO set those in click
+    wavelength=physical_params[PhysicalParams.WAVELENGTH],
 ):
     train_model(
         channel,
@@ -65,6 +72,8 @@ def citl_train(
         batch_size,
         step_lr,
         experiment,
+        prop_dist,
+        wavelength,
     )
 
 

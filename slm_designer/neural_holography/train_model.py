@@ -45,8 +45,6 @@ from slm_controller.hardware import (
 from slm_designer.hardware import (
     CamDevices,
     CamParam,
-    PhysicalParams,
-    physical_params,
     cam_devices,
 )
 
@@ -56,9 +54,9 @@ from slm_designer.neural_holography.propagation_model import ModelPropagate
 from slm_designer.neural_holography.augmented_image_loader import ImageLoader
 from slm_designer.neural_holography.utils_tensorboard import SummaryModelWriter
 
-cam_device = CamDevices.DUMMY.value
+cam_device = CamDevices.IDS.value
 slm_device = SLMDevices.HOLOEYE_LC_2012.value
-
+slm_settle_time = 0.5
 
 # # Command line argument processing
 # p = configargparse.ArgumentParser()
@@ -124,6 +122,8 @@ def train_model(
     batch_size,
     step_lr,
     experiment,
+    prop_dist,
+    wavelength,
 ):
 
     # channel = channel  # Red:0 / Green:1 / Blue:2
@@ -132,10 +132,6 @@ def train_model(
 
     print(f"   - training parameterized wave propagation model....")
 
-    prop_dist = physical_params[
-        PhysicalParams.PROPAGATION_DISTANCE
-    ]  # propagation distance from SLM plane to target plane
-    wavelength = physical_params[PhysicalParams.WAVELENGTH]  # wavelength
     feature_size = slm_devices[slm_device][SLMParam.CELL_DIM]  # SLM pitch
 
     slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
@@ -173,7 +169,7 @@ def train_model(
         # channel,
         # laser_arduino=True,
         # roi_res=(roi_res[1], roi_res[0]),  # TODO why inverted
-        slm_settle_time=0.15,
+        slm_settle_time=slm_settle_time,
         # range_row=(220, 1000),
         # range_col=(300, 1630),
         # patterns_path=calibration_path,  # path of 21 x 12 calibration patterns, see Supplement.
