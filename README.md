@@ -26,7 +26,7 @@ settings as well are provided.
 <!-- TODO Talk about dependencies with slm-controller and waveprop -->
 
 ```sh
-./pi_setup.sh
+./env_setup.sh
 ```
 
 The script will:
@@ -211,7 +211,7 @@ Options:
   --show_tick_labels              Whether or not to show cell values along
                                   axes.
 
-  --cell_dim FLOAT...             Shape of cell in meters (height, width).
+  --pixel_pitch FLOAT...             Shape of cell in meters (height, width).
   --slm_shape INTEGER...          Dimension of SLM in number of cells (height,
                                   width).
 

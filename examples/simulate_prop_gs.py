@@ -25,7 +25,7 @@ def simulate_prop_gs():
     # Set parameters
     distance = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
-    feature_size = slm_devices[slm_device][SLMParam.CELL_DIM]
+    pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     iterations = 500
 
     slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]
@@ -57,16 +57,14 @@ def simulate_prop_gs():
     init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_res)).to(device)
 
     # Run Gerchberg-Saxton
-    gs = GS(distance, wavelength, feature_size, iterations, device=device)
+    gs = GS(distance, wavelength, pixel_pitch, iterations, device=device)
     angles = gs(target_amp, init_phase).cpu().detach()
 
     # Extend the computed angles, aka the phase values, to a complex tensor again
     neural_holography_slm_field = extend_to_complex(angles)
 
     # Transform the results to the hardware setting using a lens
-    temp = lensless_to_lens(
-        neural_holography_slm_field, distance, wavelength, slm_res, feature_size
-    )
+    temp = lensless_to_lens(neural_holography_slm_field, distance, wavelength, slm_res, pixel_pitch)
 
     # Simulate the propagation in the lens setting and show the results
     slm_field = temp[0, 0, :, :]
@@ -79,7 +77,7 @@ def simulate_prop_gs():
         neural_holography_slm_field,
         physical_params[PhysicalParams.PROPAGATION_DISTANCE],
         physical_params[PhysicalParams.WAVELENGTH],
-        slm_devices[slm_device][SLMParam.CELL_DIM],
+        slm_devices[slm_device][SLMParam.PIXEL_PITCH],
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Neural Holography GS without lens")
 

@@ -3,7 +3,7 @@ import numpy as np
 
 
 dim = 10
-s = SLM(shape=(dim, dim), cell_dim=(1, 1))
+s = SLM(shape=(dim, dim), pixel_pitch=(1, 1))
 
 
 class TestSLM:

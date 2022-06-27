@@ -57,7 +57,7 @@ def citl_predict():
         PhysicalParams.PROPAGATION_DISTANCE
     ]  # propagation distance from SLM plane to target plane
     wavelength = physical_params[PhysicalParams.WAVELENGTH]  # wavelength
-    feature_size = slm_devices[slm_device][SLMParam.CELL_DIM]  # SLM pitch
+    pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]  # SLM pitch
 
     slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
     image_res = cam_devices[cam_device][CamParam.IMG_SHAPE]  # TODO slm.shape == image.shape?
@@ -83,7 +83,7 @@ def citl_predict():
         propagator = propagation_ASM
         for c in chs:
             precomputed_H[c] = propagator(
-                torch.empty(1, 1, *slm_res, 2), feature_size, wavelength, prop_dist, return_H=True,
+                torch.empty(1, 1, *slm_res, 2), pixel_pitch, wavelength, prop_dist, return_H=True,
             ).to(device)
 
     elif prop_model.upper() == "CAMERA":
@@ -102,7 +102,7 @@ def citl_predict():
         propagators = {}
         for c in chs:
             propagator = ModelPropagate(
-                distance=prop_dist, feature_size=feature_size, wavelength=wavelength, blur=blur,
+                distance=prop_dist, feature_size=pixel_pitch, wavelength=wavelength, blur=blur,
             ).to(device)
 
             propagator.load_state_dict(
@@ -169,7 +169,7 @@ def citl_predict():
             if prop_model.upper() == "MODEL":
                 propagator = propagators[c]  # Select CITL-calibrated models for each channel
             recon_field = propagate_field(
-                slm_field, propagator, prop_dist, wavelength, feature_size, prop_model, dtype,
+                slm_field, propagator, prop_dist, wavelength, pixel_pitch, prop_model, dtype,
             )
 
             # cartesian to polar coordinate

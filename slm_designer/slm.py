@@ -3,7 +3,7 @@ from slm_designer.utils import _prepare_index_vals, rgb2gray
 
 
 class SLM:
-    def __init__(self, shape, cell_dim):
+    def __init__(self, shape, pixel_pitch):
         """
         Class for defining SLM.
 
@@ -11,13 +11,13 @@ class SLM:
         ----------
         shape : tuple(int)
             (height, width) in number of cell.
-        cell_dim : tuple(float)
-            Cell dimensions (height, width) in meters.
+        pixel_pitch : tuple(float)
+            Pixel pitch (height, width) in meters.
         """
         assert np.all(shape) > 0
-        assert np.all(cell_dim) > 0
+        assert np.all(pixel_pitch) > 0
         self._shape = shape
-        self._cell_dim = cell_dim
+        self._pixel_pitch = pixel_pitch
         self._values = np.zeros((3,) + shape)
 
     @property
@@ -29,8 +29,8 @@ class SLM:
         return self._shape
 
     @property
-    def cell_dim(self):
-        return self._cell_dim
+    def pixel_pitch(self):
+        return self._pixel_pitch
 
     @property
     def center(self):
@@ -38,7 +38,7 @@ class SLM:
 
     @property
     def dim(self):
-        return np.array(self._shape) * np.array(self._cell_dim)
+        return np.array(self._shape) * np.array(self._pixel_pitch)
 
     @property
     def height(self):
@@ -67,7 +67,7 @@ class SLM:
         value : int, float, :py:class:`~numpy.ndarray`
             [Optional] values to set, otherwise return values at specified coordinates.
         """
-        idx = _prepare_index_vals(physical_coord, self._cell_dim)
+        idx = _prepare_index_vals(physical_coord, self._pixel_pitch)
         if value is None:
             # getter
             return self._values[idx]
@@ -99,15 +99,15 @@ class SLM:
         # plot
         fig, ax = plt.subplots()
         extent = [
-            -0.5 * self._cell_dim[1],
-            (self._shape[1] - 0.5) * self._cell_dim[1],
-            (self._shape[0] - 0.5) * self._cell_dim[0],
-            -0.5 * self._cell_dim[0],
+            -0.5 * self._pixel_pitch[1],
+            (self._shape[1] - 0.5) * self._pixel_pitch[1],
+            (self._shape[0] - 0.5) * self._pixel_pitch[0],
+            -0.5 * self._pixel_pitch[0],
         ]
         ax.imshow(Z, extent=extent)
         ax.grid(which="major", axis="both", linestyle="-", color="0.5", linewidth=0.25)
 
-        x_ticks = np.arange(-0.5, self._shape[1], 1) * self._cell_dim[1]
+        x_ticks = np.arange(-0.5, self._shape[1], 1) * self._pixel_pitch[1]
         ax.set_xticks(x_ticks)
         if show_tick_labels:
             x_tick_labels = (np.arange(-0.5, self._shape[1], 1) + 0.5).astype(int)
@@ -115,7 +115,7 @@ class SLM:
             x_tick_labels = [None] * len(x_ticks)
         ax.set_xticklabels(x_tick_labels)
 
-        y_ticks = np.arange(-0.5, self._shape[0], 1) * self._cell_dim[0]
+        y_ticks = np.arange(-0.5, self._shape[0], 1) * self._pixel_pitch[0]
         ax.set_yticks(y_ticks)
         if show_tick_labels:
             y_tick_labels = (np.arange(-0.5, self._shape[0], 1) + 0.5).astype(int)

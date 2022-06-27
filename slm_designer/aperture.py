@@ -15,7 +15,7 @@ class ApertureOptions(Enum):
         return [shape.value for shape in ApertureOptions]
 
 
-def rect_aperture(slm_shape, cell_dim, apert_dim, center=None):
+def rect_aperture(slm_shape, pixel_pitch, apert_dim, center=None):
     """
     Create and return SLM object with rectangular aperture of desired dimensions.
 
@@ -23,7 +23,7 @@ def rect_aperture(slm_shape, cell_dim, apert_dim, center=None):
     ----------
     slm_shape : tuple(int)
         Dimensions (height, width) of SLM in cells.
-    cell_dim : tuple(float)
+    pixel_pitch : tuple(float)
         Dimensions (height, width) of each cell in meters.
     apert_dim : tuple(float)
         Dimensions (height, width) of aperture in meters.
@@ -41,7 +41,7 @@ def rect_aperture(slm_shape, cell_dim, apert_dim, center=None):
     assert np.all(apert_dim) > 0
 
     # initialize SLM
-    slm = SLM(shape=slm_shape, cell_dim=cell_dim)
+    slm = SLM(shape=slm_shape, pixel_pitch=pixel_pitch)
 
     # check / compute center
     if center is None:
@@ -79,7 +79,7 @@ def rect_aperture(slm_shape, cell_dim, apert_dim, center=None):
     return slm
 
 
-def line_aperture(slm_shape, cell_dim, length, vertical=True, center=None):
+def line_aperture(slm_shape, pixel_pitch, length, vertical=True, center=None):
     """
     Create and return SLM object with a line aperture of desired length.
 
@@ -87,7 +87,7 @@ def line_aperture(slm_shape, cell_dim, length, vertical=True, center=None):
     ----------
     slm_shape : tuple(int)
         Dimensions (height, width) of SLM in cells.
-    cell_dim : tuple(float)
+    pixel_pitch : tuple(float)
         Dimensions (height, width) of each cell in meters.
     length : float
         Length of aperture in meters.
@@ -103,11 +103,11 @@ def line_aperture(slm_shape, cell_dim, length, vertical=True, center=None):
     """
 
     # call `create_rect_aperture`
-    apert_dim = (length, cell_dim[1]) if vertical else (cell_dim[0], length)
-    return rect_aperture(slm_shape, cell_dim, apert_dim, center)
+    apert_dim = (length, pixel_pitch[1]) if vertical else (pixel_pitch[0], length)
+    return rect_aperture(slm_shape, pixel_pitch, apert_dim, center)
 
 
-def square_aperture(slm_shape, cell_dim, side, center=None):
+def square_aperture(slm_shape, pixel_pitch, side, center=None):
     """
     Create and return SLM object with a square aperture of desired shape.
 
@@ -115,7 +115,7 @@ def square_aperture(slm_shape, cell_dim, side, center=None):
     ----------
     slm_shape : tuple(int)
         Dimensions (height, width) of SLM in cells.
-    cell_dim : tuple(float)
+    pixel_pitch : tuple(float)
         Dimensions (height, width) of each cell in meters.
     side : float
         Side length of square aperture in meters.
@@ -129,10 +129,10 @@ def square_aperture(slm_shape, cell_dim, side, center=None):
         SLM object with cells programmed to desired square aperture.
 
     """
-    return rect_aperture(slm_shape, cell_dim, (side, side), center)
+    return rect_aperture(slm_shape, pixel_pitch, (side, side), center)
 
 
-def circ_aperture(slm_shape, cell_dim, radius, center=None):
+def circ_aperture(slm_shape, pixel_pitch, radius, center=None):
     """
     Create and return SLM object with a circle aperture of desired shape.
 
@@ -140,7 +140,7 @@ def circ_aperture(slm_shape, cell_dim, radius, center=None):
     ----------
     slm_shape : tuple(int)
         Dimensions (height, width) of SLM in cells.
-    cell_dim : tuple(float)
+    pixel_pitch : tuple(float)
         Dimensions (height, width) of each cell in meters.
     radius : float
         Radius of aperture in meters.
@@ -158,7 +158,7 @@ def circ_aperture(slm_shape, cell_dim, radius, center=None):
     assert radius > 0
 
     # initialize SLM
-    slm = SLM(shape=slm_shape, cell_dim=cell_dim)
+    slm = SLM(shape=slm_shape, pixel_pitch=pixel_pitch)
 
     # check / compute center
     if center is None:
@@ -173,8 +173,8 @@ def circ_aperture(slm_shape, cell_dim, radius, center=None):
 
     # compute mask
     i, j = np.meshgrid(
-        np.arange(slm.dim[0], step=slm.cell_dim[0]),
-        np.arange(slm.dim[1], step=slm.cell_dim[1]),
+        np.arange(slm.dim[0], step=slm.pixel_pitch[0]),
+        np.arange(slm.dim[1], step=slm.pixel_pitch[1]),
         sparse=True,
         indexing="ij",
     )

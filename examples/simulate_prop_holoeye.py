@@ -35,7 +35,7 @@ slm_device = SLMDevices.HOLOEYE_LC_2012.value
 prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
 wavelength = physical_params[PhysicalParams.WAVELENGTH]
 slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
-slm_pitch = slm_devices[slm_device][SLMParam.CELL_DIM]
+slm_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
 
 
 def simulate_prop_holoeye():

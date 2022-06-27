@@ -13,7 +13,7 @@ def _cell_slice(_slice, cell_m):
     _slice : slice
         Original slice in meters.
     cell_m : float
-        Cell dimension in meters.
+        Dimension of cell in meters.
     """
     start = None if _slice.start is None else _m_to_cell_idx(_slice.start, cell_m)
     stop = _m_to_cell_idx(_slice.stop, cell_m) if _slice.stop is not None else None
@@ -49,7 +49,7 @@ def _m_to_cell_idx(val, cell_m):
 #     return np.array(val // cell_m, dtype=int)
 
 
-def _prepare_index_vals(key, cell_shape):
+def _prepare_index_vals(key, pixel_pitch):
     """
     Convert indexing object in meters to indexing object in cell indices.
 
@@ -57,25 +57,25 @@ def _prepare_index_vals(key, cell_shape):
     ----------
     key : int, float, slice, or list
         Indexing operation in meters.
-    cell_shape : tuple(float)
-        Cell dimensions (height, width) in meters.
+    pixel_pitch : tuple(float)
+        Pixel pitch (height, width) in meters.
     """
 
     if isinstance(key, (float, int)):
-        idx = slice(None), _m_to_cell_idx(key, cell_shape[0])
+        idx = slice(None), _m_to_cell_idx(key, pixel_pitch[0])
 
     elif isinstance(key, slice):
-        idx = slice(None), _cell_slice(key, cell_shape[0])
+        idx = slice(None), _cell_slice(key, pixel_pitch[0])
 
     elif len(key) == 2:
         idx = [slice(None)]
         for k, _slice in enumerate(key):
 
             if isinstance(_slice, slice):
-                idx.append(_cell_slice(_slice, cell_shape[k]))
+                idx.append(_cell_slice(_slice, pixel_pitch[k]))
 
             elif isinstance(_slice, (float, int)):
-                idx.append(_m_to_cell_idx(_slice, cell_shape[k]))
+                idx.append(_m_to_cell_idx(_slice, pixel_pitch[k]))
 
             else:
                 raise ValueError("Invalid key.")
@@ -178,7 +178,7 @@ def show_plot(slm_field, propped_slm_field, title):
 
 
 def quantize_phase_pattern(phase_map):
-    phase_map += np.PI
-    phase_map /= 2 * np.PI
-    phase_map *= 255
-    return np.round(phase_map)
+    phase_map += np.pi
+    phase_map /= 2 * np.pi
+    phase_map *= 255.0
+    return np.rint(phase_map, dtype=np.uint8)

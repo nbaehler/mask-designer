@@ -15,9 +15,7 @@ from physical_params import (
     PhysicalParams,
     physical_params,
 )
-from slm_designer.transform_fields import lensless_to_lens
-from slm_designer.wrapper import GS, ImageLoader
-from slm_designer.utils import extend_to_complex, quantize_phase_pattern
+from slm_designer.wrapper import ImageLoader, run_gs
 
 slm_device = SLMDevices.HOLOEYE_LC_2012.value
 
@@ -25,7 +23,7 @@ slm_device = SLMDevices.HOLOEYE_LC_2012.value
 # Set parameters
 distance = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
 wavelength = physical_params[PhysicalParams.WAVELENGTH]
-feature_size = slm_devices[slm_device][SLMParam.CELL_DIM]
+pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
 iterations = 500
 
 slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]
@@ -68,17 +66,9 @@ def physical_prop_gs(show_time):
     init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_res)).to(device)
 
     # Run Gerchberg-Saxton
-    gs = GS(distance, wavelength, feature_size, iterations, device=device)
-    angles = gs(target_amp, init_phase).cpu().detach()
-
-    # Extend the computed angles, aka the phase values, to a complex tensor again
-    extended = extend_to_complex(angles)
-
-    # Transform the results to the hardware setting using a lens
-    final_phase_gs = lensless_to_lens(extended, distance, wavelength, slm_res, feature_size).angle()
-
-    # Quantize the the angles, aka phase values, to a bit values
-    phase_out = quantize_phase_pattern(final_phase_gs)
+    phase_out = run_gs(
+        init_phase, target_amp, iterations, slm_res, distance, wavelength, pixel_pitch, device,
+    )
 
     # Display
     s.imshow(phase_out)

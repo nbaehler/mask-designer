@@ -69,9 +69,9 @@ def set_aperture(shape, n_cells, rect_shape, center, vertical, device):
 
     # print device info
     device_config = slm_devices[device]
-    cell_dim = device_config[SLMParam.CELL_DIM]
+    pixel_pitch = device_config[SLMParam.PIXEL_PITCH]
     print(f"SLM dimension : {device_config[SLMParam.SLM_SHAPE]}")
-    print(f"Cell dim (m) : {cell_dim}")
+    print(f"Pixel pitch (m) : {pixel_pitch}")
     if shape == ApertureOptions.LINE.value:
         if vertical:
             print("Aperture shape : vertical line")
@@ -80,7 +80,7 @@ def set_aperture(shape, n_cells, rect_shape, center, vertical, device):
     else:
         print(f"Aperture shape : {shape}")
     if len(center) > 0:
-        center = (center[0] * cell_dim[0], center[1] * cell_dim[1])
+        center = (center[0] * pixel_pitch[0], center[1] * pixel_pitch[1])
     else:
         center = None
 
@@ -88,28 +88,28 @@ def set_aperture(shape, n_cells, rect_shape, center, vertical, device):
     ap = None
     if shape == ApertureOptions.LINE.value:
         print(f"Length : {n_cells}")
-        length = n_cells * cell_dim[0] if vertical else n_cells * cell_dim[1]
+        length = n_cells * pixel_pitch[0] if vertical else n_cells * pixel_pitch[1]
         ap = line_aperture(
             length=length,
             vertical=vertical,
             slm_shape=device_config[SLMParam.SLM_SHAPE],
-            cell_dim=device_config[SLMParam.CELL_DIM],
+            pixel_pitch=device_config[SLMParam.PIXEL_PITCH],
             center=center,
         )
     elif shape == ApertureOptions.SQUARE.value:
         print(f"Side length : {n_cells}")
         ap = square_aperture(
-            side=n_cells * cell_dim[0],
+            side=n_cells * pixel_pitch[0],
             slm_shape=device_config[SLMParam.SLM_SHAPE],
-            cell_dim=device_config[SLMParam.CELL_DIM],
+            pixel_pitch=device_config[SLMParam.PIXEL_PITCH],
             center=center,
         )
     elif shape == ApertureOptions.CIRC.value:
         print(f"Radius : {n_cells}")
         ap = circ_aperture(
-            radius=n_cells * cell_dim[0],
+            radius=n_cells * pixel_pitch[0],
             slm_shape=device_config[SLMParam.SLM_SHAPE],
-            cell_dim=device_config[SLMParam.CELL_DIM],
+            pixel_pitch=device_config[SLMParam.PIXEL_PITCH],
             center=center,
         )
     elif shape == ApertureOptions.RECT.value:
@@ -117,11 +117,11 @@ def set_aperture(shape, n_cells, rect_shape, center, vertical, device):
             # not provided
             rect_shape = (n_cells, n_cells)
         print(f"Shape : {rect_shape}")
-        apert_dim = rect_shape[0] * cell_dim[0], rect_shape[1] * cell_dim[1]
+        apert_dim = rect_shape[0] * pixel_pitch[0], rect_shape[1] * pixel_pitch[1]
         ap = rect_aperture(
             apert_dim=apert_dim,
             slm_shape=device_config[SLMParam.SLM_SHAPE],
-            cell_dim=device_config[SLMParam.CELL_DIM],
+            pixel_pitch=device_config[SLMParam.PIXEL_PITCH],
             center=center,
         )
     assert ap is not None

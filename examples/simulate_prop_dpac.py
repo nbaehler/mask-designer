@@ -25,7 +25,7 @@ def simulate_prop_dpac():
     # Set parameters
     distance = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
-    feature_size = slm_devices[slm_device][SLMParam.CELL_DIM]
+    pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
 
     slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]
     image_res = slm_res
@@ -52,9 +52,8 @@ def simulate_prop_dpac():
     target_amp = target_amp[None, None, :, :]
     target_amp = target_amp.to(device)
 
-    # Run Double Phase Amplitude Coding #TODO does not work, not even out of the
-    # box
-    dpac = DPAC(distance, wavelength, feature_size, device=device)
+    # Run Double Phase Amplitude Coding #TODO does not work
+    dpac = DPAC(distance, wavelength, pixel_pitch, device=device)
     angles = dpac(target_amp)
     angles = angles.cpu().detach()
 
@@ -62,9 +61,7 @@ def simulate_prop_dpac():
     neural_holography_slm_field = extend_to_complex(angles)
 
     # Transform the results to the hardware setting using a lens
-    temp = lensless_to_lens(
-        neural_holography_slm_field, distance, wavelength, slm_res, feature_size
-    )
+    temp = lensless_to_lens(neural_holography_slm_field, distance, wavelength, slm_res, pixel_pitch)
 
     # Simulate the propagation in the lens setting and show the results
     slm_field = temp[0, 0, :, :]
@@ -77,7 +74,7 @@ def simulate_prop_dpac():
         neural_holography_slm_field,
         physical_params[PhysicalParams.PROPAGATION_DISTANCE],
         physical_params[PhysicalParams.WAVELENGTH],
-        slm_devices[slm_device][SLMParam.CELL_DIM],
+        slm_devices[slm_device][SLMParam.PIXEL_PITCH],
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Neural Holography DPAC without lens")
 

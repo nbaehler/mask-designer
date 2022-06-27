@@ -132,13 +132,19 @@ def train_model(
 
     print(f"   - training parameterized wave propagation model....")
 
-    feature_size = slm_devices[slm_device][SLMParam.CELL_DIM]  # SLM pitch
+    feature_size = slm_devices[slm_device][
+        SLMParam.PIXEL_PITCH
+    ]  # SLM pitch #TODO remove this dependency
 
     slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
-    image_res = cam_devices[cam_device][CamParam.IMG_SHAPE]  # TODO slm.shape == image.shape?
+    image_res = cam_devices[cam_device][
+        CamParam.IMG_SHAPE
+    ]  # TODO slm.shape == image.shape?
     roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
 
-    dtype = torch.float32  # default datatype (results may differ if using, e.g., float64)
+    dtype = (
+        torch.float32
+    )  # default datatype (results may differ if using, e.g., float64)
     # device = "cuda" if torch.cuda.is_available() else "cpu" #TODO gpu is too small
     device = "cpu"
 
@@ -178,7 +184,9 @@ def train_model(
 
     # Model instance to train
     # Check propagation_model.py for the default parameter settings!
-    blur = utils.make_kernel_gaussian(0.85, 3)  # Optional, just be consistent with inference.
+    blur = utils.make_kernel_gaussian(
+        0.85, 3
+    )  # Optional, just be consistent with inference.
     model = ModelPropagate(
         distance=prop_dist,
         feature_size=feature_size,
@@ -263,18 +271,27 @@ def train_model(
                 # Load pre-computed phases
                 # Instead, you can optimize phases from the scratch after a few number of iterations.
                 if e > 0:
-                    phase_filename = os.path.join(phase_path, f"{chan_str}", f"{idx}.png")
+                    phase_filename = os.path.join(
+                        phase_path, f"{chan_str}", f"{idx}.png"
+                    )
                 else:
                     phase_filename = os.path.join(
-                        phase_path, f"{chan_str}", f"{idx}_{channel}", "phasemaps_1000.png",
+                        phase_path,
+                        f"{chan_str}",
+                        f"{idx}_{channel}",
+                        "phasemaps_1000.png",
                     )
 
                 if os.path.exists(phase_filename):
-                    slm_phase = skimage.io.imread(phase_filename) / np.iinfo(np.uint8).max
+                    slm_phase = (
+                        skimage.io.imread(phase_filename) / np.iinfo(np.uint8).max
+                    )
                 else:
                     slm_phase = (
                         np.random.randint(
-                            low=0, high=np.iinfo(np.uint8).max + 1, size=(1, 1, *slm_res),
+                            low=0,
+                            high=np.iinfo(np.uint8).max + 1,
+                            size=(1, 1, *slm_res),
                         )
                         / np.iinfo(np.uint8).max
                     )
@@ -305,9 +322,9 @@ def train_model(
 
                 # calculate loss and backpropagate to phase
                 with torch.no_grad():
-                    scale_phase = (model_amp * target_amp).mean(dim=[-2, -1], keepdims=True) / (
-                        model_amp ** 2
-                    ).mean(dim=[-2, -1], keepdims=True)
+                    scale_phase = (model_amp * target_amp).mean(
+                        dim=[-2, -1], keepdims=True
+                    ) / (model_amp ** 2).mean(dim=[-2, -1], keepdims=True)
 
                     # or we can optimize scale with regression and statistics of the image
                     # scale_phase = target_amp.mean(dim=[-2,-1], keepdims=True).detach() * sa + sb
@@ -362,12 +379,18 @@ def train_model(
                     for c in range(camera_amp.shape[1]):
                         im = Image.fromarray(camera_amp[p, c].cpu().numpy())
                         im = im.resize(
-                            (slm_res[1], slm_res[0]), Image.BICUBIC,  # Pillow uses width, height
+                            (slm_res[1], slm_res[0]),
+                            Image.BICUBIC,  # Pillow uses width, height
                         )
-                        camera_amp_scaled[p, c] = torch.from_numpy(np.array(im)).to(device)
+                        camera_amp_scaled[p, c] = torch.from_numpy(np.array(im)).to(
+                            device
+                        )
 
                 camera_amp = utils.crop_image(
-                    camera_amp_scaled, target_shape=roi_res, pytorch=True, stacked_complex=False,
+                    camera_amp_scaled,
+                    target_shape=roi_res,
+                    pytorch=True,
+                    stacked_complex=False,
                 )
                 # ---------------------------------
 
@@ -389,7 +412,10 @@ def train_model(
                     writer.add_scalar("Loss/model_vs_camera", loss_value_model, i_acc)
                     writer.add_scalar(
                         "Loss/camera_vs_target",
-                        loss_mse(camera_amp * target_amp.mean() / camera_amp.mean(), target_amp,),
+                        loss_mse(
+                            camera_amp * target_amp.mean() / camera_amp.mean(),
+                            target_amp,
+                        ),
                         i_acc,
                     )
                 if i % 50 == 0:
@@ -404,7 +430,9 @@ def train_model(
                 i_acc += 1
 
         # save model, every epoch
-        torch.save(model.state_dict(), os.path.join(model_path, f"{run_id}_{e}epoch.pth"))
+        torch.save(
+            model.state_dict(), os.path.join(model_path, f"{run_id}_{e}epoch.pth")
+        )
         if step_lr:
             lr_scheduler.step()
 
