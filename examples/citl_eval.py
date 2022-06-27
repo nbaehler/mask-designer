@@ -1,5 +1,5 @@
 import click
-from slm_designer.neural_holography.eval import eval
+from slm_designer.wrapper import eval
 
 
 @click.command()

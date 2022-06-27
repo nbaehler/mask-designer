@@ -2,7 +2,7 @@ from enum import Enum
 
 # Camera devices that are implemented in this project
 class CamDevices(Enum):
-    DUMMY = "dummy"  # TODO for development only! Remove!
+    DUMMY = "dummy"  # TODO for development only!
     IDS = "ids"
 
     @staticmethod

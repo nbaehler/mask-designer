@@ -15,3 +15,6 @@ pip install -e ../waveprop/
 pip install -U numpy
 
 conda install black
+
+conda install -c conda-forge tensorboard
+pip install torch_tb_profiler

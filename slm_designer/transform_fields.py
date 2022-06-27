@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import math
 
-import slm_designer.neural_holography.utils as utils
+from slm_designer.wrapper import ifftshift, polar_to_rect
 
 
 def __compute_H(prop_dist, wavelength, slm_shape, slm_pitch):
@@ -62,10 +62,10 @@ def __compute_H(prop_dist, wavelength, slm_shape, slm_pitch):
     )
 
     # get real/img components
-    H_real, H_imag = utils.polar_to_rect(H_filter, H_exp)
+    H_real, H_imag = polar_to_rect(H_filter, H_exp)
 
     H = torch.stack((H_real, H_imag), 4)
-    H = utils.ifftshift(H)
+    H = ifftshift(H)
     H = torch.view_as_complex(H)
 
     return H
@@ -89,7 +89,7 @@ def lens_to_lensless(holoeye_slm_field, prop_dist, wavelength, slm_shape, slm_pi
 
     H = __compute_H(prop_dist, wavelength, slm_shape, slm_pitch)
 
-    return utils.fftshift(
+    return fftshift(
         torch.fft.ifftn(
             torch.fft.fftn(
                 torch.fft.fftn(holoeye_slm_field, dim=(-2, -1), norm="ortho"),
@@ -126,7 +126,7 @@ def lensless_to_lens(
         torch.fft.ifftn(
             H
             * torch.fft.fftn(
-                utils.ifftshift(neural_holography_slm_field), dim=(-2, -1), norm="ortho"
+                ifftshift(neural_holography_slm_field), dim=(-2, -1), norm="ortho"
             ),
             dim=(-2, -1),
             norm="ortho",

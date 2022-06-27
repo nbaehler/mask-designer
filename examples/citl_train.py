@@ -1,6 +1,5 @@
 import click
-from slm_designer.neural_holography.train_model import train_model
-from slm_designer.neural_holography.utils import str2bool
+from slm_designer.wrapper import train_model, str2bool
 
 from physical_params import (
     PhysicalParams,

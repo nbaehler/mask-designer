@@ -16,10 +16,8 @@ from physical_params import (
     physical_params,
 )
 from slm_designer.transform_fields import lensless_to_lens
-from slm_designer.neural_holography.modules import GS
-from slm_designer.neural_holography.utils import phasemap_8bit
-from slm_designer.neural_holography.augmented_image_loader import ImageLoader
-from slm_designer.utils import extend_to_complex
+from slm_designer.wrapper import GS, ImageLoader
+from slm_designer.utils import extend_to_complex, quantize_phase_pattern
 
 slm_device = SLMDevices.HOLOEYE_LC_2012.value
 
@@ -80,10 +78,10 @@ def physical_prop_gs(show_time):
     final_phase_gs = lensless_to_lens(extended, distance, wavelength, slm_res, feature_size).angle()
 
     # Quantize the the angles, aka phase values, to a bit values
-    phase_out_8bit = phasemap_8bit(final_phase_gs)
+    phase_out = quantize_phase_pattern(final_phase_gs)
 
     # Display
-    s.imshow(phase_out_8bit)
+    s.imshow(phase_out)
 
 
 if __name__ == "__main__":

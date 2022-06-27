@@ -17,10 +17,8 @@ from physical_params import (
 )
 
 from slm_designer.transform_fields import lensless_to_lens
-from slm_designer.neural_holography.modules import DPAC
-from slm_designer.neural_holography.utils import phasemap_8bit
-from slm_designer.neural_holography.augmented_image_loader import ImageLoader
-from slm_designer.utils import extend_to_complex
+from slm_designer.wrapper import DPAC, ImageLoader
+from slm_designer.utils import extend_to_complex, quantize_phase_pattern
 
 slm_device = SLMDevices.HOLOEYE_LC_2012.value
 
@@ -82,10 +80,10 @@ def physical_prop_dpac(show_time):
     ).angle()
 
     # Quantize the the angles, aka phase values, to a bit values
-    phase_out_8bit = phasemap_8bit(final_phase_dpac)
+    phase_out = quantize_phase_pattern(final_phase_dpac)
 
     # Display
-    s.imshow(phase_out_8bit)
+    s.imshow(phase_out)
 
 
 if __name__ == "__main__":

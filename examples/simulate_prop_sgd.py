@@ -16,8 +16,7 @@ from physical_params import (
     PhysicalParams,
     physical_params,
 )
-from slm_designer.neural_holography.modules import SGD
-from slm_designer.neural_holography.augmented_image_loader import ImageLoader
+from slm_designer.wrapper import SGD, ImageLoader
 
 slm_device = SLMDevices.HOLOEYE_LC_2012.value
 

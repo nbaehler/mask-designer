@@ -175,3 +175,10 @@ def show_plot(slm_field, propped_slm_field, title):
     ax3.imshow(propped_slm_field.angle())
     ax4.imshow(propped_slm_field.abs())
     plt.show()
+
+
+def quantize_phase_pattern(phase_map):
+    phase_map += np.PI
+    phase_map /= 2 * np.PI
+    phase_map *= 255
+    return np.round(phase_map)

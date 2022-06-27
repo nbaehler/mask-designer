@@ -1,7 +1,6 @@
 import torch
 
-import slm_designer.neural_holography.utils as utils
-from slm_designer.neural_holography.propagation_ASM import propagation_ASM
+from slm_designer.wrapper import fftshift, propagate_field, propagation_ASM
 from waveprop.fraunhofer import fraunhofer
 from waveprop.fresnel import (
     fresnel_conv,
@@ -34,8 +33,8 @@ def lens_prop(slm_field):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    return utils.fftshift(slm_field)  # TODO no wavelengthgth etc???
-    # return utils.fftshift(torch.fft.fftn(slm_field, dim=(-2, -1),
+    return fftshift(slm_field)  # TODO no wavelengthgth etc???
+    # return fftshift(torch.fft.fftn(slm_field, dim=(-2, -1),
     # norm="ortho")) #TODO check this
 
 
@@ -53,7 +52,7 @@ def lensless_prop(slm_field, prop_dist, wavelength, slm_pitch):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    return utils.propagate_field(
+    return propagate_field(
         slm_field,
         propagation_ASM,
         prop_dist,
@@ -69,10 +68,7 @@ def wave_prop_fraunhofer(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = fraunhofer(
-        u_in=slm_field.numpy(),
-        wv=wavelength,
-        d1=slm_pitch[0],
-        dz=prop_dist,
+        u_in=slm_field.numpy(), wv=wavelength, d1=slm_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(res)[None, None, :, :]
@@ -97,10 +93,7 @@ def wave_prop_angular_spectrum_np(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = angular_spectrum_np(
-        u_in=slm_field.numpy(),
-        wv=wavelength,
-        d1=slm_pitch[0],
-        dz=prop_dist,
+        u_in=slm_field.numpy(), wv=wavelength, d1=slm_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
@@ -110,10 +103,7 @@ def wave_prop_fft_di(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = fft_di(
-        u_in=slm_field.numpy(),
-        wv=wavelength,
-        d1=slm_pitch[0],
-        dz=prop_dist,
+        u_in=slm_field.numpy(), wv=wavelength, d1=slm_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(res)[None, None, :, :]
@@ -138,10 +128,7 @@ def wave_prop_fresnel_one_step(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = fresnel_one_step(  # TODO Too small
-        u_in=slm_field.numpy(),
-        wv=wavelength,
-        d1=slm_pitch[0],
-        dz=prop_dist,
+        u_in=slm_field.numpy(), wv=wavelength, d1=slm_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
@@ -179,10 +166,7 @@ def wave_prop_fresnel_conv(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = fresnel_conv(
-        u_in=slm_field.numpy(),
-        wv=wavelength,
-        d1=slm_pitch[0],
-        dz=prop_dist,
+        u_in=slm_field.numpy(), wv=wavelength, d1=slm_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
@@ -192,10 +176,7 @@ def wave_prop_shifted_fresnel(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = shifted_fresnel(
-        u_in=slm_field.numpy(),
-        wv=wavelength,
-        d1=slm_pitch[0],
-        dz=prop_dist,
+        u_in=slm_field.numpy(), wv=wavelength, d1=slm_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
@@ -205,10 +186,7 @@ def wave_prop_spherical(slm_field, prop_dist, wavelength, slm_pitch):
     slm_field = slm_field[0, 0, :, :]
 
     res, _, _ = spherical_prop(
-        u_in=slm_field.numpy(),
-        wv=wavelength,
-        d1=slm_pitch[0],
-        dz=prop_dist,
+        u_in=slm_field.numpy(), wv=wavelength, d1=slm_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(res)[None, None, :, :]

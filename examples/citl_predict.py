@@ -21,11 +21,18 @@ from physical_params import (
     physical_params,
 )
 
-from slm_designer.neural_holography.propagation_model import ModelPropagate
-from slm_designer.neural_holography.propagation_ASM import propagation_ASM
-from slm_designer.neural_holography.augmented_image_loader import ImageLoader
-import slm_designer.neural_holography.utils as utils
-from slm_designer.neural_holography.modules import PhysicalProp
+from slm_designer.wrapper import (
+    ModelPropagate,
+    propagation_ASM,
+    ImageLoader,
+    make_kernel_gaussian,
+    crop_image,
+    polar_to_rect,
+    propagate_field,
+    srgb_lin2gamma,
+    cond_mkdir,
+    PhysicalProp,
+)
 
 cam_device = CamDevices.IDS.value
 slm_device = SLMDevices.HOLOEYE_LC_2012.value
@@ -91,7 +98,7 @@ def citl_predict():
             show_preview=True,
         )
     elif prop_model.upper() == "MODEL":
-        blur = utils.make_kernel_gaussian(0.85, 3)
+        blur = make_kernel_gaussian(0.85, 3)
         propagators = {}
         for c in chs:
             propagator = ModelPropagate(
@@ -140,9 +147,7 @@ def citl_predict():
         print(f"    - running for img_{target_idx}...")
 
         # crop to ROI
-        target_amp = utils.crop_image(target_amp, target_shape=roi_res, stacked_complex=False).to(
-            device
-        )
+        target_amp = crop_image(target_amp, target_shape=roi_res, stacked_complex=False).to(device)
 
         recon_amp = []
 
@@ -158,12 +163,12 @@ def citl_predict():
             )
 
             # propagate field
-            real, imag = utils.polar_to_rect(torch.ones_like(slm_phase), slm_phase)
+            real, imag = polar_to_rect(torch.ones_like(slm_phase), slm_phase)
             slm_field = torch.complex(real, imag)
 
             if prop_model.upper() == "MODEL":
                 propagator = propagators[c]  # Select CITL-calibrated models for each channel
-            recon_field = utils.propagate_field(
+            recon_field = propagate_field(
                 slm_field, propagator, prop_dist, wavelength, feature_size, prop_model, dtype,
             )
 
@@ -171,7 +176,7 @@ def citl_predict():
             recon_amp_c = recon_field.abs()
 
             # crop to ROI
-            recon_amp_c = utils.crop_image(recon_amp_c, target_shape=roi_res, stacked_complex=False)
+            recon_amp_c = crop_image(recon_amp_c, target_shape=roi_res, stacked_complex=False)
 
             # append to list
             recon_amp.append(recon_amp_c)
@@ -205,8 +210,8 @@ def citl_predict():
         #     )
 
         # save reconstructed image in srgb domain
-        recon_srgb = utils.srgb_lin2gamma(np.clip(recon_amp ** 2, 0.0, 1.0))
-        utils.cond_mkdir(recon_path)
+        recon_srgb = srgb_lin2gamma(np.clip(recon_amp ** 2, 0.0, 1.0))
+        cond_mkdir(recon_path)
         imageio.imwrite(
             os.path.join(recon_path, f"{target_idx}_{run_id}_{chan_strs[channel]}.png"),
             (recon_srgb * np.iinfo(np.uint8).max).round().astype(np.uint8),
