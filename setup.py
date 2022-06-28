@@ -3,24 +3,36 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setuptools.setup(  # TODO change
+setuptools.setup(
     name="slm-designer",
     version="0.0.1",
     author="Eric Bezzam",
     author_email="ebezzam@gmail.com",
-    description="Package to control spatial light modulator with Raspberry Pi.",
+    description="Package to perform phase retrieval for SLMs",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/ebezzam/slm-controller",
+    url="https://github.com/nbaehler/slm-designer",
     packages=setuptools.find_packages(),
-    classifiers=["Programming Language :: Python :: 3", "Operating System :: OS Independent",],
-    python_requires=">=3.6",
-    install_requires=[
-        "adafruit-circuitpython-rgb-display",
-        "adafruit-circuitpython-sharpmemorydisplay",
-        "adafruit-circuitpython-pcd8544",
-        "Pillow",
-        "numpy",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent",
     ],
-    extra_requires={"dev": ["click", "matplotlib", "pytest"],},
+    python_requires=">=3.9",  # TODO check that
+    install_requires=[  # TODO check list
+        "requests",
+        "numpy",
+        "matplotlib",
+        "pytorch",
+        "torchvision",
+        "torchaudio",
+        "cudatoolkit==11.3",
+        "pytorch",
+        "scikit-image",
+        "aotools",
+        "opencv",
+        "tensorboardx",
+    ],
+    extra_requires={
+        "dev": ["click", "black", "pytest", "tensorboard", "torch_tb_profiler"],
+    },
 )

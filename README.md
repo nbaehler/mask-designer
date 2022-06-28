@@ -1,7 +1,7 @@
 # slm-designer
 
 Collection of different approaches to phase retrieval,
-i.e. mask design.
+i.e. mask design for SLM devices.
 
 ## Overview
 
@@ -23,7 +23,7 @@ settings as well are provided.
 
 ## Installation
 
-<!-- TODO Talk about dependencies with slm-controller and waveprop -->
+For installing the simply run the following script:
 
 ```sh
 ./env_setup.sh
@@ -31,9 +31,14 @@ settings as well are provided.
 
 The script will:
 
-1. Install OS dependencies. <!-- TODO Any? -->
-2. Create a Python3 virtual environment called `slm_designer_env`.
-3. Install Python dependencies in the virtual environment.
+1. Create a Python3 virtual environment called `slm_designer_env`.
+2. Install Python dependencies in the virtual environment.
+3. Install both [slm-controller](https://github.com/ebezzam/slm-controller) and [waveprop](https://github.com/ebezzam/waveprop) in setuptools “develop mode” from
+   GitHub
+
+This project is using those two repos to access physical SLMs after the phase
+pattern has been computed and to simulate the light propagation in the different
+phase retrieval algorithms. Note that those are still in development too.
 
 ## Manual installation needed for enabling some features
 
