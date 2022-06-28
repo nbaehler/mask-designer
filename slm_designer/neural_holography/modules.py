@@ -12,9 +12,6 @@ Technical Paper:
 Y. Peng, S. Choi, N. Padmanaban, G. Wetzstein. Neural Holography with Camera-in-the-loop Training. ACM TOG (SIGGRAPH Asia), 2020.
 """
 
-from slm_controller.hardware import SLMDevices
-from slm_designer.hardware import CamDevices
-
 import torch
 import torch.nn as nn
 from slm_controller import slm
@@ -34,9 +31,6 @@ from slm_designer.neural_holography.propagation_ASM import propagation_ASM
 from slm_designer.neural_holography.calibration_module import Calibration
 
 import platform
-
-cam_device = CamDevices.DUMMY.value
-slm_device = SLMDevices.HOLOEYE_LC_2012.value
 
 # my_os = platform.system()
 # if my_os == "Windows":
@@ -411,8 +405,10 @@ class PhysicalProp(nn.Module):
 
     def __init__(
         self,
-        # channel=1,
+        slm_device,
+        cam_device,
         slm_settle_time=0.1,
+        # channel=1,
         # roi_res=(1600, 880),
         # num_circles=(21, 12),
         # laser_arduino=False,

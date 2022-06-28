@@ -1,5 +1,5 @@
 import numpy as np
-from slm_designer.utils import _prepare_index_vals, rgb2gray
+from slm_designer.utils import prepare_index_vals, rgb2gray
 
 
 class SLM:
@@ -67,7 +67,7 @@ class SLM:
         value : int, float, :py:class:`~numpy.ndarray`
             [Optional] values to set, otherwise return values at specified coordinates.
         """
-        idx = _prepare_index_vals(physical_coord, self._pixel_pitch)
+        idx = prepare_index_vals(physical_coord, self._pixel_pitch)
         if value is None:
             # getter
             return self._values[idx]
@@ -91,13 +91,13 @@ class SLM:
             Whether to show cell number along x- and y-axis.
         """
 
-        import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt  # TODO move up
 
         # prepare mask data for `imshow`, expects the input data array size to be (width, height, 3)
         Z = self.values.transpose(1, 2, 0)
 
         # plot
-        fig, ax = plt.subplots()
+        _, ax = plt.subplots()
         extent = [
             -0.5 * self._pixel_pitch[1],
             (self._shape[1] - 0.5) * self._pixel_pitch[1],

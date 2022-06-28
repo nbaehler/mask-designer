@@ -2,9 +2,10 @@
 Simulated propagation of the slm pattern generated using the holoeye software.
 """
 
-from physical_params import (
+from slm_designer.experimental_setup import (
     PhysicalParams,
     physical_params,
+    slm_device,
 )
 
 from slm_designer.utils import load_holoeye_slm_pattern, show_plot
@@ -26,12 +27,11 @@ from slm_designer.simulate_prop import (
 from slm_designer.transform_fields import lens_to_lensless
 
 from slm_controller.hardware import (
-    SLMDevices,
     SLMParam,
     slm_devices,
 )
 
-slm_device = SLMDevices.HOLOEYE_LC_2012.value
+# Define parameters
 prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
 wavelength = physical_params[PhysicalParams.WAVELENGTH]
 slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]

@@ -8,17 +8,15 @@ from slm_designer.transform_fields import lensless_to_lens
 import torch
 
 from slm_controller.hardware import (
-    SLMDevices,
     SLMParam,
     slm_devices,
 )
-from physical_params import (
+from slm_designer.experimental_setup import (
     PhysicalParams,
     physical_params,
+    slm_device,
 )
 from slm_designer.wrapper import SGD, ImageLoader
-
-slm_device = SLMDevices.HOLOEYE_LC_2012.value
 
 
 def simulate_prop_sgd():

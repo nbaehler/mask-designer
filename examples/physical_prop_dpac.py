@@ -6,36 +6,32 @@ import torch
 import click
 from slm_controller import slm
 from slm_controller.hardware import (
-    SLMDevices,
     SLMParam,
     slm_devices,
 )
 
-from physical_params import (
+from slm_designer.experimental_setup import (
     PhysicalParams,
     physical_params,
+    slm_device,
 )
 
 from slm_designer.wrapper import ImageLoader, run_dpac
-
-slm_device = SLMDevices.HOLOEYE_LC_2012.value
-
-
-# Set parameters
-distance = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
-wavelength = physical_params[PhysicalParams.WAVELENGTH]
-pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
-iterations = 500
-
-slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]
-image_res = slm_res
-
-roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
 
 
 @click.command()
 @click.option("--show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.")
 def physical_prop_dpac(show_time):
+    # Set parameters
+    distance = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
+    wavelength = physical_params[PhysicalParams.WAVELENGTH]
+    pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
+
+    slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]
+    image_res = slm_res
+
+    roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
+
     # Use GPU if detected in system
     device = "cuda" if torch.cuda.is_available() else "cpu"
 

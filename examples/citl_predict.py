@@ -5,20 +5,20 @@ import torch
 import numpy as np
 
 from slm_controller.hardware import (
-    SLMDevices,
     SLMParam,
     slm_devices,
 )
 
 from slm_designer.hardware import (
     CamParam,
-    CamDevices,
     cam_devices,
 )
 
-from physical_params import (
+from slm_designer.experimental_setup import (
     PhysicalParams,
     physical_params,
+    slm_device,
+    cam_device,
 )
 
 from slm_designer.wrapper import (
@@ -34,12 +34,8 @@ from slm_designer.wrapper import (
     PhysicalProp,
 )
 
-cam_device = CamDevices.IDS.value
-slm_device = SLMDevices.HOLOEYE_LC_2012.value
-slm_settle_time = 0.5
 
-
-def citl_predict():
+def citl_predict():  # TODO Use click
     channel = 1
     prop_model = "ASM"
     root_path = "./phases"

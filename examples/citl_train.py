@@ -1,9 +1,11 @@
 import click
 from slm_designer.wrapper import train_model, str2bool
 
-from physical_params import (
+from slm_designer.experimental_setup import (
     PhysicalParams,
     physical_params,
+    slm_device,
+    cam_device,
 )
 
 
@@ -55,10 +57,15 @@ def citl_train(
     batch_size,
     step_lr,
     experiment,
-    prop_dist=physical_params[PhysicalParams.PROPAGATION_DISTANCE],  # TODO set those in click
-    wavelength=physical_params[PhysicalParams.WAVELENGTH],
 ):
+    slm_settle_time = 0.5  # TODO set those in click
+    prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
+    wavelength = physical_params[PhysicalParams.WAVELENGTH]
+
     train_model(
+        slm_device,
+        cam_device,
+        slm_settle_time,
         channel,
         pretrained_path,
         model_path,

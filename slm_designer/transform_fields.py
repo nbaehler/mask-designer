@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import math
 
-from slm_designer.wrapper import ifftshift, polar_to_rect
+from slm_designer.wrapper import fftshift, ifftshift, polar_to_rect
 
 
 def __compute_H(prop_dist, wavelength, slm_shape, slm_pitch):

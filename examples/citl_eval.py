@@ -29,7 +29,6 @@ from slm_designer.wrapper import eval
     help="Directory where calibration phases are being stored.",
 )
 def citl_eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
-
     eval(channel, prop_model, root_path, prop_model_dir, calibration_path)
 
 

@@ -49,7 +49,7 @@ def _m_to_cell_idx(val, cell_m):
 #     return np.array(val // cell_m, dtype=int)
 
 
-def _prepare_index_vals(key, pixel_pitch):
+def prepare_index_vals(key, pixel_pitch):
     """
     Convert indexing object in meters to indexing object in cell indices.
 
@@ -170,15 +170,22 @@ def show_plot(slm_field, propped_slm_field, title):
     ax2.title.set_text("Amplitude on SLM")
     ax3.title.set_text("Phase after propagation to screen")
     ax4.title.set_text("Amplitude after propagation to screen")
-    ax1.imshow(slm_field.angle())
-    ax2.imshow(slm_field.abs())
-    ax3.imshow(propped_slm_field.angle())
-    ax4.imshow(propped_slm_field.abs())
+    ax1.imshow(slm_field.angle(), cmap="gray")
+    ax2.imshow(slm_field.abs(), cmap="gray")
+    ax3.imshow(propped_slm_field.angle(), cmap="gray")
+    ax4.imshow(propped_slm_field.abs(), cmap="gray")
     plt.show()
 
 
 def quantize_phase_pattern(phase_map):
+    if torch.is_tensor(phase_map):
+        phase_map = phase_map.cpu().detach().numpy()
+
+    if len(phase_map.shape):
+        phase_map = phase_map[0, 0, :, :]
+
     phase_map += np.pi
     phase_map /= 2 * np.pi
     phase_map *= 255.0
-    return np.rint(phase_map, dtype=np.uint8)
+
+    return np.rint(phase_map).astype("B")

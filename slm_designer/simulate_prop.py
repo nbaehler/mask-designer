@@ -33,9 +33,10 @@ def lens_prop(slm_field):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    return fftshift(slm_field)  # TODO no wavelengthgth etc???
-    # return fftshift(torch.fft.fftn(slm_field, dim=(-2, -1),
-    # norm="ortho")) #TODO check this
+    # return fftshift(slm_field) # TODO check this
+    return fftshift(
+        torch.fft.fftn(slm_field, dim=(-2, -1), norm="ortho")
+    )  # TODO no wavelength etc???
 
 
 def lensless_prop(slm_field, prop_dist, wavelength, slm_pitch):

@@ -12,7 +12,7 @@ pip install IDS\ids_peak\generic_sdk\ipl\binding\python\wheel\x86_64\ids_peak_ip
 
 pip install -e ../slm-controller/
 pip install -e ../waveprop/
-pip install -U numpy
+pip install -U numpy==1.22 #TODO incompatible numpy versions
 
 conda install black
 
