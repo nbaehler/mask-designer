@@ -71,7 +71,9 @@ def __compute_H(prop_dist, wavelength, slm_shape, slm_pitch):
     return H
 
 
-def lens_to_lensless(holoeye_slm_field, prop_dist, wavelength, slm_shape, slm_pitch):
+def lens_to_lensless(
+    holoeye_slm_field, prop_dist, wavelength, slm_shape, slm_pitch
+):  # TODO might not be only linked to lenses, ASM vs Fraunhofer
     """
     Transform from the lens setting (holoeye) to the lensless setting (neural
     holography).
@@ -105,7 +107,7 @@ def lens_to_lensless(holoeye_slm_field, prop_dist, wavelength, slm_shape, slm_pi
 
 def lensless_to_lens(
     neural_holography_slm_field, prop_dist, wavelength, slm_shape, slm_pitch
-):
+):  # TODO might not be only linked to lenses, ASM vs Fraunhofer
     """
     Transform from the lensless setting (neural holography) to the lens setting
     (holoeye).
