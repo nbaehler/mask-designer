@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="SL8H2ZP1onxJy9nslx8K" name="Page-1">
-        <mxGraphModel dx="780" dy="382" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="796" dy="382" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -46,7 +46,7 @@
                 <mxCell id="NaqtpgOzilmIxhuoCxP4-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="NaqtpgOzilmIxhuoCxP4-31" target="NaqtpgOzilmIxhuoCxP4-4" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="NaqtpgOzilmIxhuoCxP4-31" value="Polarizer 1,&lt;br&gt;-45°" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                <mxCell id="NaqtpgOzilmIxhuoCxP4-31" value="Polarizer,&lt;br&gt;-45°" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="106" y="170" width="64" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="NaqtpgOzilmIxhuoCxP4-52" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="NaqtpgOzilmIxhuoCxP4-32" target="NaqtpgOzilmIxhuoCxP4-3" edge="1">
@@ -70,7 +70,7 @@
                 <mxCell id="3" value="" style="edgeStyle=none;html=1;" parent="1" source="NaqtpgOzilmIxhuoCxP4-43" target="NaqtpgOzilmIxhuoCxP4-5" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="NaqtpgOzilmIxhuoCxP4-43" value="Polarizer 2,&lt;br&gt;15°" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                <mxCell id="NaqtpgOzilmIxhuoCxP4-43" value="Analyzer,&lt;br&gt;15°" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="468" y="145" width="64" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="NaqtpgOzilmIxhuoCxP4-50" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="NaqtpgOzilmIxhuoCxP4-48" target="NaqtpgOzilmIxhuoCxP4-25" edge="1">

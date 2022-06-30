@@ -13,10 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/nbaehler/slm-designer",
     packages=setuptools.find_packages(),
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "Operating System :: OS Independent",
-    ],
+    classifiers=["Programming Language :: Python :: 3", "Operating System :: OS Independent",],
     python_requires=">=3.9",  # TODO check that
     install_requires=[  # TODO check list
         "requests",
@@ -32,7 +29,5 @@ setuptools.setup(
         "opencv",
         "tensorboardx",
     ],
-    extra_requires={
-        "dev": ["click", "black", "pytest", "tensorboard", "torch_tb_profiler"],
-    },
+    extra_requires={"dev": ["click", "black", "pytest", "tensorboard", "torch_tb_profiler"],},
 )

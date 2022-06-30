@@ -1,7 +1,7 @@
 # slm-designer
 
 Collection of different approaches to phase retrieval,
-i.e. mask design for SLM devices.
+i.e. mask design for phase SLM devices.
 
 - [slm-designer](#slm-designer)
   - [Installation](#installation)
@@ -186,8 +186,8 @@ This section will briefly discuss the propagation of a phase map to the target
 plane. More precisely propagation simulation is a crucial element in most of the
 mask designing algorithms. Holoeye's SLM Pattern Generator uses
 [Fraunhofer](https://en.wikipedia.org/wiki/Fraunhofer_diffraction_equation) and
-Neural Holography mostly uses the [Angular spectrum
-method](https://en.wikipedia.org/wiki/Angular_spectrum_method) ASM. In a next step
+Neural Holography mostly uses [Angular spectrum
+method](https://en.wikipedia.org/wiki/Angular_spectrum_method) (ASM). In a next step
 we plan to replace the ASM implemented in Neural Holography with a propagation
 method from [waveprop](https://github.com/ebezzam/waveprop).
 
