@@ -24,9 +24,7 @@ from slm_designer.neural_holography.propagation_ASM import (
     propagation_ASM_zernike_fourier,
 )
 
-from slm_designer.neural_holography.pytorch_prototyping.pytorch_prototyping import (
-    Conv2dSame,
-)  # TODO Import package
+from slm_designer.neural_holography.pytorch_prototyping.pytorch_prototyping import Conv2dSame
 
 
 class LatentCodedMLP(nn.Module):

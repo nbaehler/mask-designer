@@ -6,6 +6,10 @@
     - [Phase retrieval](#phase-retrieval)
   - [Holoeye SLM Pattern Generator](#holoeye-slm-pattern-generator)
   - [Neural Holography](#neural-holography)
+    - [1. Gerchberg-Saxton (GS)](#1-gerchberg-saxton-gs)
+    - [2. Stochastic Gradient Descent (SGD)](#2-stochastic-gradient-descent-sgd)
+    - [3. Double Phase Amplitude Coding (DPAC)](#3-double-phase-amplitude-coding-dpac)
+    - [4. Camera-In-The-Loop (CITL)](#4-camera-in-the-loop-citl)
   - [Experimental setup](#experimental-setup)
     - [Setup 1](#setup-1)
     - [Setup 2](#setup-2)
@@ -13,6 +17,7 @@
     - [Setup 4](#setup-4)
     - [Setup 5](#setup-5)
     - [Final setup](#final-setup)
+    - [Candidate setup to test](#candidate-setup-to-test)
   - [Propagation](#propagation)
   - [Sources](#sources)
 
@@ -30,9 +35,10 @@ Here a example of a SLM we support (via [slm-controller](https://github.com/ebez
 
 ![Holoeye slm](images/slm.png)
 
-It's a transmissive SLM and allows to modulate both amplitude and phase. Commonly SLMs and also the Holoeye one are based
-Liquid Crystal Display (LCD) technology. Briefly, the SLM consists of a grid of
-such crystal cells where each of them can be programmatically addressed and by applying
+It's a transmissive SLM and allows to modulate both amplitude and phase.
+Commonly SLMs, and also the Holoeye one, are based on Liquid Crystal Display
+(LCD) technology. Briefly, the SLM consists of a grid of crystal cells where
+each of them can be programmatically addressed and by applying
 different voltages its physical properties are changed. Concretely, for the
 Holoeye SLM Twisted Nematic (TN) cells are used. Here two image that sum
 this up:
@@ -51,7 +57,7 @@ aligned molecules, $V_C >> V_{thr}$ with aligned molecules in the central region
 of the cell.
 
 By modulating the polarization and combining the SLM with a polarizer and an
-analyzer amplitude and phase modulation can be achieved.
+analyzer both amplitude and phase modulation can be achieved.
 
 SLMs generally have different fields of application like, for example, lensless
 imaging but in this project the focus lies on Computer Generated Holography (CGH).
@@ -144,10 +150,51 @@ provide implementations to different phase retrieval approaches. Here a
 list of the methods that were slightly modified and hence compatible
 with the remainder of the project and where to find them:
 
-- Gerchberg-Saxton (GS)
-- Stochastic Gradient Descent (SGD)
-- Double Phase Amplitude Coding (DPAC)
-- Camera-In-The-Loop (CITL)
+1. Gerchberg-Saxton (GS)
+2. Stochastic Gradient Descent (SGD)
+3. Double Phase Amplitude Coding (DPAC)
+4. Camera-In-The-Loop (CITL)
+
+### 1. Gerchberg-Saxton (GS)
+
+As mentioned earlier, this is basically the IFTA. Light is iteratively
+propagated back and forth and constraints are enforced at both ends, like being
+close to the target amplitude at the target plane.
+
+### 2. Stochastic Gradient Descent (SGD)
+
+Similar to before, the phase map is iteratively optimized such that the
+resulting amplitude after propagation is closer and
+closer to the target amplitude. Note that this methods requires the light
+propagation to be differentiable. Additionally, this method uses a region of
+interest (ROI) in which errors are more penalized than on the outside of this
+region. So typically you want the result to be close to the target in the center
+but give the
+algorithm some slack in the border regions. This simplifies the optimization
+task as you do not force the algorithm to optimize region which you do not care
+about. Generally speaking, you require fewer iterations and hence get some speedup.
+
+### 3. Double Phase Amplitude Coding (DPAC)
+
+As the only one of those 4 algorithms, DPAC is a single shot algorithm, it's
+non-iterative. When looking at the results presented in the Neural Holography
+paper, one can clearly see that it yields worse results than the other methods,
+which is quite intuitive as it's much faster to run. But practically we never
+got satisfying results from it. The performance does not seem to come close to
+the one reported in the paper. For now we didn't find any reason for this
+performance mismatch but this is something that need further investigation.
+
+### 4. Camera-In-The-Loop (CITL)
+
+CITL adds physical propagation and the measurement of those results into the
+algorithm. The idea is to compute a phase map (for example with SGD), propagate
+it physically using a SLM, then measuring the resulting pattern on the target
+plane using a camera and finally using those observations to improve the phase
+map further before repeating these steps. So this approach is iterative.
+Additionally, it is technically the most challenging but as shown in the Neural
+Holography paper it performs better than all the other methods. In the current
+state the training of the CITL is functional but more work needs to be done in
+order to make it truly useable and testable.
 
 ## Experimental setup
 
@@ -182,7 +229,7 @@ perfectly match the photo sensor of the camera.
 
 ### Setup 3
 
-Again, suggested by the manual, a polarizer ($-45°$) and an analyzer ($15°$) are
+Again, suggested by the manual, a polarizer $(-45°)$ and an analyzer $(15°)$ are
 added to the very front and the very back of the optical pipeline respectively.
 Those are the required settings according to Holoeye for the SLM to perform
 optimally as a phase SLM.
@@ -198,18 +245,52 @@ relative position of the to lenses determines the scale.
 ![Experimental setup](images/setup_3.svg)
 
 This setup was the final version suggested by the Holoeye but we experienced
-several issues and problems with it.
+several issues and problems with it. Firstly, having the SLM after the first lens
+creates a situation where the laser beam that enters the SLM actually is no
+longer collimated which goes against what is suggested earlier. Visually it
+seems to make not a big difference as the convex lens has a rather big focal
+distance the beam is still close to being collimated. Nonetheless it is cleaner
+to put the SLM in front of any lens and handle the scaling of the interference
+pattern differently. Secondly, we experienced oversaturation of the photo sensor
+even with the shortest exposure time possible with Thorlabs software ([ThorCam](https://www.thorlabs.com/software_pages/ViewSoftwarePage.cfm?Code=ThorCam)). A handy
+way of controlling the
+amount of light i.e. its intensity is to use two polarizers back to back and
+turning them relative to each other such that just the right amount of light
+passes through them. Instead of adding a third polarizer we simply moved the analyzer
+in between the polarizer and the SLM. The removal of the analyzer did not
+visually degrade the results. But it would be cleaner to follow Holoeye
+suggestions here.
 
 ### Setup 5
+
+For simplicity, we first only used one lens to test if our changes to the setup
+where a step in the right direction. And indeed they where! Note that in order
+to stay as close to the Holoeye's setup the input polarization of the light
+hitting the SLM was not changed. We no longer had any
+issues with the light intensity as the back to back polarizers provide an
+efficient way of controlling this parameter. But, as expected, the resulting
+pattern was pretty small and hence we needed to address the scaling issue.
 
 ![Experimental setup](images/setup_4.svg)
 
 ### Final setup
 
+Adding the concave lens back into the setup solved the scaling issue. Thus, we
+settled for this configuration.
+
 ![Experimental setup](images/setup.svg)
 ![Experimental setup](images/setup.jpg)
 
+Focusing the optical system with the two lenses exactly on the photo sensor is a
+bit tricky. By experience it is easiest to fix the convex lens and then moving
+the concave lens and the camera in such a way that both scaling and focus are
+good. Additionally, one can compute the exact focus plane of the lenses once you
+found a configuration which is close to the scaling you are looking for.
+Consider the following diagram.
+
 ![Lenses diagram](images/lenses_diagram.svg)
+
+Hence, one can derive a formula for $b$.
 
 $$
 \begin{align}
@@ -221,35 +302,102 @@ $$
 
 with $a=200−c$ and $125 < c < 200$.
 
+### Candidate setup to test
+
+As mentioned earlier, removing the analyzer and using it in the back to back
+polarizer pair didn't harm the visual results but still not what was suggested
+by Holoeye. Hence, either we should use 3 polarizers or find another solutions.
+Luckily, testing other software that allowed to control the camera ([IDS
+Peak](https://en.ids-imaging.com/download-details/AB00695.html)) enabled even
+lower exposure times. So low that the intensity of the laser beam did not
+oversaturate the photo sensor, even without the back to back polarizer pair. The
+shorter exposure time might lead to more noise but it is still this is something
+worth investigating. Hence we could use the two polarizers as intended by
+Holoeye, leading to this candidate setup that we will evaluate in the future.
+
+![Experimental setup](images/setup_candidate.svg)
+
 ## Propagation
 
-This software assumes a experimental setup that uses a lens in between the SLM and
-the target plane. Neural Holography on the other hand, uses a different setting
-where no lens is placed between the SLM and the target plane, i.e. a lensless
-setting. Those differences impact the resulting phase map of the mask design
-algorithm. The methods in `slm_designer/transform_fields.py` allow transforming phase maps,
-fields, back and forth between both settings. Note that Neural Holography encodes
-phase maps, images etc. as 4D PyTorch Tensors where the dimensions are [image,
-channel, height, width]. But again, the wrapper `slm_designer/wrapper.py` does
-provide interfacing methods for the different algorithms that handle all those complications for you and you
-are not required to dig any deeper than that.
+Following Holoeye's manual, those setup all include one convex lens.
+Neural Holography on the other hand, uses a different setting where no lens is
+placed between the SLM and the target plane, i.e. a lensless setting (at least
+in the first part of their optical configuration).
 
 ![Neural Holography experimental setup](images/neural_holography_setup.png)
-![Experimental setup](images/setup.svg)
-![Different propagation methods used by Holoeye and Neural Holography](images/propagation.svg)
+
+A convex lens is physically performing a Fourier transform, hence those settings
+are not compatible with each other, meaning that a phase map computed using
+Neural Holography code won't result in the desired pattern on the photo sensor
+and vice versa for the same target amplitude.
+
+Hence, our physical setup does perform propagation in the
+[Fraunhofer](https://en.wikipedia.org/wiki/Fraunhofer_diffraction_equation)
+sense, where the propagation basically boils down to applying a Fourier
+transform. This fact was confirmed by simulating propagation using Fraunhofer of phase maps
+generated by Holoeye software and comparing the results to physical observations
+with our experimental setup (including one convex lens).
+
+Additionally, Neural Holography uses a different propagation method, namely [Angular spectrum
+method](https://en.wikipedia.org/wiki/Angular_spectrum_method) (ASM). To
+summarize, we have those differences in propagation:
+
+![Different propagation methods used by Holoeye and Neural
+Holography](images/propagation.svg)
+
+Thus for the `same target amplitude` we obtain `different phase maps` where the
+difference is not explained to numerical variations.
+
+Mathematically, we have that
 
 $$
 \begin{align}
-A_h&=(FT \circ S)(\phi_h) \\
-A_n&=(IS \circ FT \circ S \circ M \circ IFT \circ S)(\phi_n) \\
-\phi_n&=(IS \circ FT \circ S \circ M \circ IFT \circ IFT)(\phi_h) \\
-\phi_h&=(FT \circ FT \circ S \circ M^{-1} \circ IFT \circ S)(\phi_n) \\
+A &\approx (FT \circ S)(\phi_H) \coloneqq p_H(\phi_H) \\
+A &\approx (IS \circ FT \circ S \circ M \circ IFT \circ S)(\phi_N) \coloneqq p_N(\phi_N)\\
 \end{align}
 $$
 
-where $FT$ is a regular Fourier transform, $IFT$ its inverse transform,
-$S$ simply shifts i.e. rotates part of the Tensors, $IS$ does the inverse shift
-and $M$ is a matrix multiplication by the homography matrix $H$ computed internally.
+but $\phi_H &\neq \phi_N$ and where
+
+- $A$ is the amplitude at the target plane of the propagated light,
+- $\phi_H$ is the phase map computed using Holoeye software,
+- $\phi_N$ is the phase map computed using Neural Holography code,
+- $FT$ is a regular Fourier transform,
+- $IFT$ its inverse transform,
+- $S$ simply shifts i.e. rotates part of the Tensors,
+- $IS$ does the inverse shift and
+- $M$ is a matrix multiplication by the homography matrix $H$ computed internally.
+
+In order to be able to use the Neural Holography code (same goes
+the other way around) we need to be able to transform the phase maps. We get
+
+$$
+\begin{align}
+\phi_N&=(IS \circ FT \circ S \circ M \circ IFT \circ IFT)(\phi_H) \coloneqq t_{H
+\rightarrow N}(\phi_H) \\
+\phi_H&=(FT \circ FT \circ S \circ M^{-1} \circ IFT \circ S)(\phi_N) \coloneqq
+t_{N\rightarrow H}(\phi_H) \\
+\end{align}
+$$
+
+and hence we have that
+
+$$
+\begin{align}
+A &\approx p_H(\phi_H)=(p_H \circ t_{N\rightarrow H})(\phi_N)\\
+A &\approx p_N(\phi_N)=(p_N \circ t_{H\rightarrow N})(\phi_H)\\
+\end{align}
+$$
+
+as desired. In diagrammatic form we have the following situation:
+
+![Transformation](images/transformation.svg)
+
+Both these transformations are implemented in
+`slm_designer/transform_fields.py`. Note that the wrapper
+`slm_designer/wrapper.py` provides interfacing methods for Neural Holography phase retrieval
+algorithms that also handle the transformation to our setup which includes a
+convex lens.
 
 ## Sources
 

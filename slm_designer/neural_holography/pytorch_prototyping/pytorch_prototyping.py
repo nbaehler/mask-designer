@@ -1,4 +1,10 @@
-"""A number of custom pytorch modules with sane defaults that I find useful for model prototyping."""
+"""
+https://github.com/vsitzmann/pytorch_prototyping #TODO add as submodule?
+
+A number of custom pytorch modules with sane defaults that I find useful for
+model prototyping.
+"""
+
 import torch
 import torch.nn as nn
 from torch.nn import functional as F

@@ -1,5 +1,6 @@
 import numpy as np
 from slm_designer.utils import prepare_index_vals, rgb2gray
+import matplotlib.pyplot as plt
 
 
 class SLM:
@@ -90,8 +91,6 @@ class SLM:
         show_tick_labels : bool
             Whether to show cell number along x- and y-axis.
         """
-
-        import matplotlib.pyplot as plt  # TODO move up
 
         # prepare mask data for `imshow`, expects the input data array size to be (width, height, 3)
         Z = self.values.transpose(1, 2, 0)
