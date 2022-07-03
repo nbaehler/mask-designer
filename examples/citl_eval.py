@@ -1,3 +1,7 @@
+"""
+Script that runs the CITL evaluations of Neural Holography. TODO: not working entirely
+"""
+
 import click
 from slm_designer.wrapper import eval
 

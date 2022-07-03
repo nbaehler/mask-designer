@@ -7,6 +7,7 @@ from enum import Enum
 class PhysicalParams(Enum):
     WAVELENGTH = "wavelength"
     PROPAGATION_DISTANCE = "prop_distance"
+    SLM_SETTLE_TIME = "slm_settle_time"
 
     @staticmethod
     def values():
@@ -17,6 +18,7 @@ class PhysicalParams(Enum):
 physical_params = {
     PhysicalParams.WAVELENGTH: 532e-9,
     PhysicalParams.PROPAGATION_DISTANCE: 0.34,
+    PhysicalParams.SLM_SETTLE_TIME: 0.25,
 }
 
 # Choose slm and camera that you want to use

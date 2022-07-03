@@ -5,7 +5,7 @@ import math
 from slm_designer.wrapper import fftshift, ifftshift, polar_to_rect
 
 
-def __compute_H(prop_dist, wavelength, slm_shape, slm_pitch):
+def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
     """
     https://github.com/computational-imaging/neural-holography/blob/d2e399014aa80844edffd98bca34d2df80a69c84/propagation_ASM.py
 
@@ -22,14 +22,14 @@ def __compute_H(prop_dist, wavelength, slm_shape, slm_pitch):
     Returns
     -------
     torch.Tensor
-        H (#TODO probably for homography)
+        H, the homography matrix
     """
 
     # number of pixels
     num_y, num_x = slm_shape
 
     # sampling interval size
-    dy, dx = slm_pitch
+    dy, dx = pixel_pitch
 
     # size of the field
     y, x = (dy * float(num_y), dx * float(num_x))
@@ -72,7 +72,7 @@ def __compute_H(prop_dist, wavelength, slm_shape, slm_pitch):
 
 
 def lens_to_lensless(
-    holoeye_slm_field, prop_dist, wavelength, slm_shape, slm_pitch
+    holoeye_slm_field, prop_dist, wavelength, slm_shape, pixel_pitch
 ):  # TODO might not be only linked to lenses, ASM vs Fraunhofer
     """
     Transform from the lens setting (holoeye) to the lensless setting (neural
@@ -89,7 +89,7 @@ def lens_to_lensless(
         The transformed phase map
     """
 
-    H = __compute_H(prop_dist, wavelength, slm_shape, slm_pitch)
+    H = __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch)
 
     return fftshift(
         torch.fft.ifftn(
@@ -106,7 +106,7 @@ def lens_to_lensless(
 
 
 def lensless_to_lens(
-    neural_holography_slm_field, prop_dist, wavelength, slm_shape, slm_pitch
+    neural_holography_slm_field, prop_dist, wavelength, slm_shape, pixel_pitch
 ):  # TODO might not be only linked to lenses, ASM vs Fraunhofer
     """
     Transform from the lensless setting (neural holography) to the lens setting
@@ -122,7 +122,7 @@ def lensless_to_lens(
     torch.Tensor
         The transformed phase map
     """
-    H = __compute_H(prop_dist, wavelength, slm_shape, slm_pitch)
+    H = __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch)
 
     return torch.fft.ifftn(
         torch.fft.ifftn(

@@ -20,7 +20,7 @@ from slm_designer.transform_fields import lensless_to_lens
 from slm_designer.utils import extend_to_complex, quantize_phase_pattern
 
 
-def run_dpac(target_amp, slm_res, distance, wavelength, pixel_pitch, device):
+def run_dpac(target_amp, slm_shape, distance, wavelength, pixel_pitch, device):
     # Run Double Phase Amplitude Coding #TODO does not work
     dpac = DPAC(distance, wavelength, pixel_pitch, device=device)
     angles = dpac(target_amp)
@@ -31,7 +31,7 @@ def run_dpac(target_amp, slm_res, distance, wavelength, pixel_pitch, device):
 
     # Transform the results to the hardware setting using a lens
     final_phase_dpac = lensless_to_lens(
-        extended, distance, wavelength, slm_res, pixel_pitch
+        extended, distance, wavelength, slm_shape, pixel_pitch
     ).angle()
 
     # Quantize the the angles, aka phase values, to a bit values
@@ -42,7 +42,7 @@ def run_gs(
     init_phase,
     target_amp,
     iterations,
-    slm_res,
+    slm_shape,
     distance,
     wavelength,
     pixel_pitch,
@@ -57,7 +57,7 @@ def run_gs(
 
     # Transform the results to the hardware setting using a lens
     final_phase_gs = lensless_to_lens(
-        extended, distance, wavelength, slm_res, pixel_pitch
+        extended, distance, wavelength, slm_shape, pixel_pitch
     ).angle()
 
     # Quantize the the angles, aka phase values, to a bit values
@@ -68,7 +68,7 @@ def run_sgd(
     init_phase,
     target_amp,
     iterations,
-    slm_res,
+    slm_shape,
     roi_res,
     distance,
     wavelength,
@@ -84,7 +84,7 @@ def run_sgd(
 
     # Transform the results to the hardware setting using a lens
     final_phase_sgd = lensless_to_lens(
-        extended, distance, wavelength, slm_res, pixel_pitch
+        extended, distance, wavelength, slm_shape, pixel_pitch
     ).angle()
 
     # Quantize the the angles, aka phase values, to a bit values

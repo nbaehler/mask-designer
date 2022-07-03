@@ -2,8 +2,9 @@
 Simulated propagation of slm patterns generated using the GS algorithm.
 """
 
+import click
 from slm_designer.utils import extend_to_complex, show_plot
-from slm_designer.simulate_prop import lens_prop, lensless_prop
+from slm_designer.simulate_prop import holoeye_fraunhofer, neural_holography_asm
 from slm_designer.transform_fields import lensless_to_lens
 import torch
 
@@ -19,16 +20,17 @@ from slm_designer.experimental_setup import (
 from slm_designer.wrapper import GS, ImageLoader
 
 
-def simulate_prop_gs():
+@click.command()
+@click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
+def simulate_prop_gs(iterations):
     # Set parameters
     distance = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
-    iterations = 500
 
-    slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]
-    image_res = slm_res
-    roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
+    slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
+    image_res = slm_shape
+    roi_res = (round(slm_shape[0] * 0.8), round(slm_shape[1] * 0.8))
 
     # Use GPU if detected in system
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -52,7 +54,7 @@ def simulate_prop_gs():
     target_amp = target_amp.to(device)
 
     # Setup a random initial slm phase map with values in [-0.5, 0.5]
-    init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_res)).to(device)
+    init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_shape)).to(device)
 
     # Run Gerchberg-Saxton
     gs = GS(distance, wavelength, pixel_pitch, iterations, device=device)
@@ -62,16 +64,18 @@ def simulate_prop_gs():
     neural_holography_slm_field = extend_to_complex(angles)
 
     # Transform the results to the hardware setting using a lens
-    temp = lensless_to_lens(neural_holography_slm_field, distance, wavelength, slm_res, pixel_pitch)
+    temp = lensless_to_lens(
+        neural_holography_slm_field, distance, wavelength, slm_shape, pixel_pitch
+    )
 
     # Simulate the propagation in the lens setting and show the results
     slm_field = temp[0, 0, :, :]
-    propped_slm_field = lens_prop(temp)[0, 0, :, :]
+    propped_slm_field = holoeye_fraunhofer(temp)[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Neural Holography GS with lens")
 
     # Simulate the propagation in the lensless setting and show the results
     slm_field = neural_holography_slm_field[0, 0, :, :]
-    propped_slm_field = lensless_prop(
+    propped_slm_field = neural_holography_asm(
         neural_holography_slm_field,
         physical_params[PhysicalParams.PROPAGATION_DISTANCE],
         physical_params[PhysicalParams.WAVELENGTH],

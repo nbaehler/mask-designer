@@ -19,10 +19,12 @@ import imageio
 import os
 import skimage.io
 import scipy.io as sio
+from slm_controller.hardware import slm_devices, SLMParam
 
 # import sys
 import torch
 import numpy as np
+from slm_designer.hardware import cam_devices, CamParam
 
 # import configargparse
 
@@ -31,6 +33,18 @@ from slm_designer.neural_holography.augmented_image_loader import ImageLoader
 import slm_designer.neural_holography.utils as utils
 from slm_designer.neural_holography.modules import PhysicalProp
 from slm_designer.neural_holography.propagation_model import ModelPropagate
+
+from slm_designer.experimental_setup import (
+    PhysicalParams,
+    physical_params,
+    slm_device,
+    cam_device,
+)
+
+from slm_controller.hardware import (
+    SLMParam,
+    slm_devices,
+)
 
 # # Command line argument processing
 # p = configargparse.ArgumentParser()
@@ -68,52 +82,56 @@ from slm_designer.neural_holography.propagation_model import ModelPropagate
 #     help="Directory where calibration phases are being stored.",
 # )
 def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
+    slm_settle_time = physical_params[PhysicalParams.SLM_SETTLE_TIME]
+    prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
+    wavelength = physical_params[PhysicalParams.WAVELENGTH]
+
     # Parse
     # opt = p.parse_args()
     # channel = channel
     chs = range(channel) if channel == 3 else [channel]  # retrieve all channels if channel is 3
+    chan_strs = ("red", "green", "blue", "rgb")
+
     run_id = f'{root_path.split("/")[-1]}_{prop_model}'  # {algorithm}_{prop_model}
 
-    # Hyperparameters setting
-    cm, mm, um, nm = 1e-2, 1e-3, 1e-6, 1e-9
-    chan_strs = ("red", "green", "blue", "rgb")
-    prop_dists = (20 * cm, 20 * cm, 20 * cm)
-    wavelengths = (638 * nm, 520 * nm, 450 * nm)  # wavelength of each color
-    feature_size = (6.4 * um, 6.4 * um)  # SLM pitch
+    feature_size = slm_devices[slm_device][
+        SLMParam.PIXEL_PITCH
+    ]  # SLM pitch #TODO remove this dependency
 
     # Resolutions
-    slm_res = (1080, 1920)  # resolution of SLM
-    if "HOLONET" in run_id.upper():
-        slm_res = (1072, 1920)
-    elif "UNET" in run_id.upper():
-        slm_res = (1024, 2048)
+    # slm_res = (1080, 1920)  # resolution of SLM
+    # if "HOLONET" in run_id.upper():
+    #     slm_res = (1072, 1920)
+    # elif "UNET" in run_id.upper():
+    #     slm_res = (1024, 2048)
 
-    image_res = (1080, 1920)
-    roi_res = (880, 1600)  # regions of interest (to penalize)
-    dtype = (
-        torch.float32
-    )  # default datatype (Note: the result may be slightly different if you use float64, etc.)
-    device = torch.device("cuda")  # The gpu you are using
+    slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
+    image_res = cam_devices[cam_device][CamParam.IMG_SHAPE]  # TODO slm.shape == image.shape?
+    roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
+
+    dtype = torch.float32  # default datatype (results may differ if using, e.g., float64)
+    device = "cuda" if torch.cuda.is_available() else "cpu"  # TODO gpu is too small
+    # device = "cpu"
 
     # You can pre-compute kernels for fast-computation
-    precomputed_H = [None] * 3
+    # precomputed_H = [None] * 3
+
     if prop_model == "ASM":
         propagator = propagation_ASM
-        for c in chs:
-            precomputed_H[c] = propagator(
-                torch.empty(1, 1, *slm_res, 2),
-                feature_size,
-                wavelengths[c],
-                prop_dists[c],
-                return_H=True,
-            ).to(device)
+        # precomputed_H = propagator(
+        #     torch.empty(1, 1, *slm_res, 2),
+        #     feature_size,
+        #     wavelength,
+        #     prop_dist,
+        #     return_H=True,
+        # ).to(device)
 
     elif prop_model.upper() == "CAMERA":
         propagator = PhysicalProp(
             channel,
             laser_arduino=True,
             roi_res=(roi_res[1], roi_res[0]),
-            slm_settle_time=0.15,
+            slm_settle_time=slm_settle_time,
             range_row=(220, 1000),
             range_col=(300, 1630),
             patterns_path=calibration_path,  # path of 21 x 12 calibration patterns, see Supplement.
@@ -121,22 +139,14 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
         )
     elif prop_model.upper() == "MODEL":
         blur = utils.make_kernel_gaussian(0.85, 3)
-        propagators = {}
-        for c in chs:
-            propagator = ModelPropagate(
-                distance=prop_dists[c],
-                feature_size=feature_size,
-                wavelength=wavelengths[c],
-                blur=blur,
-            ).to(device)
+        propagator = ModelPropagate(
+            distance=prop_dist, feature_size=feature_size, wavelength=wavelength, blur=blur,
+        ).to(device)
 
-            propagator.load_state_dict(
-                torch.load(
-                    os.path.join(prop_model_dir, f"{chan_strs[c]}.pth"), map_location=device,
-                )
-            )
-            propagator.eval()
-            propagators[c] = propagator
+        propagator.load_state_dict(
+            torch.load(os.path.join(prop_model_dir, f"{chan_strs[c]}.pth"), map_location=device,)
+        )
+        propagator.eval()
 
     print(f"  - reconstruction with {prop_model}... ")
 
@@ -193,16 +203,12 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
             real, imag = utils.polar_to_rect(torch.ones_like(slm_phase), slm_phase)
             slm_field = torch.complex(real, imag)
 
-            if prop_model.upper() == "MODEL":
-                propagator = propagators[c]  # Select CITL-calibrated models for each channel
+            # if prop_model.upper() == "MODEL":
+            #     propagator = propagators[
+            #         c
+            #     ]  # Select CITL-calibrated models for each channel
             recon_field = utils.propagate_field(
-                slm_field,
-                propagator,
-                prop_dists[c],
-                wavelengths[c],
-                feature_size,
-                prop_model,
-                dtype,
+                slm_field, propagator, prop_dist, wavelength, feature_size, prop_model, dtype,
             )
 
             # cartesian to polar coordinate

@@ -1,3 +1,12 @@
+"""
+Script that computes a phase map using the CITL model. TODO: not working entirely
+
+This code is heavily inspired by slm_designer/neural_holography/eval.py. So
+credit where credit is due.
+"""
+
+
+import click
 import imageio
 import os
 import skimage.io
@@ -35,13 +44,33 @@ from slm_designer.wrapper import (
 )
 
 
-def citl_predict():  # TODO Use click
-    channel = 1
-    prop_model = "ASM"
-    root_path = "./phases"
-    prop_model_dir = "./calibrated_models"
-    calibration_path = "./calibration"
-
+@click.command()
+@click.option("--channel", type=int, default=1, help="red:0, green:1, blue:2, rgb:3")
+@click.option(
+    "--prop_model",
+    type=str,
+    default="ASM",
+    help="Type of propagation model for reconstruction: ASM / MODEL / CAMERA",
+)
+@click.option(
+    "--root_path",
+    type=str,
+    default="./phases",
+    help="Directory where test phases are being stored.",
+)
+@click.option(
+    "--prop_model_dir",
+    type=str,
+    default="./calibrated_models",
+    help="Directory for the CITL-calibrated wave propagation models",
+)
+@click.option(
+    "--calibration_path",
+    type=str,
+    default="./calibration",
+    help="Directory where calibration phases are being stored.",
+)
+def citl_predict(channel, prop_model, root_path, prop_model_dir, calibration_path):
     # Parse
     # opt = p.parse_args()
     # channel = channel
@@ -53,18 +82,20 @@ def citl_predict():  # TODO Use click
         PhysicalParams.PROPAGATION_DISTANCE
     ]  # propagation distance from SLM plane to target plane
     wavelength = physical_params[PhysicalParams.WAVELENGTH]  # wavelength
+    slm_settle_time = physical_params[PhysicalParams.SLM_SETTLE_TIME]
+
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]  # SLM pitch
 
-    slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
+    slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
     image_res = cam_devices[cam_device][CamParam.IMG_SHAPE]  # TODO slm.shape == image.shape?
-    roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
+    roi_res = (round(slm_shape[0] * 0.8), round(slm_shape[1] * 0.8))
 
     # # Resolutions
-    # slm_res = (1080, 1920)  # resolution of SLM
+    # slm_shape = (1080, 1920)  # resolution of SLM
     # if "HOLONET" in run_id.upper():
-    #     slm_res = (1072, 1920)
+    #     slm_shape = (1072, 1920)
     # elif "UNET" in run_id.upper():
-    #     slm_res = (1024, 2048)
+    #     slm_shape = (1024, 2048)
 
     # image_res = (1080, 1920)
     # roi_res = (880, 1600)  # regions of interest (to penalize)
@@ -74,20 +105,22 @@ def citl_predict():  # TODO Use click
     device = torch.device("cuda")  # The gpu you are using
 
     # You can pre-compute kernels for fast-computation
-    precomputed_H = [None] * 3
     if prop_model == "ASM":
         propagator = propagation_ASM
-        for c in chs:
-            precomputed_H[c] = propagator(
-                torch.empty(1, 1, *slm_res, 2), pixel_pitch, wavelength, prop_dist, return_H=True,
-            ).to(device)
+        # precomputed_H = propagator(
+        #     torch.empty(1, 1, *slm_shape, 2),
+        #     pixel_pitch,
+        #     wavelength,
+        #     prop_dist,
+        #     return_H=True,
+        # ).to(device)
 
     elif prop_model.upper() == "CAMERA":
         propagator = PhysicalProp(
             channel,
             laser_arduino=True,
             roi_res=(roi_res[1], roi_res[0]),
-            slm_settle_time=0.15,
+            slm_settle_time=slm_settle_time,
             range_row=(220, 1000),
             range_col=(300, 1630),
             patterns_path=calibration_path,  # path of 21 x 12 calibration patterns, see Supplement.
@@ -95,19 +128,16 @@ def citl_predict():  # TODO Use click
         )
     elif prop_model.upper() == "MODEL":
         blur = make_kernel_gaussian(0.85, 3)
-        propagators = {}
-        for c in chs:
-            propagator = ModelPropagate(
-                distance=prop_dist, feature_size=pixel_pitch, wavelength=wavelength, blur=blur,
-            ).to(device)
+        propagator = ModelPropagate(
+            distance=prop_dist, feature_size=pixel_pitch, wavelength=wavelength, blur=blur,
+        ).to(device)
 
-            propagator.load_state_dict(
-                torch.load(
-                    os.path.join(prop_model_dir, f"{chan_strs[c]}.pth"), map_location=device,
-                )
+        propagator.load_state_dict(
+            torch.load(
+                os.path.join(prop_model_dir, f"{chan_strs[channel]}.pth"), map_location=device,
             )
-            propagator.eval()
-            propagators[c] = propagator
+        )
+        propagator.eval()
 
     print(f"  - reconstruction with {prop_model}... ")
 
@@ -154,7 +184,7 @@ def citl_predict():  # TODO Use click
             slm_phase = skimage.io.imread(phase_filename) / 255.0
             slm_phase = (
                 torch.tensor((1 - slm_phase) * 2 * np.pi - np.pi, dtype=dtype)
-                .reshape(1, 1, *slm_res)
+                .reshape(1, 1, *slm_shape)
                 .to(device)
             )
 
@@ -162,8 +192,11 @@ def citl_predict():  # TODO Use click
             real, imag = polar_to_rect(torch.ones_like(slm_phase), slm_phase)
             slm_field = torch.complex(real, imag)
 
-            if prop_model.upper() == "MODEL":
-                propagator = propagators[c]  # Select CITL-calibrated models for each channel
+            # if prop_model.upper() == "MODEL":
+            #     propagator = propagators[
+            #         c
+            #     ]  # Select CITL-calibrated models for each channel
+
             recon_field = propagate_field(
                 slm_field, propagator, prop_dist, wavelength, pixel_pitch, prop_model, dtype,
             )

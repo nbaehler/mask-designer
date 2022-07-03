@@ -46,6 +46,13 @@ from slm_designer.hardware import (
     cam_devices,
 )
 
+from slm_designer.experimental_setup import (
+    PhysicalParams,
+    physical_params,
+    slm_device,
+    cam_device,
+)
+
 import slm_designer.neural_holography.utils as utils
 from slm_designer.neural_holography.modules import PhysicalProp
 from slm_designer.neural_holography.propagation_model import ModelPropagate
@@ -104,9 +111,6 @@ from slm_designer.neural_holography.utils_tensorboard import SummaryModelWriter
 
 
 def train_model(
-    slm_device,
-    cam_device,
-    slm_settle_time,
     channel,
     pretrained_path,
     model_path,
@@ -119,9 +123,10 @@ def train_model(
     batch_size,
     step_lr,
     experiment,
-    prop_dist,
-    wavelength,
 ):
+    slm_settle_time = physical_params[PhysicalParams.SLM_SETTLE_TIME]
+    prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
+    wavelength = physical_params[PhysicalParams.WAVELENGTH]
 
     # channel = channel  # Red:0 / Green:1 / Blue:2
     chan_str = ("red", "green", "blue")[channel]
@@ -138,8 +143,8 @@ def train_model(
     roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
 
     dtype = torch.float32  # default datatype (results may differ if using, e.g., float64)
-    # device = "cuda" if torch.cuda.is_available() else "cpu" #TODO gpu is too small
-    device = "cpu"
+    device = "cuda" if torch.cuda.is_available() else "cpu"  # TODO gpu is too small
+    # device = "cpu"
 
     # Options for the algorithm
     lr_s_phase = lr_phase / 200
@@ -353,7 +358,7 @@ def train_model(
                 )
 
                 # ---------------------------------
-                # TODO not sure about rescaling etc.
+                # TODO check rescaling
                 camera_amp_scaled = torch.empty(
                     (camera_amp.shape[0], camera_amp.shape[1], slm_res[0], slm_res[1]),
                     device=device,
@@ -409,7 +414,7 @@ def train_model(
         if step_lr:
             lr_scheduler.step()
 
-    # # disconnect everything
+    # # disconnect everything #TODO needed? Add to camera?
     # if camera_prop is not None:
     #     camera_prop.disconnect()
     #     camera_prop.alc.disconnect()

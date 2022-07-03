@@ -27,10 +27,10 @@ def physical_prop_dpac(show_time):
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
 
-    slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]
-    image_res = slm_res
+    slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
+    image_res = slm_shape
 
-    roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
+    roi_res = (round(slm_shape[0] * 0.8), round(slm_shape[1] * 0.8))
 
     # Use GPU if detected in system
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -60,7 +60,7 @@ def physical_prop_dpac(show_time):
     target_amp = target_amp.to(device)
 
     # Run Double Phase Amplitude Coding #TODO does not work
-    phase_out = run_dpac(target_amp, slm_res, distance, wavelength, pixel_pitch, device)
+    phase_out = run_dpac(target_amp, slm_shape, distance, wavelength, pixel_pitch, device)
 
     # Display
     s.imshow(phase_out)

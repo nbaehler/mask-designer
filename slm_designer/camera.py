@@ -38,6 +38,7 @@ class Camera:
         time : int, optional
             New exposure time in milliseconds, by default 200
         """
+        pass
 
     @abc.abstractmethod
     def acquire_images(self, number=1):

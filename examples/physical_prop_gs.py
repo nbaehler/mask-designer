@@ -19,18 +19,18 @@ from slm_designer.wrapper import ImageLoader, run_gs
 
 
 @click.command()
+@click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
 @click.option("--show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.")
-def physical_prop_gs(show_time):
+def physical_prop_gs(iterations, show_time):
     # Set parameters
     distance = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
-    iterations = 500
 
-    slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]
-    image_res = slm_res
+    slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
+    image_res = slm_shape
 
-    roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
+    roi_res = (round(slm_shape[0] * 0.8), round(slm_shape[1] * 0.8))
 
     # Use GPU if detected in system
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -60,11 +60,11 @@ def physical_prop_gs(show_time):
     target_amp = target_amp.to(device)
 
     # Setup a random initial slm phase map with values in [-0.5, 0.5]
-    init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_res)).to(device)
+    init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_shape)).to(device)
 
     # Run Gerchberg-Saxton
     phase_out = run_gs(
-        init_phase, target_amp, iterations, slm_res, distance, wavelength, pixel_pitch, device,
+        init_phase, target_amp, iterations, slm_shape, distance, wavelength, pixel_pitch, device,
     )
 
     # Display
