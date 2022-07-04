@@ -8,6 +8,10 @@ def _cell_slice(_slice, cell_m):
     """
     Convert slice indexing in meters to slice indexing in cells.
 
+    author: Eric Bezzam,
+    email: ebezzam@gmail.com,
+    GitHub: https://github.com/ebezzam
+
     Parameters
     ----------
     _slice : slice
@@ -24,6 +28,10 @@ def _cell_slice(_slice, cell_m):
 def _m_to_cell_idx(val, cell_m):
     """
     Convert location to cell index.
+    
+    author: Eric Bezzam,
+    email: ebezzam@gmail.com,
+    GitHub: https://github.com/ebezzam
 
     Parameters
     ----------
@@ -39,6 +47,10 @@ def _m_to_cell_idx(val, cell_m):
 #     """
 #     Convert locations to cell index.
 
+# author: Eric Bezzam,
+# email: ebezzam@gmail.com,
+# GitHub: https://github.com/ebezzam
+
 #     Parameters
 #     ----------
 #     val : :py:class:`~numpy.ndarray`
@@ -52,6 +64,10 @@ def _m_to_cell_idx(val, cell_m):
 def prepare_index_vals(key, pixel_pitch):
     """
     Convert indexing object in meters to indexing object in cell indices.
+    
+    author: Eric Bezzam,
+    email: ebezzam@gmail.com,
+    GitHub: https://github.com/ebezzam
 
     Parameters
     ----------
@@ -92,6 +108,10 @@ def prepare_index_vals(key, pixel_pitch):
 def rgb2gray(rgb, weights=None):
     """
     Convert RGB array to grayscale.
+    
+    author: Eric Bezzam,
+    email: ebezzam@gmail.com,
+    GitHub: https://github.com/ebezzam
 
     Parameters
     ----------

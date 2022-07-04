@@ -1,9 +1,10 @@
 """
-Simulated propagation of slm patterns generated using the DPAC algorithm.
+Simulated propagation of slm patterns generated using the GS algorithm.
 """
 
+import click
 from slm_designer.utils import extend_to_complex, show_plot
-from slm_designer.simulate_prop import holoeye_fraunhofer, neural_holography_asm
+from slm_designer.simulated_prop import holoeye_fraunhofer, neural_holography_asm
 from slm_designer.transform_fields import lensless_to_lens
 import torch
 
@@ -16,10 +17,12 @@ from slm_designer.experimental_setup import (
     physical_params,
     slm_device,
 )
-from slm_designer.wrapper import DPAC, ImageLoader
+from slm_designer.wrapper import GS, ImageLoader
 
 
-def simulate_prop_dpac():
+@click.command()
+@click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
+def simulated_prop_gs(iterations):
     # Set parameters
     distance = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
@@ -50,10 +53,12 @@ def simulate_prop_dpac():
     target_amp = target_amp[None, None, :, :]
     target_amp = target_amp.to(device)
 
-    # Run Double Phase Amplitude Coding #TODO does not work
-    dpac = DPAC(distance, wavelength, pixel_pitch, device=device)
-    angles = dpac(target_amp)
-    angles = angles.cpu().detach()
+    # Setup a random initial slm phase map with values in [-0.5, 0.5]
+    init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_shape)).to(device)
+
+    # Run Gerchberg-Saxton
+    gs = GS(distance, wavelength, pixel_pitch, iterations, device=device)
+    angles = gs(target_amp, init_phase).cpu().detach()
 
     # Extend the computed angles, aka the phase values, to a complex tensor again
     neural_holography_slm_field = extend_to_complex(angles)
@@ -66,7 +71,7 @@ def simulate_prop_dpac():
     # Simulate the propagation in the lens setting and show the results
     slm_field = temp[0, 0, :, :]
     propped_slm_field = holoeye_fraunhofer(temp)[0, 0, :, :]
-    show_plot(slm_field, propped_slm_field, "Neural Holography DPAC with lens")
+    show_plot(slm_field, propped_slm_field, "Neural Holography GS with lens")
 
     # Simulate the propagation in the lensless setting and show the results
     slm_field = neural_holography_slm_field[0, 0, :, :]
@@ -76,8 +81,8 @@ def simulate_prop_dpac():
         physical_params[PhysicalParams.WAVELENGTH],
         slm_devices[slm_device][SLMParam.PIXEL_PITCH],
     )[0, 0, :, :]
-    show_plot(slm_field, propped_slm_field, "Neural Holography DPAC without lens")
+    show_plot(slm_field, propped_slm_field, "Neural Holography GS without lens")
 
 
 if __name__ == "__main__":
-    simulate_prop_dpac()
+    simulated_prop_gs()

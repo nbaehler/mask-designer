@@ -1,3 +1,9 @@
+"""
+author: Eric Bezzam,
+email: ebezzam@gmail.com,
+GitHub: https://github.com/ebezzam
+"""
+
 import numpy as np
 from enum import Enum
 

@@ -11,15 +11,17 @@
     - [3. Double Phase Amplitude Coding (DPAC)](#3-double-phase-amplitude-coding-dpac)
     - [4. Camera-In-The-Loop (CITL)](#4-camera-in-the-loop-citl)
   - [Experimental setup](#experimental-setup)
-    - [Setup 1](#setup-1)
-    - [Setup 2](#setup-2)
-    - [Setup 3](#setup-3)
-    - [Setup 4](#setup-4)
-    - [Setup 5](#setup-5)
     - [Final setup](#final-setup)
+    - [Incremental development of final setup](#incremental-development-of-final-setup)
+      - [Version 1](#version-1)
+      - [Version 2](#version-2)
+      - [Version 3](#version-3)
+      - [Version 4](#version-4)
+      - [Version 5](#version-5)
+      - [Final version](#final-version)
     - [Candidate setup to test](#candidate-setup-to-test)
   - [Propagation](#propagation)
-  - [Sources](#sources)
+  - [References](#references)
 
 ## Overview
 
@@ -33,7 +35,9 @@ either its amplitude, phase or polarization in space or time and can be reflecti
 Here a example of a SLM we support (via [slm-controller](https://github.com/ebezzam/slm-controller)) in this project, the [Holoeye LC
 2012](https://holoeye.com/lc-2012-spatial-light-modulator/).
 
-![Holoeye slm](images/slm.png)
+|    ![Holoeye slm](images/slm.png)    |
+| :----------------------------------: |
+| <b>Image Credits - Reference [1]</b> |
 
 It's a transmissive SLM and allows to modulate both amplitude and phase.
 Commonly SLMs, and also the Holoeye one, are based on Liquid Crystal Display
@@ -43,12 +47,16 @@ different voltages its physical properties are changed. Concretely, for the
 Holoeye SLM Twisted Nematic (TN) cells are used. Here two image that sum
 this up:
 
-![Holoeye slm](images/tn_lc_ground_state.png)
+| ![Holoeye slm](images/tn_lc_ground_state.png) |
+| :-------------------------------------------: |
+|     <b>Image Credits - Reference [1]</b>      |
 
 This picture shows such a TN cell when no voltage is applied. The polarization
 of the light follows the crystals and is hence rotated by $90°$.
 
-![Holoeye slm](images/tn_lc.png)
+|   ![Holoeye slm](images/tn_lc.png)   |
+| :----------------------------------: |
+| <b>Image Credits - Reference [1]</b> |
 
 When a voltage is applied the twist in the helix is altered leading to different
 properties. Here, $V_A = 0$ with
@@ -80,7 +88,9 @@ retrieval, i.e. mask design for phase SLMs. So concretely, those algorithms aim 
 compute a phase map that can be set on a SLM such that a given target image is
 appearing on the screen. For example, we want to get this target amplitude.
 
-![Holoeye logo](../images/target_amplitude/holoeye_logo.png)
+| ![Holoeye logo](../images/target_amplitude/holoeye_logo.png) |
+| :----------------------------------------------------------: |
+|             <b>Image Credits - Reference [2]</b>             |
 
 Any of those algorithms then computes the corresponding phase map.
 
@@ -132,7 +142,9 @@ and its corresponding amplitude at the target plane under
 This code is unfortunately not open-source but they claim to use an Iterative
 Fourier Transform Algorithm (IFTA) summed in the following picture.
 
-![Holoeye algorithm](images/holoeye_algo.png)
+| ![Holoeye algorithm](images/holoeye_algo.png) |
+| :-------------------------------------------: |
+|     <b>Image Credits - Reference [3]</b>      |
 
 The Discrete Fourier Transform (DFT) here does perform propagation simulation in
 the [Fraunhofer](https://en.wikipedia.org/wiki/Fraunhofer_diffraction_equation)
@@ -198,6 +210,40 @@ order to make it truly useable and testable.
 
 ## Experimental setup
 
+### Final setup
+
+Before going into the incremental steps that lead to the final setup we just
+want to present the final version.
+
+![Experimental setup](images/setup.svg)
+
+And here a picture taking of it in the lab.
+
+![Experimental setup](images/setup.jpg)
+
+Focusing the optical system with the two lenses exactly on the photo sensor is a
+bit tricky. By experience it is easiest to fix the convex lens and then moving
+the concave lens and the camera in such a way that both scaling and focus are
+good. Additionally, one can compute the exact focus plane of the lenses once you
+found a configuration which is close to the scaling you are looking for.
+Consider the following diagram.
+
+![Lenses diagram](images/lenses_diagram.svg)
+
+Hence, one can derive a formula for $b$.
+
+$$
+\begin{align}
+ \frac{1}{−75}=\frac{1}{b}−\frac{1}{a} &\iff \frac{1}{b}=\frac{1}{a}−\frac{1}{75} \\
+ &\iff b=\left(\frac{1}{a}−\frac{1}{75}\right)^{−1} \\
+ &\iff b=\left(\frac{1}{200−c}−\frac{1}{75}\right)^{−1}
+\end{align}
+$$
+
+with $a=200−c$ and $125 < c < 200$.
+
+### Incremental development of final setup
+
 In this next section, we are going to walk through the different experimental
 setups we tested to finally converge to a final setup. As a general rule we
 found it to be way easier to use a camera with an exposed photo sensor i.e. with
@@ -205,7 +251,7 @@ no optics at all. Otherwise perfect alignment was tricky and all the
 inconveniences of a bare bone senor could be resolved fairly easily. But you can
 also use a simply screen instead of camera to avoid those complications.
 
-### Setup 1
+#### Version 1
 
 This setup was the simplest setup that was proposed in the `OptiXplorer` manual
 that came with the Holoeye SLM. It's a starting point and conceived to built
@@ -216,7 +262,7 @@ the convex lens.
 
 ![Experimental setup](images/setup_0.svg)
 
-### Setup 2
+#### Version 2
 
 In the same manual it is suggested to place the SLM after the lens because this
 those not affect the resulting interference pattern but the
@@ -227,7 +273,7 @@ perfectly match the photo sensor of the camera.
 
 ![Experimental setup](images/setup_1.svg)
 
-### Setup 3
+#### Version 3
 
 Again, suggested by the manual, a polarizer $(-45°)$ and an analyzer $(15°)$ are
 added to the very front and the very back of the optical pipeline respectively.
@@ -236,7 +282,7 @@ optimally as a phase SLM.
 
 ![Experimental setup](images/setup_2.svg)
 
-### Setup 4
+#### Version 4
 
 A second lens, this time a concave one is added to the optical setup which
 allows to change the size, the scaling, of the interference pattern. The
@@ -261,7 +307,7 @@ in between the polarizer and the SLM. The removal of the analyzer did not
 visually degrade the results. But it would be cleaner to follow Holoeye
 suggestions here.
 
-### Setup 5
+#### Version 5
 
 For simplicity, we first only used one lens to test if our changes to the setup
 where a step in the right direction. And indeed they where! Note that in order
@@ -273,34 +319,12 @@ pattern was pretty small and hence we needed to address the scaling issue.
 
 ![Experimental setup](images/setup_4.svg)
 
-### Final setup
+#### Final version
 
 Adding the concave lens back into the setup solved the scaling issue. Thus, we
-settled for this configuration.
+settled for the final configuration.
 
 ![Experimental setup](images/setup.svg)
-![Experimental setup](images/setup.jpg)
-
-Focusing the optical system with the two lenses exactly on the photo sensor is a
-bit tricky. By experience it is easiest to fix the convex lens and then moving
-the concave lens and the camera in such a way that both scaling and focus are
-good. Additionally, one can compute the exact focus plane of the lenses once you
-found a configuration which is close to the scaling you are looking for.
-Consider the following diagram.
-
-![Lenses diagram](images/lenses_diagram.svg)
-
-Hence, one can derive a formula for $b$.
-
-$$
-\begin{align}
- \frac{1}{−75}=\frac{1}{b}−\frac{1}{a} &\iff \frac{1}{b}=\frac{1}{a}−\frac{1}{75} \\
- &\iff b=\left(\frac{1}{a}−\frac{1}{75}\right)^{−1} \\
- &\iff b=\left(\frac{1}{200−c}−\frac{1}{75}\right)^{−1}
-\end{align}
-$$
-
-with $a=200−c$ and $125 < c < 200$.
 
 ### Candidate setup to test
 
@@ -324,7 +348,9 @@ Neural Holography on the other hand, uses a different setting where no lens is
 placed between the SLM and the target plane, i.e. a lensless setting (at least
 in the first part of their optical configuration).
 
-![Neural Holography experimental setup](images/neural_holography_setup.png)
+| ![Neural Holography experimental setup](images/neural_holography_setup.png) |
+| :-------------------------------------------------------------------------: |
+|                    <b>Image Credits - Reference [4]</b>                     |
 
 A convex lens is physically performing a Fourier transform, hence those settings
 are not compatible with each other, meaning that a phase map computed using
@@ -357,9 +383,11 @@ A &\approx (IS \circ FT \circ S \circ M \circ IFT \circ S)(\phi_N) \coloneqq p_N
 \end{align}
 $$
 
-but $\phi_H &\neq \phi_N$ and where
+but $\phi_H \neq \phi_N$ and where
 
 - $A$ is the amplitude at the target plane of the propagated light,
+- $\approx$ expresses the fact that those methods results in the "same"
+  amplitudes up to some numerical errors,
 - $\phi_H$ is the phase map computed using Holoeye software,
 - $\phi_N$ is the phase map computed using Neural Holography code,
 - $FT$ is a regular Fourier transform,
@@ -399,11 +427,12 @@ Both these transformations are implemented in
 algorithms that also handle the transformation to our setup which includes a
 convex lens.
 
-## Sources
+## References
 
-- Holoeye OptiXplorer Manual
-- Frank Wyrowski and Olof Bryngdahl, "Iterative Fourier transform algorithm
+- [1] Holoeye OptiXplorer Manual
+- [2] Holoeye OptiXplorer Software
+- [3] Frank Wyrowski and Olof Bryngdahl, "Iterative Fourier transform algorithm
   applied to computer holography," J. Opt. Soc. Am. A 5, 1058-1065 (1988)
-- Peng, Yifan & Choi, Suyeon & Padmanaban, Nitish & Wetzstein, Gordon. (2020).
+- [4] Peng, Yifan & Choi, Suyeon & Padmanaban, Nitish & Wetzstein, Gordon. (2020).
   Neural holography with camera in the loop training. ACM Transactions on
   Graphics. 39. 1-14. 10.1145/3414685.3417802.

@@ -9,6 +9,11 @@ This code and data is released under the Creative Commons Attribution-NonCommerc
 Technical Paper:
 Y. Peng, S. Choi, N. Padmanaban, G. Wetzstein. Neural Holography with Camera-in-the-loop Training. ACM TOG (SIGGRAPH Asia), 2020.
 
+Copyright (c) 2020, Stanford University
+
+All rights reserved.
+
+Refer to the LICENSE file for more information.
 -----
 
 $ python eval.py --channel=[0 or 1 or 2 or 3] --root_path=[some path]

@@ -4,7 +4,7 @@ Simulated propagation of slm patterns generated using the SGD algorithm.
 
 import click
 from slm_designer.utils import extend_to_complex, show_plot
-from slm_designer.simulate_prop import holoeye_fraunhofer, neural_holography_asm
+from slm_designer.simulated_prop import holoeye_fraunhofer, neural_holography_asm
 from slm_designer.transform_fields import lensless_to_lens
 import torch
 
@@ -22,7 +22,7 @@ from slm_designer.wrapper import SGD, ImageLoader
 
 @click.command()
 @click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
-def simulate_prop_sgd(iterations):
+def simulated_prop_sgd(iterations):
     # Set parameters
     distance = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
@@ -85,4 +85,4 @@ def simulate_prop_sgd(iterations):
 
 
 if __name__ == "__main__":
-    simulate_prop_sgd()
+    simulated_prop_sgd()

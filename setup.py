@@ -6,8 +6,8 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="slm-designer",
     version="0.0.1",
-    author="Eric Bezzam",
-    author_email="ebezzam@gmail.com",
+    author="Nicolas Bähler",
+    author_email="nicolas.bahler@epfl.ch",
     description="Package to perform phase retrieval for SLMs",
     long_description=long_description,
     long_description_content_type="text/markdown",

@@ -1,3 +1,9 @@
+"""
+author: Eric Bezzam,
+email: ebezzam@gmail.com,
+GitHub: https://github.com/ebezzam
+"""
+
 import pytest
 from slm_designer.slm import SLM
 from slm_designer.aperture import rect_aperture

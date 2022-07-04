@@ -9,7 +9,7 @@ from slm_designer.experimental_setup import (
 )
 
 from slm_designer.utils import load_holoeye_slm_pattern, show_plot
-from slm_designer.simulate_prop import (
+from slm_designer.simulated_prop import (
     holoeye_fraunhofer,
     neural_holography_asm,
 )
@@ -21,7 +21,7 @@ from slm_controller.hardware import (
 )
 
 
-def simulate_prop_holoeye():
+def simulated_prop_holoeye():
     # Define parameters
     prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
@@ -52,4 +52,4 @@ def simulate_prop_holoeye():
 
 
 if __name__ == "__main__":
-    simulate_prop_holoeye()
+    simulated_prop_holoeye()

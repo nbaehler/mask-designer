@@ -1,3 +1,10 @@
+"""
+author: Eric Bezzam,
+email: ebezzam@gmail.com,
+GitHub: https://github.com/ebezzam
+"""
+
+
 from slm_designer.slm import SLM
 import numpy as np
 
