@@ -4,10 +4,8 @@ email: ebezzam@gmail.com,
 GitHub: https://github.com/ebezzam
 """
 
-
 from slm_designer.slm import SLM
 import numpy as np
-
 
 dim = 10
 s = SLM(shape=(dim, dim), pixel_pitch=(1, 1))

@@ -21,7 +21,7 @@ i.e. mask design for phase SLM devices.
     - [Aperture examples](#aperture-examples)
   - [Adding a new camera](#adding-a-new-camera)
 
-The main goal of the project is tackle the inverse problem of phase retrieval,
+The main goal of the project is tackle the inverse problem called phase retrieval,
 i.e. mask design for SLMs.
 But it also allows to explore the forward problem by setting a phase
 pattern and then simply observing the output amplitude at the target plane. Mainly though, it
@@ -32,7 +32,7 @@ Further, another part of the code does add support for cameras. Neural
 Holography, amongst others, follows a `Camera-In-The-Loop` approach which involves a
 camera taking pictures of the resulting interference patterns at the target
 plane and then using this information to improve the designed mask iteratively.
-Finally, mostly for debugging purposes, functions that allow to transform
+Finally, functions that allow to transform
 generated phase maps using Holoeye's software or Neural Holography code into
 each others assumed experimental setup and simulated propagation functions for both
 settings as well are provided.
@@ -62,7 +62,7 @@ The script will:
    [waveprop](https://github.com/ebezzam/waveprop) in setuptools “develop mode”
    from GitHub directly
 
-This project is using those two repos to access physical SLMs after the phase
+This project is using those two repositories to access physical SLMs after the phase
 pattern has been computed and to simulate the light propagation in the different
 phase retrieval algorithms or propagation simulations. Note that those are still
 in development too.
@@ -102,7 +102,7 @@ pip install x86_64/ids_peak-1.4.1.0-cp39-cp39-win_amd64.whl
 
 Secondly, again from the IDS installation
 directory, go to `ids_peak/generic_sdk/ipl/binding/python/wheel`. Similar to
-before install the correct version of the wheel for your setup, for example:
+before, install the correct version of the wheel for your setup, for example:
 
 ```sh
 pip install x86_64/ids_peak_ipl-1.3.2.7-cp39-cp39-win_amd64.whl
@@ -117,7 +117,7 @@ The authors of `Neural Holography` ([paper](https://www.computationalimaging.org
 [repository](https://github.com/computational-imaging/neural-holography))
 provide implementations to different phase retrieval approaches. Here a
 list of the methods that were slightly modified and hence compatible
-with the remainder of the project and where to find them:
+with the remainder of the project:
 
 - Gerchberg-Saxton (GS)
 - Stochastic Gradient Descent (SGD)
@@ -130,7 +130,7 @@ and PyTorch modules that go along with them are provided in
 script `slm_designer/neural_holography/train_model.py`. Note that you do
 generally not need to interact with the Neural Holography code directly. A
 wrapper for it is provided at `slm_designer/wrapper.py` which does simply import
-code from Neural Holography so that you do not need to go lock for it in their
+code from Neural Holography so that you do not need to go look for it in their
 code and also contains some interfacing methods to run the different phase
 retrieval algorithms. We'd like to remind that
 this code was released under the license provided in `LICENSE` and we do not
@@ -138,13 +138,15 @@ claim any credit for it. Usage examples of all
 those features will be presented in the
 subsequent [Example scripts](#example-scripts) section.
 
+<!-- TODO add our own license -->
+
 ## Camera
 
-As mentioned earlier, camera play a crucial role in the CITL-approach. Hence, an
+As mentioned earlier, cameras play a crucial role in the CITL-approach. Hence, an
 interface for such devices is needed. For now, the project only supports one
 real camera, the [Thorlabs
 DCC3260M](https://www.thorlabs.com/thorproduct.cfm?partnumber=DCC3260M) and a
-dummy camera that simply "takes" black snapshots. Later can be useful during
+dummy camera that simply "takes" black snapshots. The later can be useful during
 development. In the future this list is going to be extended (for example with
 the [Raspberry Pi HQ Camera](https://www.adafruit.com/product/4561)), but here its
 current state.
@@ -156,7 +158,7 @@ Supported cameras:
 
 ## Experimental setup
 
-The experimental setup is an incremental adaption of an initial setup proposed
+The experimental setup is an incremental improvement of an initial setup proposed
 by Holoeye in the manual that came with their SLM. Again, for more information
 refer to the `documentation/DOCUMENTATION.md`. Here, we simply present the
 final version we settled for.
@@ -164,7 +166,7 @@ final version we settled for.
 ![Experimental setup](documentation/images/setup.svg)
 
 Further, the `slm_designer/experimental_setup.py` allows to set which camera and SLM are
-used, what wavelength the laser is operating at and finally the propagation
+used and how long patterns are shown on the SLM, what wavelength the laser is operating at and, finally, the propagation
 distance (distance form the SLM to the camera sensor). Those parameters are then
 used in the remainder of the code base.
 
@@ -175,29 +177,31 @@ Generator](https://customers.holoeye.com/slm-pattern-generator-v5-1-1-windows/)
 which amongst others has a feature that does perform phase retrieval for a given
 target amplitude. One such example can be found in `images/holoeye_phase_map`
 and its corresponding amplitude at the target plane under `images/target_amplitude`.
-This software assumes a experimental setup that uses a lens in between the SLM and
+This software assumes a experimental setup that uses a convex lens in between the SLM and
 the target plane. Neural Holography on the other hand, uses a different setting
 where no lens is placed between the SLM and the target plane, i.e. a lensless
-setting. Those differences impact the resulting phase map of the mask design
+setting. Those differences impact the resulting phase maps of the mask design
 algorithm. The methods in `slm_designer/transform_fields.py` allow transforming phase maps,
-fields, back and forth between both settings. Note that Neural Holography encodes
+or fields, back and forth between both settings. Note that Neural Holography encodes
 phase maps, images etc. as 4D PyTorch Tensors where the dimensions are [image,
 channel, height, width]. But again, the wrapper `slm_designer/wrapper.py` does
-provide interfacing methods for the different algorithms that handle all those complications for you and you
-are not required to dig any deeper than that.
+provide interfacing methods for the different algorithms that handle all those
+complications for you and you are not required to dig any deeper than that.
 
 ## Propagation
 
 <!-- TODO might not be only linked to lenses, ASM vs Fraunhofer -->
 
 This section will briefly discuss the propagation of a phase map to the target
-plane. More precisely propagation simulation is a crucial element in most of the
+plane. More precisely, propagation simulation is a crucial element in most of the
 mask designing algorithms. Holoeye's SLM Pattern Generator uses
 [Fraunhofer](https://en.wikipedia.org/wiki/Fraunhofer_diffraction_equation) and
 Neural Holography mostly uses [Angular spectrum
 method](https://en.wikipedia.org/wiki/Angular_spectrum_method) (ASM). In a next step
 we plan to replace the ASM implemented in Neural Holography with a propagation
 method from [waveprop](https://github.com/ebezzam/waveprop).
+
+<!-- TODO replace prop with waveprop -->
 
 ### Physical propagation
 
@@ -213,9 +217,9 @@ subsequent [Example scripts](#example-scripts) section.
 ### Simulated propagation
 
 Opposed to physical propagation, here the propagation is only simulated. No
-physical SLM is involved. This feature is specially useful for working, testing,
+physical SLM is involved. This feature is specially useful for working, testing or
 debugging when not having access to all the material needed to do the physical
-propagation. As explained earlier ([Propagation](#propagation)) Holoeye and
+propagation. As explained earlier ([Propagation](#propagation)), Holoeye and
 Neural Holography assume different experimental setups. Hence, methods are
 provided to simulated propagation in both settings in
 `slm_designer/simulated_prop.py`. Additionally, a whole bunch of methods from
@@ -229,16 +233,16 @@ As explained earlier, generally what we do in phase retrieval is actually an
 inverse problem. The forward version consists of choosing a pattern, in this
 case mostly an aperture (circular, rectangular, etc.) and then observe the
 resulting amplitude at the target plane. The `slm_designer/aperture.py` provides
-an easy way to set different such apertures:
+an easy way to set different apertures:
 
 - rectangle,
 - square,
 - line and
 - circle
 
-aperture. Then `slm_designer/slm.py` is used to simulate a SLM and provide
-plotting capabilities of those aperture. Additionally, you can also physically
-set those apertures on SLM real devices. Usage examples will be presented in the
+aperture. Then, `slm_designer/slm.py` is used to simulate a SLM and provide
+plotting capabilities of those apertures. Additionally, you can also physically
+send those apertures to real SLM devices. Usage examples will be presented in the
 subsequent [Example scripts](#example-scripts) section.
 
 ## Example scripts
@@ -261,7 +265,7 @@ You can exit the virtual environment by running `deactivate`.
 This section does show how the CITL can be used. Note though that this is still
 very much in development, so not bug free. More work will be needed here.
 
-This script calls via the `slm_designer/wrapper.py` Neural Holography code the
+This script calls via the `slm_designer/wrapper.py` Neural Holography code that
 evaluates the resulting amplitudes using different measures.
 
 ```sh
@@ -281,7 +285,7 @@ Options:
 ```
 
 This code is very similar to the `slm_designer/neural_holography/eval.py` code
-an needs further adaptions to simply output the phase map without doing evaluation.
+and needs further adaptions to simply output the phase map without doing evaluation.
 
 ```sh
 $ python examples/citl_predict.py --help
@@ -401,16 +405,15 @@ Options:
 Same as above, different versions of the simulated propagation do exist, one for
 a precomputed Holoeye phase map, another 3 for the phase maps computed with Neural
 Holography methods and finally one that test a whole bunch of methods
-implemented in waveprop. For the former four, as a sanity check each phase map
-is transformed into both lens and lensless setting and then its propagation is
+implemented in waveprop. For the former four, as a sanity check, each phase map
+is transformed into both lens and lensless setup and then its propagation is
 simulated in the respective setting. The
 resulting amplitude patterns must be the same. The script using waveprop methods
 simply propagates the same precomputed phase map as in the Holoeye script in a
 variety of different ways.
 
 The only difference to the physical propagation scripts is that here the
-propagation is simulated and the results plotted to the screen. As mentioned
-just above, both lens and lensless settings are compared as a sanity check.
+propagation is simulated and the results plotted to the screen.
 
 ```sh
 python examples/simulated_prop_dpac.py
@@ -438,7 +441,7 @@ Options:
   --help                Show this message and exit.
 ```
 
-This script on the other hand is more for development and checking different
+The next script on the other hand is more for development and checking different
 methods import from waveprop. Not all methods are integrated correctly, more
 work is also needed here.
 

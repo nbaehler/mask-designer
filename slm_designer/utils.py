@@ -28,7 +28,7 @@ def _cell_slice(_slice, cell_m):
 def _m_to_cell_idx(val, cell_m):
     """
     Convert location to cell index.
-    
+
     author: Eric Bezzam,
     email: ebezzam@gmail.com,
     GitHub: https://github.com/ebezzam
@@ -46,11 +46,11 @@ def _m_to_cell_idx(val, cell_m):
 # def si2cell(val: np.ndarray, cell_m): # TODO unused
 #     """
 #     Convert locations to cell index.
-
-# author: Eric Bezzam,
-# email: ebezzam@gmail.com,
-# GitHub: https://github.com/ebezzam
-
+#
+#     author: Eric Bezzam,
+#     email: ebezzam@gmail.com,
+#     GitHub: https://github.com/ebezzam
+#
 #     Parameters
 #     ----------
 #     val : :py:class:`~numpy.ndarray`
@@ -64,7 +64,7 @@ def _m_to_cell_idx(val, cell_m):
 def prepare_index_vals(key, pixel_pitch):
     """
     Convert indexing object in meters to indexing object in cell indices.
-    
+
     author: Eric Bezzam,
     email: ebezzam@gmail.com,
     GitHub: https://github.com/ebezzam
@@ -108,7 +108,7 @@ def prepare_index_vals(key, pixel_pitch):
 def rgb2gray(rgb, weights=None):
     """
     Convert RGB array to grayscale.
-    
+
     author: Eric Bezzam,
     email: ebezzam@gmail.com,
     GitHub: https://github.com/ebezzam
@@ -179,6 +179,15 @@ def load_holoeye_slm_pattern(
 def show_plot(slm_field, propped_slm_field, title):
     """
     Plotting utility function.
+
+    Parameters
+    ----------
+    slm_field : torch.Tensor
+        The phase map before propagation
+    propped_slm_field : torch.Tensor
+        The amplitude after propagation
+    title : String
+        The title of the plot
     """
     fig = plt.figure()
     fig.suptitle(title)
@@ -198,6 +207,19 @@ def show_plot(slm_field, propped_slm_field, title):
 
 
 def quantize_phase_pattern(phase_map):
+    """
+    Transform [-pi, pi] angles into the discrete interval 0-255.
+
+    Parameters
+    ----------
+    phase_map : torch.Tensor or numpy.ndarray
+        The angles to be quantized/discretized
+
+    Returns
+    -------
+    numpy.ndarray
+        The discretized map
+    """
     if torch.is_tensor(phase_map):
         phase_map = phase_map.cpu().detach().numpy()
 

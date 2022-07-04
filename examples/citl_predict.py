@@ -142,16 +142,12 @@ def citl_predict(channel, prop_model, root_path, prop_model_dir, calibration_pat
     elif prop_model.upper() == "MODEL":
         blur = make_kernel_gaussian(0.85, 3)
         propagator = ModelPropagate(
-            distance=prop_dist,
-            feature_size=pixel_pitch,
-            wavelength=wavelength,
-            blur=blur,
+            distance=prop_dist, feature_size=pixel_pitch, wavelength=wavelength, blur=blur,
         ).to(device)
 
         propagator.load_state_dict(
             torch.load(
-                os.path.join(prop_model_dir, f"{chan_strs[channel]}.pth"),
-                map_location=device,
+                os.path.join(prop_model_dir, f"{chan_strs[channel]}.pth"), map_location=device,
             )
         )
         propagator.eval()
@@ -215,13 +211,7 @@ def citl_predict(channel, prop_model, root_path, prop_model_dir, calibration_pat
             #     ]  # Select CITL-calibrated models for each channel
 
             recon_field = propagate_field(
-                slm_field,
-                propagator,
-                prop_dist,
-                wavelength,
-                pixel_pitch,
-                prop_model,
-                dtype,
+                slm_field, propagator, prop_dist, wavelength, pixel_pitch, prop_model, dtype,
             )
 
             # cartesian to polar coordinate
@@ -262,7 +252,7 @@ def citl_predict(channel, prop_model, root_path, prop_model_dir, calibration_pat
         #     )
 
         # save reconstructed image in srgb domain
-        recon_srgb = srgb_lin2gamma(np.clip(recon_amp**2, 0.0, 1.0))
+        recon_srgb = srgb_lin2gamma(np.clip(recon_amp ** 2, 0.0, 1.0))
         cond_mkdir(recon_path)
         imageio.imwrite(
             os.path.join(recon_path, f"{target_idx}_{run_id}_{chan_strs[channel]}.png"),

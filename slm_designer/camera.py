@@ -56,7 +56,7 @@ class Camera:
 class DummyCamera(Camera):
     def __init__(self):
         """
-        Initializes the dummy camera.
+        Initializes the dummy camera returning only black images.
         """
         super().__init__()
 

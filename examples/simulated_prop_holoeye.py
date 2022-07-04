@@ -46,10 +46,7 @@ def simulated_prop_holoeye():
 
     # Simulate the propagation in the lensless setting and show the results
     propped_slm_field = neural_holography_asm(
-        holoeye_slm_field,
-        prop_dist,
-        wavelength,
-        pixel_pitch,
+        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Holoeye without lens")
 

@@ -25,6 +25,17 @@ def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
 
     Refer to the LICENSE file for more information.
 
+    Parameters
+    ----------
+    prop_dist : float
+        The propagation distance from the SLM to the target plane
+    wavelength : float
+        The wavelength of the light
+    slm_shape : Tuple(int)
+        The shape or the resolution of the SLM
+    pixel_pitch : float
+        The pixel pitch of the SLM
+
     Returns
     -------
     torch.Tensor
@@ -88,6 +99,14 @@ def lens_to_lensless(
     ----------
     holoeye_slm_field : torch.Tensor
         The phase map that needs to be transformed
+    prop_dist : float
+        The propagation distance from the SLM to the target plane
+    wavelength : float
+        The wavelength of the light
+    slm_shape : Tuple(int)
+        The shape or the resolution of the SLM
+    pixel_pitch : float
+        The pixel pitch of the SLM
 
     Returns
     -------
@@ -122,6 +141,14 @@ def lensless_to_lens(
     ----------
     neural_holography_slm_field : torch.Tensor
         The phase map that needs to be transformed
+    prop_dist : float
+        The propagation distance from the SLM to the target plane
+    wavelength : float
+        The wavelength of the light
+    slm_shape : Tuple(int)
+        The shape or the resolution of the SLM
+    pixel_pitch : float
+        The pixel pitch of the SLM
 
     Returns
     -------

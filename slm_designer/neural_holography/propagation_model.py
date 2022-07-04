@@ -60,9 +60,7 @@ class LatentCodedMLP(nn.Module):
         for i in range(num_layers - 1):
             net = [
                 nn.Conv2d(
-                    num_features[i] + num_latent_codes[i],
-                    num_features[i + 1],
-                    kernel_size=1,
+                    num_features[i] + num_latent_codes[i], num_features[i + 1], kernel_size=1,
                 )
             ]
             if norm is not None:
@@ -83,8 +81,7 @@ class LatentCodedMLP(nn.Module):
         for i in range(len(self.num_latent_codes)):
             if latent_codes is not None:
                 after_relu = torch.cat(
-                    (after_relu, latent_codes[:, self.idxs[i] : self.idxs[i + 1], ...]),
-                    1,
+                    (after_relu, latent_codes[:, self.idxs[i] : self.idxs[i + 1], ...]), 1,
                 )
             after_relu = self.nets[i](after_relu)
 
@@ -203,16 +200,10 @@ class SourceAmplitude(nn.Module):
         # create sampling grid if needed
         if self.x_dim is None or self.y_dim is None:
             self.x_dim = torch.linspace(
-                -(shape[-1] - 1) / 2,
-                (shape[-1] - 1) / 2,
-                shape[-1],
-                device=self.dc_term.device,
+                -(shape[-1] - 1) / 2, (shape[-1] - 1) / 2, shape[-1], device=self.dc_term.device,
             )
             self.y_dim = torch.linspace(
-                -(shape[-2] - 1) / 2,
-                (shape[-2] - 1) / 2,
-                shape[-2],
-                device=self.dc_term.device,
+                -(shape[-2] - 1) / 2, (shape[-2] - 1) / 2, shape[-2], device=self.dc_term.device,
             )
 
         if self.x_dim.device != self.sigmas.device:
@@ -363,9 +354,7 @@ class ModelPropagate(nn.Module):
         if latent_coords:
             latent_x = np.linspace(-1.0, 1.0, image_res[1])
             latent_y = np.linspace(
-                -1.0 * image_res[0] / image_res[1],
-                1.0 * image_res[0] / image_res[1],
-                image_res[0],
+                -1.0 * image_res[0] / image_res[1], 1.0 * image_res[0] / image_res[1], image_res[0],
             )
             lx, ly = np.meshgrid(latent_x, latent_y)
             self.latent_coords = nn.Parameter(
@@ -451,9 +440,7 @@ class ModelPropagate(nn.Module):
 
         if self.zernike_fourier is None and self.coeffs_fourier is not None:
             self.zernike_fourier = compute_zernike_basis(
-                self.coeffs_fourier.size()[0],
-                [i * 2 for i in phases.size()[-2:]],
-                wo_piston=True,
+                self.coeffs_fourier.size()[0], [i * 2 for i in phases.size()[-2:]], wo_piston=True,
             )
             self.zernike_fourier = self.zernike_fourier.to(self.dev).detach()
             self.zernike_fourier.requires_grad = False

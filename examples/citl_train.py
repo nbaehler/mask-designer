@@ -17,10 +17,7 @@ from slm_designer.wrapper import train_model, str2bool
     help="Path of pretrained checkpoints as a starting point",
 )
 @click.option(
-    "--model_path",
-    type=str,
-    default="./models",
-    help="Directory for saving out checkpoints",
+    "--model_path", type=str, default="./models", help="Directory for saving out checkpoints",
 )
 @click.option(
     "--phase_path",

@@ -85,11 +85,7 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
     # Drawing the keypoints
     cv2.drawChessboardCorners(captured_img, num_circles, centers, found_dots)
     img_gray = cv2.drawKeypoints(
-        img_gray,
-        keypoints,
-        np.array([]),
-        (0, 255, 0),
-        cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS,
+        img_gray, keypoints, np.array([]), (0, 255, 0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS,
     )
 
     # Find transformation

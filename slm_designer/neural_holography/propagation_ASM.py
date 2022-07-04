@@ -68,7 +68,7 @@ def propagation_ASM(
         if padtype == "zero":
             padval = 0
         elif padtype == "median":
-            padval = torch.median(torch.pow((u_in**2).sum(-1), 0.5))
+            padval = torch.median(torch.pow((u_in ** 2).sum(-1), 0.5))
         u_in = utils.pad_image(u_in, conv_size, padval=padval, stacked_complex=False)
 
     if precomped_H is None and precomped_H_exp is None:
@@ -92,7 +92,7 @@ def propagation_ASM(
         FX, FY = np.meshgrid(fx, fy)
 
         # transfer function in numpy (omit distance)
-        HH = 2 * math.pi * np.sqrt(1 / wavelength**2 - (FX**2 + FY**2))
+        HH = 2 * math.pi * np.sqrt(1 / wavelength ** 2 - (FX ** 2 + FY ** 2))
 
         # create tensor & upload to device (GPU)
         H_exp = torch.tensor(HH, dtype=dtype).to(u_in.device)
@@ -115,8 +115,7 @@ def propagation_ASM(
         fy_max = 1 / np.sqrt((2 * z * (1 / y)) ** 2 + 1) / wavelength
         fx_max = 1 / np.sqrt((2 * z * (1 / x)) ** 2 + 1) / wavelength
         H_filter = torch.tensor(
-            ((np.abs(FX) < fx_max) & (np.abs(FY) < fy_max)).astype(np.uint8),
-            dtype=dtype,
+            ((np.abs(FX) < fx_max) & (np.abs(FY) < fy_max)).astype(np.uint8), dtype=dtype,
         )
 
         # get real/img components
