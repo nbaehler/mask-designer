@@ -378,7 +378,7 @@ class DPAC(nn.Module):
 
 
 class PhysicalProp(nn.Module):
-    """ A module for physical propagation,
+    """A module for physical propagation,
     forward pass displays gets SLM pattern as an input and display the pattern on the physical setup,
     and capture the diffraction image at the target plane,
     and then return warped image using pre-calibrated homography from instantiation.

@@ -64,7 +64,14 @@ def physical_prop_gs(iterations, show_time):
 
     # Run Gerchberg-Saxton
     phase_out = run_gs(
-        init_phase, target_amp, iterations, slm_shape, distance, wavelength, pixel_pitch, device,
+        init_phase,
+        target_amp,
+        iterations,
+        slm_shape,
+        distance,
+        wavelength,
+        pixel_pitch,
+        device,
     )
 
     # Display

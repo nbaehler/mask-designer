@@ -56,7 +56,7 @@ To install, simply run the following script:
 
 The script will:
 
-1. Create a Python3 virtual environment called `slm_designer_env`.
+1. Create a Python3 virtual environment called `.slm_designer_env`.
 2. Install Python dependencies in the virtual environment.
 3. Install both [slm-controller](https://github.com/ebezzam/slm-controller) and
    [waveprop](https://github.com/ebezzam/waveprop) in setuptools “develop mode”
@@ -71,7 +71,7 @@ If you plan to use this code base more in depth you can install additional
 dependencies intended for developing while the virtual environment is activated.
 
 ```sh
-pip install -e .[dev]
+pip install -e .[dev] #TODO does not work, dev not found
 ```
 
 ## Manual installation needed for enabling some features
@@ -249,7 +249,7 @@ the features integrated into the project.
 First, activate the virtual environment:
 
 ```sh
-source slm_designer_env/bin/activate
+source .slm_designer_env/bin/activate
 ```
 
 You can exit the virtual environment by running `deactivate`.

@@ -41,7 +41,9 @@ from slm_controller.hardware import SLMDevices, slm_devices, SLMParam
     help="Whether line should be vertical (True) or horizontal (False).",
 )
 @click.option(
-    "--show_tick_labels", is_flag=True, help="Whether or not to show cell values along axes.",
+    "--show_tick_labels",
+    is_flag=True,
+    help="Whether or not to show cell values along axes.",
 )
 @click.option(
     "--pixel_pitch",
@@ -63,7 +65,14 @@ from slm_controller.hardware import SLMDevices, slm_devices, SLMParam
     help="Which device to program with aperture.",
 )
 def plot_aperture(
-    shape, n_cells, rect_shape, vertical, show_tick_labels, pixel_pitch, slm_shape, device,
+    shape,
+    n_cells,
+    rect_shape,
+    vertical,
+    show_tick_labels,
+    pixel_pitch,
+    slm_shape,
+    device,
 ):
     """
     Plot SLM aperture.

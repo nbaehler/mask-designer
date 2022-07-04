@@ -103,7 +103,10 @@ class SummaryModelWriter(tensorboardX.SummaryWriter):
                     )
 
                     plt.fill_between(
-                        input_phase, output_mean - output_std, output_mean + output_std, alpha=0.5,
+                        input_phase,
+                        output_mean - output_std,
+                        output_mean + output_std,
+                        alpha=0.5,
                     )
                 else:
                     plt.plot(input_phase, output_phase, "b")
@@ -182,7 +185,9 @@ class SummaryModelWriter(tensorboardX.SummaryWriter):
             if domain == "primal":
                 if self.zernike_basis is None:
                     self.model.zernike = compute_zernike_basis(
-                        self.model.coeffs.size()[0], map_size.size()[-2:], wo_piston=True,
+                        self.model.coeffs.size()[0],
+                        map_size.size()[-2:],
+                        wo_piston=True,
                     )
                     self.model.zernike = self.model.zernike.to(self.model.dev).detach()
                     self.model.zernike.requires_grad = False
@@ -204,7 +209,10 @@ class SummaryModelWriter(tensorboardX.SummaryWriter):
             amp = self.model.target_constant_amp
             amp = amp.squeeze().unsqueeze(0).cpu().detach().numpy()
             self.add_figure_cmap(
-                "parameters/Content-independent_target_amp", amp.squeeze(), idx, self.cmap_rgb,
+                "parameters/Content-independent_target_amp",
+                amp.squeeze(),
+                idx,
+                self.cmap_rgb,
             )
 
             self.add_image(
@@ -217,7 +225,10 @@ class SummaryModelWriter(tensorboardX.SummaryWriter):
             phase = self.model.target_constant_phase
             phase = phase.squeeze().unsqueeze(0).cpu().detach().numpy()
             self.add_figure_cmap(
-                "parameters/Content-independent_target_phase", phase.squeeze(), idx, plt.cm.plasma,
+                "parameters/Content-independent_target_phase",
+                phase.squeeze(),
+                idx,
+                plt.cm.plasma,
             )
 
             self.add_image(

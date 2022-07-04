@@ -277,7 +277,10 @@ def train_model(
                     phase_filename = os.path.join(phase_path, f"{chan_str}", f"{idx}.png")
                 else:
                     phase_filename = os.path.join(
-                        phase_path, f"{chan_str}", f"{idx}_{channel}", "phasemaps_1000.png",
+                        phase_path,
+                        f"{chan_str}",
+                        f"{idx}_{channel}",
+                        "phasemaps_1000.png",
                     )
 
                 if os.path.exists(phase_filename):
@@ -285,7 +288,9 @@ def train_model(
                 else:
                     slm_phase = (
                         np.random.randint(
-                            low=0, high=np.iinfo(np.uint8).max + 1, size=(1, 1, *slm_res),
+                            low=0,
+                            high=np.iinfo(np.uint8).max + 1,
+                            size=(1, 1, *slm_res),
                         )
                         / np.iinfo(np.uint8).max
                     )
@@ -317,7 +322,7 @@ def train_model(
                 # calculate loss and backpropagate to phase
                 with torch.no_grad():
                     scale_phase = (model_amp * target_amp).mean(dim=[-2, -1], keepdims=True) / (
-                        model_amp ** 2
+                        model_amp**2
                     ).mean(dim=[-2, -1], keepdims=True)
 
                     # or we can optimize scale with regression and statistics of the image
@@ -373,12 +378,16 @@ def train_model(
                     for c in range(camera_amp.shape[1]):
                         im = Image.fromarray(camera_amp[p, c].cpu().numpy())
                         im = im.resize(
-                            (slm_res[1], slm_res[0]), Image.BICUBIC,  # Pillow uses width, height
+                            (slm_res[1], slm_res[0]),
+                            Image.BICUBIC,  # Pillow uses width, height
                         )
                         camera_amp_scaled[p, c] = torch.from_numpy(np.array(im)).to(device)
 
                 camera_amp = utils.crop_image(
-                    camera_amp_scaled, target_shape=roi_res, pytorch=True, stacked_complex=False,
+                    camera_amp_scaled,
+                    target_shape=roi_res,
+                    pytorch=True,
+                    stacked_complex=False,
                 )
                 # ---------------------------------
 
@@ -400,7 +409,10 @@ def train_model(
                     writer.add_scalar("Loss/model_vs_camera", loss_value_model, i_acc)
                     writer.add_scalar(
                         "Loss/camera_vs_target",
-                        loss_mse(camera_amp * target_amp.mean() / camera_amp.mean(), target_amp,),
+                        loss_mse(
+                            camera_amp * target_amp.mean() / camera_amp.mean(),
+                            target_amp,
+                        ),
                         i_acc,
                     )
                 if i % 50 == 0:

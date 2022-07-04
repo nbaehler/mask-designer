@@ -53,59 +53,92 @@ def simulated_prop_waveprop():
     # TODO test those
     # ==========================================================================
     propped_slm_field = wave_prop_fraunhofer(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,
+        holoeye_slm_field,
+        prop_dist,
+        wavelength,
+        pixel_pitch,
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Holoeye with Fraunhofer")
 
     propped_slm_field = wave_prop_angular_spectrum(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,
+        holoeye_slm_field,
+        prop_dist,
+        wavelength,
+        pixel_pitch,
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Holoeye with Angular Spectrum")
 
     propped_slm_field = wave_prop_angular_spectrum_np(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,
+        holoeye_slm_field,
+        prop_dist,
+        wavelength,
+        pixel_pitch,
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Holoeye with Angular Spectrum NP")
 
     propped_slm_field = wave_prop_fft_di(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,  # TODO not working
+        holoeye_slm_field,
+        prop_dist,
+        wavelength,
+        pixel_pitch,  # TODO not working
     )[
         0, 0, :, :
     ]  # TODO add those! All?
     show_plot(slm_field, propped_slm_field, "Holoeye with FFT Direct")
 
     propped_slm_field = wave_prop_direct_integration(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,
+        holoeye_slm_field,
+        prop_dist,
+        wavelength,
+        pixel_pitch,
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Holoeye with Direct Integration")
 
     propped_slm_field = wave_prop_fresnel_one_step(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,
+        holoeye_slm_field,
+        prop_dist,
+        wavelength,
+        pixel_pitch,
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Holoeye with Fresnel One Step")
 
     propped_slm_field = wave_prop_fresnel_two_step(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,  # TODO not working
+        holoeye_slm_field,
+        prop_dist,
+        wavelength,
+        pixel_pitch,  # TODO not working
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Holoeye with Fresnel Two Step")
 
     propped_slm_field = wave_prop_fresnel_multi_step(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,  # TODO not working
+        holoeye_slm_field,
+        prop_dist,
+        wavelength,
+        pixel_pitch,  # TODO not working
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Holoeye with Fresnel Multi Step")
 
     propped_slm_field = wave_prop_fresnel_conv(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,
+        holoeye_slm_field,
+        prop_dist,
+        wavelength,
+        pixel_pitch,
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Holoeye with Fresnel Convolution")
 
     propped_slm_field = wave_prop_shifted_fresnel(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,
+        holoeye_slm_field,
+        prop_dist,
+        wavelength,
+        pixel_pitch,
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Holoeye with Shifted Fresnel")
 
     propped_slm_field = wave_prop_spherical(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,  # TODO not working
+        holoeye_slm_field,
+        prop_dist,
+        wavelength,
+        pixel_pitch,  # TODO not working
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Holoeye with Spherical")
 
@@ -119,7 +152,10 @@ def simulated_prop_waveprop():
 
     # Simulate the propagation in the lensless setting and show the results
     propped_slm_field = neural_holography_asm(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,
+        holoeye_slm_field,
+        prop_dist,
+        wavelength,
+        pixel_pitch,
     )[0, 0, :, :]
     show_plot(slm_field, propped_slm_field, "Holoeye without lens")
 

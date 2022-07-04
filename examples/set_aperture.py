@@ -37,7 +37,11 @@ from slm_controller.hardware import slm_devices, SLMDevices, SLMParam
     help="Shape for 'rect' in number of cells; `shape` must be set to 'rect'.",
 )
 @click.option(
-    "--center", default=None, nargs=2, type=int, help="Coordinate for center.",
+    "--center",
+    default=None,
+    nargs=2,
+    type=int,
+    help="Coordinate for center.",
 )
 @click.option(
     "--vertical",

@@ -145,11 +145,17 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
     elif prop_model.upper() == "MODEL":
         blur = utils.make_kernel_gaussian(0.85, 3)
         propagator = ModelPropagate(
-            distance=prop_dist, feature_size=feature_size, wavelength=wavelength, blur=blur,
+            distance=prop_dist,
+            feature_size=feature_size,
+            wavelength=wavelength,
+            blur=blur,
         ).to(device)
 
         propagator.load_state_dict(
-            torch.load(os.path.join(prop_model_dir, f"{chan_strs[c]}.pth"), map_location=device,)
+            torch.load(
+                os.path.join(prop_model_dir, f"{chan_strs[c]}.pth"),
+                map_location=device,
+            )
         )
         propagator.eval()
 
@@ -213,7 +219,13 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
             #         c
             #     ]  # Select CITL-calibrated models for each channel
             recon_field = utils.propagate_field(
-                slm_field, propagator, prop_dist, wavelength, feature_size, prop_model, dtype,
+                slm_field,
+                propagator,
+                prop_dist,
+                wavelength,
+                feature_size,
+                prop_model,
+                dtype,
             )
 
             # cartesian to polar coordinate
@@ -250,7 +262,7 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
             print(f"PSNR({domain}): {psnr_val[domain]},  SSIM({domain}): {ssim_val[domain]:.4f}, ")
 
         # save reconstructed image in srgb domain
-        recon_srgb = utils.srgb_lin2gamma(np.clip(recon_amp ** 2, 0.0, 1.0))
+        recon_srgb = utils.srgb_lin2gamma(np.clip(recon_amp**2, 0.0, 1.0))
         utils.cond_mkdir(recon_path)
         imageio.imwrite(
             os.path.join(recon_path, f"{target_idx}_{run_id}_{chan_strs[channel]}.png"),
@@ -264,5 +276,6 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
         data_dict[f"psnrs_{domain}"] = psnrs[domain]
 
     sio.savemat(
-        os.path.join(recon_path, f"metrics_{run_id}_{chan_strs[channel]}.mat"), data_dict,
+        os.path.join(recon_path, f"metrics_{run_id}_{chan_strs[channel]}.mat"),
+        data_dict,
     )

@@ -81,7 +81,7 @@ def reciprocal_complex(t):
 
 def rect_to_polar(real, imag):
     """Converts the rectangular complex representation to polar"""
-    mag = torch.pow(real ** 2 + imag ** 2, 0.5)
+    mag = torch.pow(real**2 + imag**2, 0.5)
     ang = torch.atan2(imag, real)
     return mag, ang
 
@@ -400,13 +400,15 @@ def write_sgd_summary(
     loss = nn.MSELoss().to(out_amp.device)
     loss_value = loss(s * out_amp, target_amp)
     psnr_value = psnr(
-        target_amp.squeeze().cpu().detach().numpy(), (s * out_amp).squeeze().cpu().detach().numpy(),
+        target_amp.squeeze().cpu().detach().numpy(),
+        (s * out_amp).squeeze().cpu().detach().numpy(),
     )
     ssim_value = ssim(
-        target_amp.squeeze().cpu().detach().numpy(), (s * out_amp).squeeze().cpu().detach().numpy(),
+        target_amp.squeeze().cpu().detach().numpy(),
+        (s * out_amp).squeeze().cpu().detach().numpy(),
     )
 
-    s_min = (target_amp * out_amp).mean() / (out_amp ** 2).mean()
+    s_min = (target_amp * out_amp).mean() / (out_amp**2).mean()
     psnr_value_min = psnr(
         target_amp.squeeze().cpu().detach().numpy(),
         (s_min * out_amp).squeeze().cpu().detach().numpy(),
@@ -443,10 +445,12 @@ def write_gs_summary(slm_field, recon_field, target_amp, k, writer, roi=(880, 16
 
     loss_value = loss(recon_amp, target_amp)
     psnr_value = psnr(
-        target_amp.squeeze().cpu().detach().numpy(), recon_amp.squeeze().cpu().detach().numpy(),
+        target_amp.squeeze().cpu().detach().numpy(),
+        recon_amp.squeeze().cpu().detach().numpy(),
     )
     ssim_value = ssim(
-        target_amp.squeeze().cpu().detach().numpy(), recon_amp.squeeze().cpu().detach().numpy(),
+        target_amp.squeeze().cpu().detach().numpy(),
+        recon_amp.squeeze().cpu().detach().numpy(),
     )
 
     if writer is not None:
@@ -465,8 +469,8 @@ def get_psnr_ssim(recon_amp, target_amp, multichannel=False):
     ssims["amp"] = ssim(target_amp, recon_amp, multichannel=multichannel)
 
     # linear
-    target_linear = target_amp ** 2
-    recon_linear = recon_amp ** 2
+    target_linear = target_amp**2
+    recon_linear = recon_amp**2
     psnrs["lin"] = psnr(target_linear, recon_linear)
     ssims["lin"] = ssim(target_linear, recon_linear, multichannel=multichannel)
 
@@ -503,7 +507,7 @@ def make_kernel_gaussian(sigma, kernel_size):
     xy_grid = torch.stack([x_grid, y_grid], dim=-1)
 
     mean = (kernel_size - 1) / 2
-    variance = sigma ** 2
+    variance = sigma**2
 
     # Calculate the 2-dimensional gaussian kernel which is
     # the product of two gaussian distributions for two different
