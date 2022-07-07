@@ -6,6 +6,7 @@ needs more work
 
 import click
 from slm_designer.wrapper import train_model, str2bool
+import datetime
 
 
 @click.command()
@@ -17,46 +18,51 @@ from slm_designer.wrapper import train_model, str2bool
     help="Path of pretrained checkpoints as a starting point",
 )
 @click.option(
-    "--model_path", type=str, default="./models", help="Directory for saving out checkpoints",
+    "--model_path", type=str, default="./citl/models", help="Directory for saving out checkpoints",
 )
 @click.option(
     "--phase_path",
     type=str,
-    default="./precomputed_phases",
+    default="./citl/precomputed_phases",
     help="Directory for precalculated phases",
 )
 @click.option(
     "--calibration_path",
     type=str,
-    default="./calibration",
+    default="./citl/calibration",
     help="Directory where calibration phases are being stored",
 )
 @click.option(
-    "--train_data_path",
+    "--train_target_amps_path",
     type=str,
-    default="./data/train",
-    help="Directory where train data is stored.",
+    default="./citl/data/train_target_amps",
+    help="Directory where train target amplitudes is stored.",
 )
 @click.option("--lr_model", type=float, default=3e-3, help="Learning rate for model parameters")
 @click.option("--lr_phase", type=float, default=5e-3, help="Learning rate for phase")
 @click.option("--num_epochs", type=int, default=15, help="Number of epochs")
-@click.option("--batch_size", type=int, default=2, help="Size of minibatch")
-@click.option("--step_lr", type=str2bool, default=True, help="Use of lr scheduler")
-@click.option("--experiment", type=str, default="", help="Name of the experiment")
+@click.option("--batch_size", type=int, default=1, help="Size of minibatch")  # TODO adapt
+@click.option(
+    "--step_lr", type=str2bool, default=True, help="Use of lr scheduler"
+)  # TODO replace with flag
+# @click.option("--experiment", type=str, default="", help="Name of the experiment")
 def citl_train(
     channel,
     pretrained_path,
     model_path,
     phase_path,
     calibration_path,
-    train_data_path,
+    train_target_amps_path,
     lr_model,
     lr_phase,
     num_epochs,
     batch_size,
     step_lr,
-    experiment,
+    # experiment,
 ):
+
+    now = datetime.datetime.now()
+    experiment = f"{now.hour}h{now.minute}_{now.year}_{now.month}_{now.day}"
 
     train_model(
         channel,
@@ -64,7 +70,7 @@ def citl_train(
         model_path,
         phase_path,
         calibration_path,
-        train_data_path,
+        train_target_amps_path,
         lr_model,
         lr_phase,
         num_epochs,

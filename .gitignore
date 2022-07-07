@@ -134,11 +134,6 @@ dmypy.json
 .pyre/
 
 # Cam in the loop
-runs
-data
-models
-calibrated_models
-calibration
-phases
-precomputed_phases
-recon
+citl/*
+!citl/calibration
+!citl/data

@@ -1,4 +1,7 @@
-from slm_designer.neural_holography.augmented_image_loader import ImageLoader
+from slm_designer.neural_holography.augmented_image_loader import (
+    ImageLoader,
+    get_image_filenames,
+)
 from slm_designer.neural_holography.eval import eval
 from slm_designer.neural_holography.modules import DPAC, GS, SGD, PhysicalProp
 from slm_designer.neural_holography.propagation_ASM import propagation_ASM

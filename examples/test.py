@@ -1,7 +1,3 @@
-"""
-Simulated propagation of the slm pattern generated using the holoeye software.
-"""
-
 from slm_designer.experimental_setup import (
     PhysicalParams,
     physical_params,
@@ -9,10 +5,9 @@ from slm_designer.experimental_setup import (
 )
 
 from slm_designer.utils import load_holoeye_slm_pattern, show_plot
-from slm_designer.propagation import (
-    holoeye_fraunhofer,
-    neural_holography_asm,
-)
+from slm_designer.simulated_prop import simulated_prop, plot_sim_result
+
+from slm_designer.propagation import neural_holography_asm
 from slm_designer.transform_fields import lens_to_lensless
 
 from slm_controller.hardware import (
@@ -21,7 +16,7 @@ from slm_controller.hardware import (
 )
 
 
-def simulated_prop_holoeye():
+def test():
     # Define parameters
     prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
@@ -35,8 +30,10 @@ def simulated_prop_holoeye():
     slm_field = holoeye_slm_field[0, 0, :, :]
 
     # Simulate the propagation in the lens setting and show the results
-    propped_slm_field = holoeye_fraunhofer(holoeye_slm_field)[0, 0, :, :]
+    propped_slm_field = simulated_prop(holoeye_slm_field)
     show_plot(slm_field, propped_slm_field, "Holoeye with lens")
+
+    plot_sim_result(simulated_prop(holoeye_slm_field))
 
     # Transform the initial phase map to the lensless setting
     holoeye_slm_field = lens_to_lensless(
@@ -45,11 +42,11 @@ def simulated_prop_holoeye():
     slm_field = holoeye_slm_field[0, 0, :, :]
 
     # Simulate the propagation in the lensless setting and show the results
-    propped_slm_field = neural_holography_asm(
-        holoeye_slm_field, prop_dist, wavelength, pixel_pitch,
-    )[0, 0, :, :]
+    propped_slm_field = simulated_prop(
+        holoeye_slm_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
+    )
     show_plot(slm_field, propped_slm_field, "Holoeye without lens")
 
 
 if __name__ == "__main__":
-    simulated_prop_holoeye()
+    test()

@@ -456,25 +456,25 @@ def write_gs_summary(slm_field, recon_field, target_amp, k, writer, roi=(880, 16
         writer.add_scalar(f"{prefix}_ssim", ssim_value, k)
 
 
-def get_psnr_ssim(recon_amp, target_amp, multichannel=False):
+def get_psnr_ssim(recon_amp, target_amp, channel_axis=False):
     """get PSNR and SSIM metrics"""
     psnrs, ssims = {}, {}
 
     # amplitude
     psnrs["amp"] = psnr(target_amp, recon_amp)
-    ssims["amp"] = ssim(target_amp, recon_amp, multichannel=multichannel)
+    ssims["amp"] = ssim(target_amp, recon_amp, channel_axis=channel_axis)
 
     # linear
     target_linear = target_amp ** 2
     recon_linear = recon_amp ** 2
     psnrs["lin"] = psnr(target_linear, recon_linear)
-    ssims["lin"] = ssim(target_linear, recon_linear, multichannel=multichannel)
+    ssims["lin"] = ssim(target_linear, recon_linear, channel_axis=channel_axis)
 
     # srgb
     target_srgb = srgb_lin2gamma(np.clip(target_linear, 0.0, 1.0))
     recon_srgb = srgb_lin2gamma(np.clip(recon_linear, 0.0, 1.0))
     psnrs["srgb"] = psnr(target_srgb, recon_srgb)
-    ssims["srgb"] = ssim(target_srgb, recon_srgb, multichannel=multichannel)
+    ssims["srgb"] = ssim(target_srgb, recon_srgb, channel_axis=channel_axis)
 
     return psnrs, ssims
 

@@ -104,7 +104,9 @@ class DummyCamera(Camera):
             self._frame_count += 1
 
             # Append dummy images as numpy array to list of acquired images
-            images.append(np.zeros((self._height, self._width)))
+            images.append(
+                np.ones((self._height, self._width))
+            )  # TODO change comments/documentation to white image
 
         return images
 

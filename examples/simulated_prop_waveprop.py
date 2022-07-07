@@ -10,7 +10,7 @@ from slm_designer.experimental_setup import (
 )
 
 from slm_designer.utils import load_holoeye_slm_pattern, show_plot
-from slm_designer.simulated_prop import (
+from slm_designer.propagation import (
     holoeye_fraunhofer,
     neural_holography_asm,
     wave_prop_angular_spectrum,

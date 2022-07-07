@@ -25,6 +25,8 @@ import os
 import skimage.io
 import torch
 import numpy as np
+from pathlib import Path
+
 
 from slm_controller.hardware import (
     SLMParam,
@@ -46,7 +48,7 @@ from slm_designer.experimental_setup import (
 from slm_designer.wrapper import (
     ModelPropagate,
     propagation_ASM,
-    ImageLoader,
+    get_image_filenames,
     make_kernel_gaussian,
     crop_image,
     polar_to_rect,
@@ -66,67 +68,73 @@ from slm_designer.wrapper import (
     help="Type of propagation model for reconstruction: ASM / MODEL / CAMERA",
 )
 @click.option(
-    "--root_path",
+    "--pred_phases_path",
     type=str,
-    default="./phases",
+    default="./citl/data/pred_phases",
     help="Directory where test phases are being stored.",
 )
 @click.option(
     "--prop_model_dir",
     type=str,
-    default="./calibrated_models",
+    default="./citl/calibrated_models",  # TODO normally calibrated in manual step?
     help="Directory for the CITL-calibrated wave propagation models",
 )
 @click.option(
     "--calibration_path",
     type=str,
-    default="./calibration",
+    default="./citl/calibration",
     help="Directory where calibration phases are being stored.",
 )
-def citl_predict(channel, prop_model, root_path, prop_model_dir, calibration_path):
+def citl_predict(
+    channel, prop_model, pred_phases_path, prop_model_dir, calibration_path,
+):
+    slm_settle_time = physical_params[PhysicalParams.SLM_SETTLE_TIME]
+    prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
+    wavelength = physical_params[PhysicalParams.WAVELENGTH]
+
     # Parse
     # opt = p.parse_args()
     # channel = channel
     chs = range(channel) if channel == 3 else [channel]  # retrieve all channels if channel is 3
     chan_strs = ("red", "green", "blue", "rgb")
-    run_id = f'{root_path.split("/")[-1]}_{prop_model}'  # {algorithm}_{prop_model}
 
-    prop_dist = physical_params[
-        PhysicalParams.PROPAGATION_DISTANCE
-    ]  # propagation distance from SLM plane to target plane
-    wavelength = physical_params[PhysicalParams.WAVELENGTH]  # wavelength
-    slm_settle_time = physical_params[PhysicalParams.SLM_SETTLE_TIME]
+    run_id = f'{pred_phases_path.split("/")[-1]}_{prop_model}'  # {algorithm}_{prop_model}
 
-    pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]  # SLM pitch
+    # Hyperparameters setting
+    prop_dists = (prop_dist, prop_dist, prop_dist)
+    wavelengths = (wavelength, wavelength, wavelength)  # wavelength of each color
+    feature_size = slm_devices[slm_device][
+        SLMParam.PIXEL_PITCH
+    ]  # SLM pitch #TODO remove this dependency
 
-    slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
-    image_res = cam_devices[cam_device][CamParam.IMG_SHAPE]  # TODO slm.shape == image.shape?
-    roi_res = (round(slm_shape[0] * 0.8), round(slm_shape[1] * 0.8))
-
-    # # Resolutions
-    # slm_shape = (1080, 1920)  # resolution of SLM
+    # Resolutions
+    # slm_res = (1080, 1920)  # resolution of SLM
     # if "HOLONET" in run_id.upper():
-    #     slm_shape = (1072, 1920)
+    #     slm_res = (1072, 1920)
     # elif "UNET" in run_id.upper():
-    #     slm_shape = (1024, 2048)
+    #     slm_res = (1024, 2048)
 
-    # image_res = (1080, 1920)
-    # roi_res = (880, 1600)  # regions of interest (to penalize)
-    dtype = (
-        torch.float32
-    )  # default datatype (Note: the result may be slightly different if you use float64, etc.)
-    device = torch.device("cuda")  # The gpu you are using
+    slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
+    image_res = cam_devices[cam_device][CamParam.IMG_SHAPE]  # TODO slm.shape == image.shape?
+    roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
+
+    dtype = torch.float32  # default datatype (results may differ if using, e.g., float64)
+    device = "cuda" if torch.cuda.is_available() else "cpu"  # TODO gpu is too small
+    # device = "cpu"
 
     # You can pre-compute kernels for fast-computation
+    # precomputed_H = [None] * 3
+
     if prop_model == "ASM":
         propagator = propagation_ASM
-        # precomputed_H = propagator(
-        #     torch.empty(1, 1, *slm_shape, 2),
-        #     pixel_pitch,
-        #     wavelength,
-        #     prop_dist,
-        #     return_H=True,
-        # ).to(device)
+        # for c in chs:
+        #     precomputed_H[c] = propagator(
+        #         torch.empty(1, 1, *slm_res, 2),
+        #         feature_size,
+        #         wavelengths[c],
+        #         prop_dists[c],
+        #         return_H=True,
+        #     ).to(device)
 
     elif prop_model.upper() == "CAMERA":
         propagator = PhysicalProp(
@@ -141,63 +149,75 @@ def citl_predict(channel, prop_model, root_path, prop_model_dir, calibration_pat
         )
     elif prop_model.upper() == "MODEL":
         blur = make_kernel_gaussian(0.85, 3)
-        propagator = ModelPropagate(
-            distance=prop_dist, feature_size=pixel_pitch, wavelength=wavelength, blur=blur,
-        ).to(device)
+        propagators = {}
+        for c in chs:
+            propagator = ModelPropagate(
+                distance=prop_dists[c],
+                feature_size=feature_size,
+                wavelength=wavelengths[c],
+                blur=blur,
+            ).to(device)
 
-        propagator.load_state_dict(
-            torch.load(
-                os.path.join(prop_model_dir, f"{chan_strs[channel]}.pth"), map_location=device,
+            propagator.load_state_dict(
+                torch.load(
+                    os.path.join(prop_model_dir, f"{chan_strs[c]}.pth"), map_location=device,
+                )
             )
-        )
-        propagator.eval()
+            propagator.eval()
+            propagators[c] = propagator
 
     print(f"  - reconstruction with {prop_model}... ")
 
     # Data path
-    data_path = "./data/test"
-    recon_path = "./recon"
+    # test_target_amps_path = "./citl/data/test_target_amps"
+    pred_path = "./citl/predictions"
 
     # Augmented image loader (if you want to shuffle, augment dataset, put options accordingly.)
-    image_loader = ImageLoader(
-        data_path,
-        channel=channel if channel < 3 else None,
-        image_res=image_res,
-        homography_res=roi_res,
-        crop_to_homography=True,
-        shuffle=False,
-        vertical_flips=False,
-        horizontal_flips=False,
-    )
+    # image_loader = ImageLoader(
+    #     pred_phases_path,
+    #     channel=channel if channel < 3 else None,
+    #     image_res=image_res,
+    #     homography_res=roi_res,
+    #     crop_to_homography=True,
+    #     shuffle=False,
+    #     vertical_flips=False,
+    #     horizontal_flips=False,
+    # )
 
-    # Placeholders for metrics
+    # # Placeholders for metrics
     # psnrs = {"amp": [], "lin": [], "srgb": []}
     # ssims = {"amp": [], "lin": [], "srgb": []}
-    idxs = []
+    # idxs = []
+
+    images = get_image_filenames(pred_phases_path)
 
     # Loop over the dataset
-    for target in image_loader:
+    for pred_idx, phase_path in enumerate(images):
         # get target image
-        target_amp, target_res, target_filename = target
-        target_path, target_filename = os.path.split(target_filename[0])
-        target_idx = target_filename.split("_")[-1]
-        target_amp = target_amp.to(device)
+        # target_amp, _, target_filename = pred_phase
+        # _, target_filename = os.path.split(target_filename[0])
+        # # target_idx = target_filename.split("_")[-1]
+        # target_amp = target_amp.to(device)
 
-        print(f"    - running for img_{target_idx}...")
+        # print(f"    - running for {target_filename}...")
 
-        # crop to ROI
-        target_amp = crop_image(target_amp, target_shape=roi_res, stacked_complex=False).to(device)
+        # # crop to ROI
+        # target_amp = crop_image(
+        #     target_amp, target_shape=roi_res, stacked_complex=False
+        # ).to(device)
 
-        recon_amp = []
+        pred_amp = []
 
         # for each channel, propagate wave from the SLM plane to the image plane and get the reconstructed image.
         for c in chs:
             # load and invert phase (our SLM setup)
-            phase_filename = os.path.join(root_path, chan_strs[c], f"{target_idx}.png")
-            slm_phase = skimage.io.imread(phase_filename) / 255.0
+            slm_phase = skimage.io.imread(phase_path) / 255.0
+
+            slm_phase = np.mean(slm_phase, axis=2)  # TODO added to make it grayscale
+
             slm_phase = (
                 torch.tensor((1 - slm_phase) * 2 * np.pi - np.pi, dtype=dtype)
-                .reshape(1, 1, *slm_shape)
+                .reshape(1, 1, *slm_res)
                 .to(device)
             )
 
@@ -205,44 +225,47 @@ def citl_predict(channel, prop_model, root_path, prop_model_dir, calibration_pat
             real, imag = polar_to_rect(torch.ones_like(slm_phase), slm_phase)
             slm_field = torch.complex(real, imag)
 
-            # if prop_model.upper() == "MODEL":
-            #     propagator = propagators[
-            #         c
-            #     ]  # Select CITL-calibrated models for each channel
-
-            recon_field = propagate_field(
-                slm_field, propagator, prop_dist, wavelength, pixel_pitch, prop_model, dtype,
+            if prop_model.upper() == "MODEL":
+                propagator = propagators[c]  # Select CITL-calibrated models for each channel
+            pred_field = propagate_field(
+                slm_field,
+                propagator,
+                prop_dists[c],
+                wavelengths[c],
+                feature_size,
+                prop_model,
+                dtype,
             )
 
             # cartesian to polar coordinate
-            recon_amp_c = recon_field.abs()
+            pred_amp_c = pred_field.abs()
 
             # crop to ROI
-            recon_amp_c = crop_image(recon_amp_c, target_shape=roi_res, stacked_complex=False)
+            pred_amp_c = crop_image(pred_amp_c, target_shape=roi_res, stacked_complex=False)
 
             # append to list
-            recon_amp.append(recon_amp_c)
+            pred_amp.append(pred_amp_c)
 
         # list to tensor, scaling
-        recon_amp = torch.cat(recon_amp, dim=1)
-        recon_amp *= torch.sum(recon_amp * target_amp, (-2, -1), keepdim=True) / torch.sum(
-            recon_amp * recon_amp, (-2, -1), keepdim=True
-        )
+        pred_amp = torch.cat(pred_amp, dim=1)
+        # pred_amp *= torch.sum(
+        #     pred_amp * target_amp, (-2, -1), keepdim=True
+        # ) / torch.sum(pred_amp * pred_amp, (-2, -1), keepdim=True)
 
         # tensor to numpy
-        recon_amp = recon_amp.squeeze().cpu().detach().numpy()
-        target_amp = target_amp.squeeze().cpu().detach().numpy()
+        pred_amp = pred_amp.squeeze().cpu().detach().numpy()
+        # target_amp = target_amp.squeeze().cpu().detach().numpy()
 
         if channel == 3:
-            recon_amp = recon_amp.transpose(1, 2, 0)
-            target_amp = target_amp.transpose(1, 2, 0)
+            pred_amp = pred_amp.transpose(1, 2, 0)
+            # target_amp = target_amp.transpose(1, 2, 0)
 
-        # calculate metrics
-        # psnr_val, ssim_val = utils.get_psnr_ssim(
-        #     recon_amp, target_amp, multichannel=(channel == 3)
+        # # calculate metrics
+        # psnr_val, ssim_val = get_psnr_ssim(
+        #     pred_amp, target_amp, channel_axis=(channel == 3)
         # )
 
-        idxs.append(target_idx)
+        # idxs.append(target_idx)
 
         # for domain in ["amp", "lin", "srgb"]:
         #     psnrs[domain].append(psnr_val[domain])
@@ -252,12 +275,25 @@ def citl_predict(channel, prop_model, root_path, prop_model_dir, calibration_pat
         #     )
 
         # save reconstructed image in srgb domain
-        recon_srgb = srgb_lin2gamma(np.clip(recon_amp ** 2, 0.0, 1.0))
-        cond_mkdir(recon_path)
+        pred_srgb = srgb_lin2gamma(np.clip(pred_amp ** 2, 0.0, 1.0))
+        cond_mkdir(pred_path)
         imageio.imwrite(
-            os.path.join(recon_path, f"{target_idx}_{run_id}_{chan_strs[channel]}.png"),
-            (recon_srgb * np.iinfo(np.uint8).max).round().astype(np.uint8),
+            os.path.join(
+                pred_path, f"{pred_idx}_{Path(phase_path).stem}_{run_id}_{chan_strs[channel]}.png",
+            ),
+            (pred_srgb * np.iinfo(np.uint8).max).round().astype(np.uint8),
         )
+
+    # # save it as a .mat file
+    # data_dict = {"img_idx": idxs}
+    # for domain in ["amp", "lin", "srgb"]:
+    #     data_dict[f"ssims_{domain}"] = ssims[domain]
+    #     data_dict[f"psnrs_{domain}"] = psnrs[domain]
+
+    # sio.savemat(  # TODO why in mat format?
+    #     os.path.join(recon_path, f"metrics_{run_id}_{chan_strs[channel]}.mat"),
+    #     data_dict,
+    # )
 
 
 if __name__ == "__main__":

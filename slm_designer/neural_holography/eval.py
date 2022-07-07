@@ -71,22 +71,24 @@ from slm_controller.hardware import (
 # p.add_argument(
 #     "--root_path",
 #     type=str,
-#     default="./phases",
+#     default="./citl/phases",
 #     help="Directory where test phases are being stored.",
 # )
 # p.add_argument(
 #     "--prop_model_dir",
 #     type=str,
-#     default="./calibrated_models/",
+#     default="./citl/calibrated_models/",
 #     help="Directory for the CITL-calibrated wave propagation models",
 # )
 # p.add_argument(
 #     "--calibration_path",
 #     type=str,
-#     default=f"./calibration",
+#     default=f"./citl/calibration",
 #     help="Directory where calibration phases are being stored.",
 # )
-def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
+def eval(
+    channel, prop_model, test_phases_path, test_target_amps_path, prop_model_dir, calibration_path,
+):
     slm_settle_time = physical_params[PhysicalParams.SLM_SETTLE_TIME]
     prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
@@ -97,8 +99,11 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
     chs = range(channel) if channel == 3 else [channel]  # retrieve all channels if channel is 3
     chan_strs = ("red", "green", "blue", "rgb")
 
-    run_id = f'{root_path.split("/")[-1]}_{prop_model}'  # {algorithm}_{prop_model}
+    run_id = f'{test_phases_path.split("/")[-1]}_{prop_model}'  # {algorithm}_{prop_model}
 
+    # Hyperparameters setting
+    prop_dists = (prop_dist, prop_dist, prop_dist)
+    wavelengths = (wavelength, wavelength, wavelength)  # wavelength of each color
     feature_size = slm_devices[slm_device][
         SLMParam.PIXEL_PITCH
     ]  # SLM pitch #TODO remove this dependency
@@ -123,13 +128,14 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
 
     if prop_model == "ASM":
         propagator = propagation_ASM
-        # precomputed_H = propagator(
-        #     torch.empty(1, 1, *slm_res, 2),
-        #     feature_size,
-        #     wavelength,
-        #     prop_dist,
-        #     return_H=True,
-        # ).to(device)
+        # for c in chs:
+        #     precomputed_H[c] = propagator(
+        #         torch.empty(1, 1, *slm_res, 2),
+        #         feature_size,
+        #         wavelengths[c],
+        #         prop_dists[c],
+        #         return_H=True,
+        #     ).to(device)
 
     elif prop_model.upper() == "CAMERA":
         propagator = PhysicalProp(
@@ -144,24 +150,32 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
         )
     elif prop_model.upper() == "MODEL":
         blur = utils.make_kernel_gaussian(0.85, 3)
-        propagator = ModelPropagate(
-            distance=prop_dist, feature_size=feature_size, wavelength=wavelength, blur=blur,
-        ).to(device)
+        propagators = {}
+        for c in chs:
+            propagator = ModelPropagate(
+                distance=prop_dists[c],
+                feature_size=feature_size,
+                wavelength=wavelengths[c],
+                blur=blur,
+            ).to(device)
 
-        propagator.load_state_dict(
-            torch.load(os.path.join(prop_model_dir, f"{chan_strs[c]}.pth"), map_location=device,)
-        )
-        propagator.eval()
+            propagator.load_state_dict(
+                torch.load(
+                    os.path.join(prop_model_dir, f"{chan_strs[c]}.pth"), map_location=device,
+                )
+            )
+            propagator.eval()
+            propagators[c] = propagator
 
     print(f"  - reconstruction with {prop_model}... ")
 
     # Data path
-    data_path = "./data"
-    recon_path = "./recon"
+    # test_target_amps_path = "./citl/data/test_target_amps"
+    recon_path = "./citl/reconstructions"
 
     # Augmented image loader (if you want to shuffle, augment dataset, put options accordingly.)
     image_loader = ImageLoader(
-        data_path,
+        test_target_amps_path,
         channel=channel if channel < 3 else None,
         image_res=image_res,
         homography_res=roi_res,
@@ -177,14 +191,14 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
     idxs = []
 
     # Loop over the dataset
-    for target in image_loader:
+    for target_idx, target in enumerate(image_loader):
         # get target image
-        target_amp, target_res, target_filename = target
-        target_path, target_filename = os.path.split(target_filename[0])
-        target_idx = target_filename.split("_")[-1]
+        target_amp, _, target_filename = target
+        _, target_filename = os.path.split(target_filename[0])
+        # target_idx = target_filename.split("_")[-1]
         target_amp = target_amp.to(device)
 
-        print(f"    - running for img_{target_idx}...")
+        print(f"    - running for {target_filename}...")
 
         # crop to ROI
         target_amp = utils.crop_image(target_amp, target_shape=roi_res, stacked_complex=False).to(
@@ -196,8 +210,11 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
         # for each channel, propagate wave from the SLM plane to the image plane and get the reconstructed image.
         for c in chs:
             # load and invert phase (our SLM setup)
-            phase_filename = os.path.join(root_path, chan_strs[c], f"{target_idx}.png")
+            phase_filename = os.path.join(test_phases_path, chan_strs[c], f"{target_filename}.png")
             slm_phase = skimage.io.imread(phase_filename) / 255.0
+
+            slm_phase = np.mean(slm_phase, axis=2)  # TODO added to make it grayscale
+
             slm_phase = (
                 torch.tensor((1 - slm_phase) * 2 * np.pi - np.pi, dtype=dtype)
                 .reshape(1, 1, *slm_res)
@@ -208,12 +225,16 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
             real, imag = utils.polar_to_rect(torch.ones_like(slm_phase), slm_phase)
             slm_field = torch.complex(real, imag)
 
-            # if prop_model.upper() == "MODEL":
-            #     propagator = propagators[
-            #         c
-            #     ]  # Select CITL-calibrated models for each channel
+            if prop_model.upper() == "MODEL":
+                propagator = propagators[c]  # Select CITL-calibrated models for each channel
             recon_field = utils.propagate_field(
-                slm_field, propagator, prop_dist, wavelength, feature_size, prop_model, dtype,
+                slm_field,
+                propagator,
+                prop_dists[c],
+                wavelengths[c],
+                feature_size,
+                prop_model,
+                dtype,
             )
 
             # cartesian to polar coordinate
@@ -240,7 +261,7 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
             target_amp = target_amp.transpose(1, 2, 0)
 
         # calculate metrics
-        psnr_val, ssim_val = utils.get_psnr_ssim(recon_amp, target_amp, multichannel=(channel == 3))
+        psnr_val, ssim_val = utils.get_psnr_ssim(recon_amp, target_amp, channel_axis=(channel == 3))
 
         idxs.append(target_idx)
 
@@ -253,7 +274,9 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
         recon_srgb = utils.srgb_lin2gamma(np.clip(recon_amp ** 2, 0.0, 1.0))
         utils.cond_mkdir(recon_path)
         imageio.imwrite(
-            os.path.join(recon_path, f"{target_idx}_{run_id}_{chan_strs[channel]}.png"),
+            os.path.join(
+                recon_path, f"{target_idx}_{target_filename}_{run_id}_{chan_strs[channel]}.png",
+            ),
             (recon_srgb * np.iinfo(np.uint8).max).round().astype(np.uint8),
         )
 
@@ -263,6 +286,6 @@ def eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
         data_dict[f"ssims_{domain}"] = ssims[domain]
         data_dict[f"psnrs_{domain}"] = psnrs[domain]
 
-    sio.savemat(
+    sio.savemat(  # TODO why in mat format?
         os.path.join(recon_path, f"metrics_{run_id}_{chan_strs[channel]}.mat"), data_dict,
     )

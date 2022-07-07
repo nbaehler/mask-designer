@@ -84,19 +84,19 @@ from slm_designer.neural_holography.utils_tensorboard import SummaryModelWriter
 # p.add_argument(
 #     "--model_path",
 #     type=str,
-#     default="./models",
+#     default="./citl/models",
 #     help="Directory for saving out checkpoints",
 # )
 # p.add_argument(
 #     "--phase_path",
 #     type=str,
-#     default="./precomputed_phases",
+#     default="./citl/precomputed_phases",
 #     help="Directory for precalculated phases",
 # )
 # p.add_argument(
 #     "--calibration_path",
 #     type=str,
-#     default=f"./calibration",
+#     default=f"./citl/calibration",
 #     help="Directory where calibration phases are being stored.",
 # )
 # p.add_argument(
@@ -121,7 +121,7 @@ def train_model(
     model_path,
     phase_path,
     calibration_path,
-    train_data_path,
+    train_target_amps_path,
     lr_model,
     lr_phase,
     num_epochs,
@@ -139,6 +139,10 @@ def train_model(
 
     print(f"   - training parameterized wave propagation model....")
 
+    prop_dist = (prop_dist, prop_dist, prop_dist)[  # TODO Not really useful
+        channel
+    ]  # propagation distance from SLM plane to target plane
+    wavelength = (wavelength, wavelength, wavelength)[channel]
     feature_size = slm_devices[slm_device][
         SLMParam.PIXEL_PITCH
     ]  # SLM pitch #TODO remove this dependency
@@ -148,8 +152,8 @@ def train_model(
     roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
 
     dtype = torch.float32  # default datatype (results may differ if using, e.g., float64)
-    device = "cuda" if torch.cuda.is_available() else "cpu"  # TODO gpu is too small
-    # device = "cpu"
+    # device = "cuda" if torch.cuda.is_available() else "cpu"  # TODO gpu is too small
+    device = "cpu"
 
     # Options for the algorithm
     lr_s_phase = lr_phase / 200
@@ -167,11 +171,14 @@ def train_model(
     num_iters_phase_update = 1  # number of iterations for phase optimization
 
     # Path for data
-    # result_path = "./models"
-    # model_path = model_path  # path for new model checkpoints
+    # result_path = "./citl/models"
+    # model_path = model_path
     utils.cond_mkdir(model_path)
+    model_path = os.path.join(model_path, f"{run_id}")
+    utils.cond_mkdir(model_path)
+
     # phase_path = phase_path  # path of precomputed phase pool
-    # data_path = "./data"  # path of targets
+    # data_path = "./citl/data"  # path of targets
 
     # Hardware setup
     camera_prop = PhysicalProp(
@@ -206,7 +213,7 @@ def train_model(
 
     # Augmented image loader (If you want to shuffle, augment dataset, put options accordingly)
     image_loader = ImageLoader(
-        train_data_path,
+        train_target_amps_path,
         channel=channel,
         batch_size=batch_size,
         image_res=image_res,
@@ -242,7 +249,7 @@ def train_model(
         )  # 1/5 every 3 epoch
 
     # tensorboard writer
-    summaries_dir = os.path.join("runs", run_id)
+    summaries_dir = os.path.join("./citl/runs", run_id)
     utils.cond_mkdir(summaries_dir)
     writer = SummaryModelWriter(
         model, f"{summaries_dir}", slm_res=slm_res, roi_res=roi_res, ch=channel
@@ -280,7 +287,7 @@ def train_model(
                         phase_path, f"{chan_str}", f"{idx}_{channel}", "phasemaps_1000.png",
                     )
 
-                if os.path.exists(phase_filename):
+                if os.path.exists(phase_filename):  # TODO if added
                     slm_phase = skimage.io.imread(phase_filename) / np.iinfo(np.uint8).max
                 else:
                     slm_phase = (
@@ -311,7 +318,7 @@ def train_model(
                 recon_field = model(slm_phases)
                 recon_amp = recon_field.abs()
                 model_amp = utils.crop_image(
-                    recon_amp, target_shape=roi_res, pytorch=True, stacked_complex=False
+                    recon_amp, target_shape=roi_res, pytorch=True, stacked_complex=False,
                 )
 
                 # calculate loss and backpropagate to phase
@@ -359,7 +366,7 @@ def train_model(
                 recon_field = model(slm_phases)
                 recon_amp = recon_field.abs()
                 model_amp = utils.crop_image(
-                    recon_amp, target_shape=roi_res, pytorch=True, stacked_complex=False
+                    recon_amp, target_shape=roi_res, pytorch=True, stacked_complex=False,
                 )
 
                 # ---------------------------------
@@ -387,7 +394,7 @@ def train_model(
                 loss_value_model.backward()
                 optimizer_model.step()
 
-            # write to tensorboard #TODO WARNING:root:NaN or Inf found in input tensor.
+            # write to tensorboard
             with torch.no_grad():
                 if i % 50 == 0:
                     writer.add_scalar("Scale/sa", sa, i_acc)
@@ -399,7 +406,7 @@ def train_model(
                     writer.add_scalar("Loss/model_vs_target", loss_value_phase, i_acc)
                     writer.add_scalar("Loss/model_vs_camera", loss_value_model, i_acc)
                     writer.add_scalar(
-                        "Loss/camera_vs_target",
+                        "Loss/camera_vs_target",  # TODO WARNING:root:NaN or Inf if camera images mean is zero
                         loss_mse(camera_amp * target_amp.mean() / camera_amp.mean(), target_amp,),
                         i_acc,
                     )
@@ -408,14 +415,16 @@ def train_model(
                     captured = camera_amp[0, ...]
                     gt = target_amp[0, ...] / scale_phase[0, ...]
                     max_amp = max(recon.max(), captured.max(), gt.max())
-                    writer.add_image("Amp/recon", recon / max_amp, i_acc)
+                    writer.add_image(
+                        "Amp/recon", recon / max_amp, i_acc,
+                    )
                     writer.add_image("Amp/captured", captured / max_amp, i_acc)
                     writer.add_image("Amp/target", gt / max_amp, i_acc)
 
                 i_acc += 1
 
         # save model, every epoch
-        torch.save(model.state_dict(), os.path.join(model_path, f"{run_id}_{e}epoch.pth"))
+        torch.save(model.state_dict(), os.path.join(model_path, f"epoch{e}.pth"))
         if step_lr:
             lr_scheduler.step()
 

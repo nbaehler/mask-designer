@@ -18,6 +18,7 @@ All rights reserved.
 Refer to the LICENSE file for more information.
 """
 
+import numpy as np
 import torch
 import torch.nn as nn
 from slm_controller import slm
@@ -229,7 +230,7 @@ class SGD(nn.Module):
         self.loss = loss.to(device)
 
     def forward(self, target_amp, init_phase=None):
-        # Pre-compute propagataion kernel only once
+        # Pre-compute propagation kernel only once
         if self.precomputed_H is None and self.prop_model == "ASM":
             self.precomputed_H = self.prop(
                 torch.empty(*init_phase.shape, dtype=torch.complex64),
@@ -414,16 +415,20 @@ class PhysicalProp(nn.Module):
         slm_device,
         cam_device,
         slm_settle_time=0.1,
-        # channel=1,
+        channel=1,
         # roi_res=(1600, 880),
         # num_circles=(21, 12),
+        roi_res=(880, 640),
+        num_circles=(12, 9),
         # laser_arduino=False,
         # com_port="COM3",
         # arduino_port_num=(6, 10, 11),
         # range_row=(200, 1000),
         # range_col=(300, 1700),
-        # patterns_path=f"F:/citl/calibration",
-        # show_preview=False,
+        range_row=(0, 1216),
+        range_col=(0, 1936),
+        patterns_path="./citl/calibration",
+        show_preview=False,
     ):
         super(PhysicalProp, self).__init__()
 
@@ -447,72 +452,76 @@ class PhysicalProp(nn.Module):
         #     self.alc = None
 
         # 4. Calibrate hardwares using homography
-        # calib_ptrn_path = os.path.join(patterns_path, f'{("red", "green", "blue")[channel]}.png')
-        # space_btw_circs = [
-        #     int(roi / (num_circs - 1)) for roi, num_circs in zip(roi_res, num_circles)
-        # ]
+        calib_ptrn_path = os.path.join(patterns_path, f'{("red", "green", "blue")[channel]}.png')
+        space_btw_circs = [
+            int(roi / (num_circs - 1)) for roi, num_circs in zip(roi_res, num_circles)
+        ]
 
-        # self.calibrate(
-        #     calib_ptrn_path,
-        #     num_circles,
-        #     space_btw_circs,
-        #     range_row=range_row,
-        #     range_col=range_col,
-        #     show_preview=show_preview,
-        # )
+        self.calibrate(
+            calib_ptrn_path,
+            num_circles,
+            space_btw_circs,
+            range_row=range_row,
+            range_col=range_col,
+            show_preview=show_preview,
+        )
 
-    # def calibrate(
-    #     self,
-    #     calibration_pattern_path,
-    #     num_circles,
-    #     space_btw_circs,
-    #     range_row,
-    #     range_col,
-    #     show_preview=False,
-    #     num_grab_images=10,
-    # ):
-    #     """
-    #     pre-calculate the homography between target plane and the camera captured plane
+    def calibrate(
+        self,
+        calibration_pattern_path,
+        num_circles,
+        space_btw_circs,
+        range_row,
+        range_col,
+        show_preview=False,
+        num_grab_images=10,
+    ):
+        """
+        pre-calculate the homography between target plane and the camera captured plane
 
-    #     :param calibration_pattern_path:
-    #     :param num_circles:
-    #     :param space_btw_circs: number of pixels between circles
-    #     :param slm_settle_time:
-    #     :param range_row:
-    #     :param range_col:
-    #     :param show_preview:
-    #     :param num_grab_images:
-    #     :return:
-    #     """
+        :param calibration_pattern_path:
+        :param num_circles:
+        :param space_btw_circs: number of pixels between circles
+        :param slm_settle_time:
+        :param range_row:
+        :param range_col:
+        :param show_preview:
+        :param num_grab_images:
+        :return:
+        """
 
-    #     self.calibrator = Calibration(num_circles, space_btw_circs)
+        self.calibrator = Calibration(num_circles, space_btw_circs)
 
-    #     # supposed to be a grid pattern image (21 x 12) for calibration
-    #     calib_phase_img = skimage.io.imread(calibration_pattern_path)
-    #     self.slm.show_data_from_array(calib_phase_img)
+        # supposed to be a grid pattern image (21 x 12) for calibration
+        calib_phase_img = skimage.io.imread(calibration_pattern_path)
 
-    #     # sleep for 0.1s
-    #     time.sleep(self.slm_settle_time)
+        calib_phase_img = np.mean(calib_phase_img[:, :, 0:2], axis=2)
 
-    #     # capture displayed grid pattern image
-    #     captured_intensities = self.camera.grab_images(
-    #         num_grab_images
-    #     )  # capture 5-10 images for averaging
-    #     captured_img = utils.burst_img_processor(captured_intensities)
+        self.slm.imshow(calib_phase_img)
 
-    #     # masking out dot pattern region for homography
-    #     captured_img_masked = captured_img[
-    #         range_row[0] : range_row[1], range_col[0] : range_col[1], ...
-    #     ]
-    #     calib_success = self.calibrator.calibrate(captured_img_masked, show_preview=show_preview)
+        # sleep for 0.1s
+        time.sleep(self.slm_settle_time)
 
-    #     self.calibrator.start_row, self.calibrator.end_row = range_row
-    #     self.calibrator.start_col, self.calibrator.end_col = range_col
+        # capture displayed grid pattern image
+        captured_intensities = self.camera.acquire_images(
+            num_grab_images
+        )  # capture 5-10 images for averaging
+        captured_img = utils.burst_img_processor(captured_intensities)
 
-    #     if calib_success:
-    #         print("   - calibration success")
-    #     else:
-    #         raise ValueError("  - Calibration failed")
+        # masking out dot pattern region for homography
+        captured_img_masked = captured_img[
+            range_row[0] : range_row[1], range_col[0] : range_col[1], ...
+        ]
+
+        calib_success = self.calibrator.calibrate(captured_img_masked, show_preview=show_preview)
+
+        self.calibrator.start_row, self.calibrator.end_row = range_row
+        self.calibrator.start_col, self.calibrator.end_col = range_col
+
+        if calib_success:
+            print("   - calibration success")
+        else:
+            raise ValueError("  - Calibration failed")
 
     def forward(self, slm_phase, num_grab_images=1):
         """
@@ -548,6 +557,7 @@ class PhysicalProp(nn.Module):
     def capture_linear_intensity(self, slm_phase, num_grab_images):
         """
 
+
         :param slm_phase:
         :param num_grab_images:
         :return:
@@ -564,16 +574,14 @@ class PhysicalProp(nn.Module):
 
         captured_intensity_raw_avg = utils.burst_img_processor(grabbed_images)  # averaging
 
-        # # crop ROI as calibrated
-        # captured_intensity_raw_cropped = captured_intensity_raw_avg[
-        #     self.calibrator.start_row : self.calibrator.end_row,
-        #     self.calibrator.start_col : self.calibrator.end_col,
-        #     ...,
-        # ]
-        # # apply homography
-        # return self.calibrator(captured_intensity_raw_cropped)
-
-        return captured_intensity_raw_avg
+        # crop ROI as calibrated
+        captured_intensity_raw_cropped = captured_intensity_raw_avg[
+            self.calibrator.start_row : self.calibrator.end_row,
+            self.calibrator.start_col : self.calibrator.end_col,
+            ...,
+        ]
+        # apply homography
+        return self.calibrator(captured_intensity_raw_cropped)
 
     # def disconnect(self):
     #     self.camera.disconnect()

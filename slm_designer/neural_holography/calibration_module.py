@@ -94,8 +94,8 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
         # Generate reference points to compute the homography
         ref_pts = np.zeros((num_circles[0] * num_circles[1], 1, 2), np.float32)
         pos = 0
-        for i in range(0, num_circles[1]):
-            for j in range(0, num_circles[0]):
+        for i in range(num_circles[1]):
+            for j in range(num_circles[0]):
                 ref_pts[pos, 0, :] = spacing * np.array([j, i]) + np.array(pad_pixels)
                 pos += 1
 
@@ -160,6 +160,4 @@ class Calibration:
                     self.num_circles, self.spacing_size, self.pad_pixels
                 )
             ]
-        output_img = cv2.warpPerspective(input_img, self.h_transform, tuple(img_size))
-
-        return output_img
+        return cv2.warpPerspective(input_img, self.h_transform, tuple(img_size))

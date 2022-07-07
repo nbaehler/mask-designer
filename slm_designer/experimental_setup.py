@@ -21,6 +21,9 @@ physical_params = {
     PhysicalParams.SLM_SETTLE_TIME: 0.25,
 }
 
-# Choose slm and camera that you want to use
+# Choose a slm device
 slm_device = SLMDevices.HOLOEYE_LC_2012.value
-cam_device = CamDevices.IDS.value
+
+# and a camera device that you want to use
+# cam_device = CamDevices.IDS.value
+cam_device = CamDevices.DUMMY.value

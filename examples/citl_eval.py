@@ -15,25 +15,40 @@ from slm_designer.wrapper import eval
     help="Type of propagation model for reconstruction: ASM / MODEL / CAMERA",
 )
 @click.option(
-    "--root_path",
+    "--test_phases_path",
     type=str,
-    default="./phases",
+    default="./citl/data/test_phases",
     help="Directory where test phases are being stored.",
+)
+@click.option(
+    "--test_target_amps_path",
+    type=str,
+    default="./citl/data/test_target_amps",
+    help="Directory where test target amplitudes are being stored.",
 )
 @click.option(
     "--prop_model_dir",
     type=str,
-    default="./calibrated_models",
+    default="./citl/calibrated_models",  # TODO normally calibrated in manual step?
     help="Directory for the CITL-calibrated wave propagation models",
 )
 @click.option(
     "--calibration_path",
     type=str,
-    default="./calibration",
+    default="./citl/calibration",
     help="Directory where calibration phases are being stored.",
 )
-def citl_eval(channel, prop_model, root_path, prop_model_dir, calibration_path):
-    eval(channel, prop_model, root_path, prop_model_dir, calibration_path)
+def citl_eval(
+    channel, prop_model, test_phases_path, test_target_amps_path, prop_model_dir, calibration_path,
+):
+    eval(
+        channel,
+        prop_model,
+        test_phases_path,
+        test_target_amps_path,
+        prop_model_dir,
+        calibration_path,
+    )
 
 
 if __name__ == "__main__":
