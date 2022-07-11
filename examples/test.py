@@ -1,6 +1,6 @@
 from slm_designer.experimental_setup import (
-    PhysicalParams,
-    physical_params,
+    Params,
+    params,
     slm_device,
 )
 
@@ -18,8 +18,8 @@ from slm_controller.hardware import (
 
 def test():
     # Define parameters
-    prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
-    wavelength = physical_params[PhysicalParams.WAVELENGTH]
+    prop_dist = params[Params.PROPAGATION_DISTANCE]
+    wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 

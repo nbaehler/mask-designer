@@ -1,13 +1,8 @@
-from msilib.schema import Error
-from matplotlib import image
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 import torch
 from torch.nn import functional as F
-from slm_designer.neural_holography.utils import (
-    crop_image,
-)  # TODO remove this dependency, via wrapper -> circular
 
 
 def _cell_slice(_slice, cell_m):

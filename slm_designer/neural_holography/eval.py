@@ -38,8 +38,8 @@ from slm_designer.neural_holography.modules import PhysicalProp
 from slm_designer.neural_holography.propagation_model import ModelPropagate
 
 from slm_designer.experimental_setup import (
-    PhysicalParams,
-    physical_params,
+    Params,
+    params,
     slm_device,
 )
 
@@ -86,10 +86,10 @@ from slm_controller.hardware import (
 def eval(
     channel, prop_model, test_phases_path, test_target_amps_path, prop_model_dir, calibration_path,
 ):
-    slm_settle_time = physical_params[PhysicalParams.SLM_SETTLE_TIME]
-    prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
-    wavelength = physical_params[PhysicalParams.WAVELENGTH]
-    roi = physical_params[PhysicalParams.ROI]
+    slm_settle_time = params[Params.SLM_SETTLE_TIME]
+    prop_dist = params[Params.PROPAGATION_DISTANCE]
+    wavelength = params[Params.WAVELENGTH]
+    roi = params[Params.ROI]
 
     # Parse
     # opt = p.parse_args()

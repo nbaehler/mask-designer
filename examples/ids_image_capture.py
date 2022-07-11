@@ -12,7 +12,7 @@ def main():
     cam = camera.create_camera(CamDevices.IDS.value)
 
     # Acquire one image
-    image = cam.acquire_images()
+    image = cam.acquire_images()[0]
 
     # and plot it using matplotlib
     _, ax = plt.subplots()

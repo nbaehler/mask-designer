@@ -11,8 +11,8 @@ from slm_controller.hardware import (
 )
 
 from slm_designer.experimental_setup import (
-    PhysicalParams,
-    physical_params,
+    Params,
+    params,
     slm_device,
 )
 from slm_designer.wrapper import ImageLoader, run_sgd
@@ -23,10 +23,10 @@ from slm_designer.wrapper import ImageLoader, run_sgd
 @click.option("--show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.")
 def physical_prop_sgd(iterations, show_time):
     # Set parameters
-    distance = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
-    wavelength = physical_params[PhysicalParams.WAVELENGTH]
+    distance = params[Params.PROPAGATION_DISTANCE]
+    wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
-    roi = physical_params[PhysicalParams.ROI]
+    roi = params[Params.ROI]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
     # Use GPU if detected in system

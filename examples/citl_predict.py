@@ -34,8 +34,8 @@ from slm_controller.hardware import (
 )
 
 from slm_designer.experimental_setup import (
-    PhysicalParams,
-    physical_params,
+    Params,
+    params,
     slm_device,
 )
 from slm_designer.utils import pad_to_slm_shape
@@ -83,10 +83,10 @@ from slm_designer.wrapper import (
 def citl_predict(
     channel, prop_model, pred_phases_path, prop_model_dir, calibration_path,
 ):
-    slm_settle_time = physical_params[PhysicalParams.SLM_SETTLE_TIME]
-    prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
-    wavelength = physical_params[PhysicalParams.WAVELENGTH]
-    roi = physical_params[PhysicalParams.ROI]
+    slm_settle_time = params[Params.SLM_SETTLE_TIME]
+    prop_dist = params[Params.PROPAGATION_DISTANCE]
+    wavelength = params[Params.WAVELENGTH]
+    roi = params[Params.ROI]
 
     chs = range(channel) if channel == 3 else [channel]  # retrieve all channels if channel is 3
     chan_strs = ("red", "green", "blue", "rgb")
@@ -96,9 +96,7 @@ def citl_predict(
     # Hyperparameters setting
     prop_dists = (prop_dist, prop_dist, prop_dist)
     wavelengths = (wavelength, wavelength, wavelength)  # wavelength of each color
-    feature_size = slm_devices[slm_device][
-        SLMParam.PIXEL_PITCH
-    ]  # SLM pitch #TODO remove this dependency
+    feature_size = slm_devices[slm_device][SLMParam.PIXEL_PITCH]  # SLM pitch
 
     # Resolutions
     # slm_res = (1080, 1920)  # resolution of SLM

@@ -48,8 +48,8 @@ from slm_controller.hardware import (
 
 
 from slm_designer.experimental_setup import (
-    PhysicalParams,
-    physical_params,
+    Params,
+    params,
     slm_device,
     cam_device,
 )
@@ -125,10 +125,10 @@ def train_model(
     step_lr,
     experiment,
 ):
-    slm_settle_time = physical_params[PhysicalParams.SLM_SETTLE_TIME]
-    prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
-    wavelength = physical_params[PhysicalParams.WAVELENGTH]
-    roi = physical_params[PhysicalParams.ROI]
+    slm_settle_time = params[Params.SLM_SETTLE_TIME]
+    prop_dist = params[Params.PROPAGATION_DISTANCE]
+    wavelength = params[Params.WAVELENGTH]
+    roi = params[Params.ROI]
 
     # channel = channel  # Red:0 / Green:1 / Blue:2
     chan_str = ("red", "green", "blue")[channel]

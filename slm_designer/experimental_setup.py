@@ -3,8 +3,8 @@ from slm_designer.hardware import CamDevices
 
 from enum import Enum
 
-# Physical parameters relevant for the propagation
-class PhysicalParams(Enum):  # TODO rename to params
+# Parameters relevant for the experiments
+class Params(Enum):
     WAVELENGTH = "wavelength"
     PROPAGATION_DISTANCE = "prop_distance"
     SLM_SETTLE_TIME = "slm_settle_time"
@@ -12,15 +12,15 @@ class PhysicalParams(Enum):  # TODO rename to params
 
     @staticmethod
     def values():
-        return [param.value for param in PhysicalParams]
+        return [param.value for param in Params]
 
 
-# Actual values of those physical parameters
-physical_params = {
-    PhysicalParams.WAVELENGTH: 532e-9,
-    PhysicalParams.PROPAGATION_DISTANCE: 0.34,
-    PhysicalParams.SLM_SETTLE_TIME: 0.25,
-    PhysicalParams.ROI: (640, 880),
+# Actual values of those parameters
+params = {
+    Params.WAVELENGTH: 532e-9,
+    Params.PROPAGATION_DISTANCE: 0.34,
+    Params.SLM_SETTLE_TIME: 0.25,
+    Params.ROI: (640, 880),
 }
 
 # Choose a slm device

@@ -13,8 +13,8 @@ from slm_controller.hardware import (
     slm_devices,
 )
 from slm_designer.experimental_setup import (
-    PhysicalParams,
-    physical_params,
+    Params,
+    params,
     slm_device,
 )
 from slm_designer.wrapper import DPAC, ImageLoader
@@ -22,10 +22,10 @@ from slm_designer.wrapper import DPAC, ImageLoader
 
 def simulated_prop_dpac():
     # Set parameters
-    prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
-    wavelength = physical_params[PhysicalParams.WAVELENGTH]
+    prop_dist = params[Params.PROPAGATION_DISTANCE]
+    wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
-    roi = physical_params[PhysicalParams.ROI]
+    roi = params[Params.ROI]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
     # Use GPU if detected in system
