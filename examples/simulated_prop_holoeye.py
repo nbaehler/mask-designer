@@ -14,7 +14,7 @@ from slm_designer.propagation import (
     holoeye_fraunhofer,
     neural_holography_asm,
 )
-from slm_designer.transform_phase_maps import lens_to_lensless
+from slm_designer.transform_phase_maps import transform_to_neural_holography_setting
 
 from slm_controller.hardware import (
     SLMParam,
@@ -42,7 +42,7 @@ def simulated_prop_holoeye():
     )  # TODO Holoeye pattern is dark, normalize image to be in [0, 255]?
 
     # Transform the initial phase map to the lensless setting
-    neural_holography_phase_map = lens_to_lensless(
+    neural_holography_phase_map = transform_to_neural_holography_setting(
         holoeye_phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
     )
     unpacked_phase_map = neural_holography_phase_map[0, 0, :, :]

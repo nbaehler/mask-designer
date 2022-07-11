@@ -133,7 +133,7 @@ class Calibration:
         self.num_circles = (
             num_circles[1],
             num_circles[0],
-        )  # TODO they flipped it earlier, why?
+        )  # TODO they flipped it earlier, this is more convenient
         self.spacing_size = spacing_size
         self.pad_pixels = pad_pixels
         self.h_transform = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])

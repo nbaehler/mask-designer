@@ -194,7 +194,7 @@ def train_model(
         feature_size=feature_size,
         wavelength=wavelength,
         blur=blur,
-        image_res=slm_res,  # TODO slm or image?
+        image_res=slm_res,
     ).to(device)
 
     if pretrained_path != "":
@@ -277,7 +277,9 @@ def train_model(
                         phase_path, f"{chan_str}", f"{idx}_{channel}", "phasemaps_1000.png",
                     )
 
-                if os.path.exists(phase_filename):  # TODO if added
+                if os.path.exists(
+                    phase_filename
+                ):  # TODO if added, create random pattern if file does not exist
                     slm_phase = skimage.io.imread(phase_filename) / np.iinfo(np.uint8).max
                 else:
                     slm_phase = (
@@ -287,7 +289,7 @@ def train_model(
                         / np.iinfo(np.uint8).max
                     )
 
-                # invert phase (our SLM setup) #TODO not needed to invert in our setting
+                # invert phase (our SLM setup) #TODO inversion not needed in our setting
                 slm_phase = (
                     torch.tensor((1 - slm_phase) * 2 * np.pi - np.pi, dtype=dtype)
                     .reshape(1, 1, *slm_res)
@@ -402,7 +404,7 @@ def train_model(
         if step_lr:
             lr_scheduler.step()
 
-    # # disconnect everything #TODO needed? Add to camera?
+    # # disconnect everything #TODO needed? Add to cameras?
     # if camera_prop is not None:
     #     camera_prop.disconnect()
     #     camera_prop.alc.disconnect()

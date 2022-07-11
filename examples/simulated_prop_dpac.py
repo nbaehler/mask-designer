@@ -5,7 +5,7 @@ Simulated propagation of slm patterns generated using the DPAC algorithm.
 from slm_designer.simulated_prop import simulated_prop
 from slm_designer.utils import extend_to_complex, show_plot
 from slm_designer.propagation import holoeye_fraunhofer, neural_holography_asm
-from slm_designer.transform_phase_maps import lensless_to_lens
+from slm_designer.transform_phase_maps import transform_from_neural_holography_setting
 import torch
 
 from slm_controller.hardware import (
@@ -49,7 +49,7 @@ def simulated_prop_dpac():
     target_amp = target_amp[None, None, :, :]
     target_amp = target_amp.to(device)
 
-    # Run Double Phase Amplitude Coding #TODO does not work
+    # Run Double Phase Amplitude Coding #TODO DPAC does not work
     dpac = DPAC(prop_dist, wavelength, pixel_pitch, device=device)
     angles = dpac(target_amp)
     angles = angles.cpu().detach()
@@ -58,7 +58,7 @@ def simulated_prop_dpac():
     neural_holography_phase_map = extend_to_complex(angles)
 
     # Transform the results to the hardware setting using a lens
-    holoeye_phase_map = lensless_to_lens(
+    holoeye_phase_map = transform_from_neural_holography_setting(
         neural_holography_phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
     )
 

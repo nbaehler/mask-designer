@@ -8,7 +8,7 @@ from slm_designer.utils import load_phase_map, show_plot
 from slm_designer.simulated_prop import simulated_prop, plot_sim_result
 
 from slm_designer.propagation import neural_holography_asm
-from slm_designer.transform_phase_maps import lens_to_lensless
+from slm_designer.transform_phase_maps import transform_to_neural_holography_setting
 
 from slm_controller.hardware import (
     SLMParam,
@@ -36,7 +36,7 @@ def test():
     plot_sim_result(simulated_prop(holoeye_phase_map))
 
     # Transform the initial phase map to the lensless setting
-    holoeye_phase_map = lens_to_lensless(
+    holoeye_phase_map = transform_to_neural_holography_setting(
         holoeye_phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
     )
     phase_map = holoeye_phase_map[0, 0, :, :]

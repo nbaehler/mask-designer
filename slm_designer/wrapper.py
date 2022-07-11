@@ -20,7 +20,7 @@ from slm_designer.neural_holography.utils import (
 )
 
 from slm_designer.transform_phase_maps import (
-    lensless_to_lens,
+    transform_from_neural_holography_setting,
 )  # TODO circular dependency but it works
 from slm_designer.utils import extend_to_complex, quantize_phase_pattern
 
@@ -49,7 +49,7 @@ def run_dpac(target_amp, slm_shape, prop_distance, wavelength, pixel_pitch, devi
     numpy.ndarray
         The quantized resulting phase map in 0-255
     """
-    # Run Double Phase Amplitude Coding #TODO does not work
+    # Run Double Phase Amplitude Coding #TODO DPAC does not work
     dpac = DPAC(prop_distance, wavelength, pixel_pitch, device=device)
     angles = dpac(target_amp)
     angles = angles.cpu().detach()
@@ -58,7 +58,7 @@ def run_dpac(target_amp, slm_shape, prop_distance, wavelength, pixel_pitch, devi
     extended = extend_to_complex(angles)
 
     # Transform the results to the hardware setting using a lens
-    final_phase_dpac = lensless_to_lens(
+    final_phase_dpac = transform_from_neural_holography_setting(
         extended, prop_distance, wavelength, slm_shape, pixel_pitch
     ).angle()
 
@@ -111,7 +111,7 @@ def run_gs(
     extended = extend_to_complex(angles)
 
     # Transform the results to the hardware setting using a lens
-    final_phase_gs = lensless_to_lens(
+    final_phase_gs = transform_from_neural_holography_setting(
         extended, prop_distance, wavelength, slm_shape, pixel_pitch
     ).angle()
 
@@ -167,7 +167,7 @@ def run_sgd(
     extended = extend_to_complex(angles)
 
     # Transform the results to the hardware setting using a lens
-    final_phase_sgd = lensless_to_lens(
+    final_phase_sgd = transform_from_neural_holography_setting(
         extended, prop_distance, wavelength, slm_shape, pixel_pitch
     ).angle()
 

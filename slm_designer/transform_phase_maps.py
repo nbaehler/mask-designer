@@ -88,12 +88,12 @@ def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
     return H
 
 
-def lens_to_lensless(
+def transform_to_neural_holography_setting(
     holoeye_phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
-):  # TODO might not be only linked to lenses, ASM vs Fraunhofer
+):
     """
-    Transform from the lens setting (holoeye) to the lensless setting (neural
-    holography).
+    Transform from normal setting (with lens) to the lensless setting used by neural
+    holography.
 
     Parameters
     ----------
@@ -130,12 +130,12 @@ def lens_to_lensless(
     )
 
 
-def lensless_to_lens(
+def transform_from_neural_holography_setting(
     neural_holography_phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
-):  # TODO might not be only linked to lenses, ASM vs Fraunhofer
+):
     """
-    Transform from the lensless setting (neural holography) to the lens setting
-    (holoeye).
+    Transform from the lensless setting used by neural holography to the the
+    normal lens setting.
 
     Parameters
     ----------

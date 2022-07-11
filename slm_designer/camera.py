@@ -126,7 +126,7 @@ class DummyCamera(Camera):
             # Append dummy images as numpy array to list of acquired images
             images.append(
                 np.ones((self._height, self._width))
-            )  # TODO change comments/documentation to white image
+            )  # TODO change comments/documentation to white image (all ones)
 
         return images
 

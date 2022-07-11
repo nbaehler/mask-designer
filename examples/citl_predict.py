@@ -71,7 +71,7 @@ from slm_designer.wrapper import (
 @click.option(
     "--prop_model_dir",
     type=str,
-    default="./citl/calibrated_models",  # TODO normally calibrated in manual step?
+    default="./citl/calibrated_models",  # TODO normally calibrated in manual step? For now just copy there by hand ...
     help="Directory for the CITL-calibrated wave propagation models",
 )
 @click.option(
@@ -156,7 +156,7 @@ def citl_predict(
 
         # for each channel, propagate wave from the SLM plane to the image plane and get the reconstructed image.
         for c in chs:
-            # load and invert phase (our SLM setup)
+            # load and invert phase (our SLM setup) #TODO inversion not needed in our setting
             phase_map = skimage.io.imread(phase_path) / 255.0
 
             phase_map = np.mean(phase_map, axis=2)  # TODO added to make it grayscale
@@ -195,7 +195,7 @@ def citl_predict(
         # list to tensor, scaling
         amp = torch.cat(amp, dim=1)
 
-        amp = pad_to_slm_shape(amp, slm_shape)  # TODO need to pad?
+        amp = pad_to_slm_shape(amp, slm_shape)  # TODO need to pad here?
 
         # tensor to numpy
         amp = amp.squeeze().cpu().detach().numpy()

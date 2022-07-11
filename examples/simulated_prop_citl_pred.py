@@ -18,7 +18,7 @@ from slm_designer.propagation import (
     holoeye_fraunhofer,
     neural_holography_asm,
 )
-from slm_designer.transform_phase_maps import lens_to_lensless
+from slm_designer.transform_phase_maps import transform_to_neural_holography_setting
 
 from slm_controller.hardware import SLMParam, slm_devices
 
@@ -36,7 +36,7 @@ def simulated_prop_citl_pred():
     # Pad roi to full slm shape
     holoeye_phase_map = pad_to_slm_shape(
         holoeye_phase_map, slm_shape
-    )  # TODO really needed? Done in prediction, we'll see
+    )  # TODO padding really needed? Done in citl_pred as well, we'll see
     unpacked_phase_map = holoeye_phase_map[0, 0, :, :]
 
     # Simulate the propagation in the lens setting and show the results
@@ -44,7 +44,7 @@ def simulated_prop_citl_pred():
     show_plot(unpacked_phase_map, propped_phase_map, "CITL with lens")
 
     # Transform the initial phase map to the lensless setting
-    neural_holography_phase_map = lens_to_lensless(
+    neural_holography_phase_map = transform_to_neural_holography_setting(
         holoeye_phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
     )
     unpacked_phase_map = neural_holography_phase_map[0, 0, :, :]

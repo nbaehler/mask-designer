@@ -247,7 +247,7 @@ def resize_image_to_slm_shape(images, slm_shape):
 
         if (
             aspect_ratio_im < aspect_ratio_slm
-        ):  # TODO aspect ratio can't sometimes be exactly equal, hence very slight deformation when resizing
+        ):  # TODO aspect ratio can't be exactly equal sometimes, hence very slight deformation when resizing
             image = crop_image_to_shape(
                 image, (image.shape[0], round(image.shape[0] / aspect_ratio_slm))
             )

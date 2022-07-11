@@ -114,8 +114,7 @@ def eval(
     slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
 
     dtype = torch.float32  # default datatype (results may differ if using, e.g., float64)
-    device = "cuda" if torch.cuda.is_available() else "cpu"  # TODO gpu is too small
-    # device = "cpu"
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # You can pre-compute kernels for fast-computation
     # precomputed_H = [None] * 3
@@ -164,7 +163,6 @@ def eval(
     print(f"  - reconstruction with {prop_model}... ")
 
     # Data path
-    # test_target_amps_path = "./citl/data/test_target_amps"
     recon_path = "./citl/reconstructions"
 
     # Augmented image loader (if you want to shuffle, augment dataset, put options accordingly.)
@@ -203,7 +201,7 @@ def eval(
 
         # for each channel, propagate wave from the SLM plane to the image plane and get the reconstructed image.
         for c in chs:
-            # load and invert phase (our SLM setup)
+            # load and invert phase (our SLM setup) #TODO inversion not needed in our setting
             phase_filename = os.path.join(test_phases_path, chan_strs[c], f"{target_filename}.png")
             slm_phase = skimage.io.imread(phase_filename) / 255.0
 

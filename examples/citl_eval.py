@@ -29,7 +29,7 @@ from slm_designer.wrapper import eval
 @click.option(
     "--prop_model_dir",
     type=str,
-    default="./citl/calibrated_models",  # TODO normally calibrated in manual step?
+    default="./citl/calibrated_models",  # TODO normally calibrated in manual step? For now just copy there by hand ...
     help="Directory for the CITL-calibrated wave propagation models",
 )
 @click.option(

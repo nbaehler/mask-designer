@@ -120,7 +120,7 @@ def wave_prop_angular_spectrum(phase_map, prop_dist, wavelength, pixel_pitch):
         wv=wavelength,
         d1=pixel_pitch[0],
         dz=prop_dist,
-        # out_shift=1,  # TODO check this
+        # out_shift=1,  # TODO check this parameter
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]

@@ -56,7 +56,7 @@ def physical_prop_dpac(show_time):
     target_amp = target_amp[None, None, :, :]
     target_amp = target_amp.to(device)
 
-    # Run Double Phase Amplitude Coding #TODO does not work
+    # Run Double Phase Amplitude Coding #TODO DPAC does not work
     phase_out = run_dpac(target_amp, slm_shape, distance, wavelength, pixel_pitch, device)
 
     # Display
