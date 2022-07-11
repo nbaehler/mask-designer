@@ -427,7 +427,7 @@ as desired. In diagrammatic form we have the following situation:
 ![Transformation](images/transformation.svg)
 
 Both these transformations are implemented in
-`slm_designer/transform_fields.py`. Note that the wrapper
+`slm_designer/transform_phase_maps.py`. Note that the wrapper
 `slm_designer/wrapper.py` provides interfacing methods for Neural Holography phase retrieval
 algorithms that also handle the transformation to our setup which includes a
 convex lens.

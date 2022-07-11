@@ -26,11 +26,8 @@ def physical_prop_sgd(iterations, show_time):
     distance = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
-
+    roi = physical_params[PhysicalParams.ROI]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
-    image_res = slm_shape
-
-    roi_res = (round(slm_shape[0] * 0.8), round(slm_shape[1] * 0.8))
 
     # Use GPU if detected in system
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -38,8 +35,8 @@ def physical_prop_sgd(iterations, show_time):
     # Initialize image loader
     image_loader = ImageLoader(
         "images/target_amplitude",
-        image_res=image_res,
-        homography_res=roi_res,
+        image_res=slm_shape,
+        homography_res=roi,
         shuffle=False,
         vertical_flips=False,
         horizontal_flips=False,
@@ -68,7 +65,7 @@ def physical_prop_sgd(iterations, show_time):
         target_amp,
         iterations,
         slm_shape,
-        roi_res,
+        roi,
         distance,
         wavelength,
         pixel_pitch,

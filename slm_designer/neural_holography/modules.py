@@ -388,7 +388,7 @@ class PhysicalProp(nn.Module):
     -------------------------------
     :param channel:
     :param slm_settle_time:
-    :param roi_res: *** Note that the order of x / y is reversed here ***
+    :param roi_res:
     :param num_circles:
     :param laser_arduino:
     :param com_port:
@@ -407,7 +407,6 @@ class PhysicalProp(nn.Module):
 
     slm_phase: phase at the SLM plane, with dimensions [batch, 1, height, width]
     captured_amp: amplitude at the target plane, with dimensions [batch, 1, height, width]
-
     """
 
     def __init__(
@@ -418,15 +417,15 @@ class PhysicalProp(nn.Module):
         channel=1,
         # roi_res=(1600, 880),
         # num_circles=(21, 12),
-        roi_res=(880, 640),
-        num_circles=(12, 9),
+        roi_res=(640, 880),
+        num_circles=(9, 12),
         # laser_arduino=False,
         # com_port="COM3",
         # arduino_port_num=(6, 10, 11),
         # range_row=(200, 1000),
         # range_col=(300, 1700),
-        range_row=(0, 1216),
-        range_col=(0, 1936),
+        range_row=(0, 768),  # TODO adapt to capture roi in real image
+        range_col=(0, 1024),
         patterns_path="./citl/calibration",
         show_preview=False,
     ):
@@ -492,21 +491,12 @@ class PhysicalProp(nn.Module):
 
         self.calibrator = Calibration(num_circles, space_btw_circs)
 
-        # supposed to be a grid pattern image (21 x 12) for calibration
+        # supposed to be a grid pattern image for calibration
         calib_phase_img = skimage.io.imread(calibration_pattern_path)
 
-        calib_phase_img = np.mean(calib_phase_img[:, :, 0:2], axis=2)
+        calib_phase_img = np.mean(calib_phase_img[:, :, 0:3], axis=2)
 
-        self.slm.imshow(calib_phase_img)
-
-        # sleep for 0.1s
-        time.sleep(self.slm_settle_time)
-
-        # capture displayed grid pattern image
-        captured_intensities = self.camera.acquire_images(
-            num_grab_images
-        )  # capture 5-10 images for averaging
-        captured_img = utils.burst_img_processor(captured_intensities)
+        captured_img = self._capture_and_average_intensities(calib_phase_img, num_grab_images)
 
         # masking out dot pattern region for homography
         captured_img_masked = captured_img[
@@ -519,9 +509,11 @@ class PhysicalProp(nn.Module):
         self.calibrator.start_col, self.calibrator.end_col = range_col
 
         if calib_success:
-            print("   - calibration success")
+            print("   - Calibration succeeded")
         else:
-            raise ValueError("  - Calibration failed")
+            # raise ValueError("   - Calibration failed") # TODO switch back to
+            # raise error
+            print("   - Calibration failed")
 
     def forward(self, slm_phase, num_grab_images=1):
         """
@@ -556,23 +548,16 @@ class PhysicalProp(nn.Module):
 
     def capture_linear_intensity(self, slm_phase, num_grab_images):
         """
-
+        TODO complete doc
 
         :param slm_phase:
         :param num_grab_images:
         :return:
         """
 
-        # display on SLM and sleep for 0.1s
-        # self.slm.show_data_from_array(slm_phase)
-        self.slm.imshow(slm_phase)
-
-        time.sleep(self.slm_settle_time)
-
-        # capture and take average
-        grabbed_images = self.camera.acquire_images(num_grab_images)
-
-        captured_intensity_raw_avg = utils.burst_img_processor(grabbed_images)  # averaging
+        captured_intensity_raw_avg = self._capture_and_average_intensities(
+            slm_phase, num_grab_images
+        )
 
         # crop ROI as calibrated
         captured_intensity_raw_cropped = captured_intensity_raw_avg[
@@ -582,6 +567,12 @@ class PhysicalProp(nn.Module):
         ]
         # apply homography
         return self.calibrator(captured_intensity_raw_cropped)
+
+    def _capture_and_average_intensities(self, phase_map, num_grab_images):
+        self.slm.imshow(phase_map)
+        time.sleep(self.slm_settle_time)
+        captured_intensities = self.camera.acquire_images_and_resize_to_slm_shape(num_grab_images)
+        return utils.burst_img_processor(captured_intensities)
 
     # def disconnect(self):
     #     self.camera.disconnect()

@@ -129,8 +129,11 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
 
 
 class Calibration:
-    def __init__(self, num_circles=(21, 12), spacing_size=(80, 80), pad_pixels=(0, 0)):
-        self.num_circles = num_circles
+    def __init__(self, num_circles=(12, 21), spacing_size=(80, 80), pad_pixels=(0, 0)):
+        self.num_circles = (
+            num_circles[1],
+            num_circles[0],
+        )  # TODO they flipped it earlier, why?
         self.spacing_size = spacing_size
         self.pad_pixels = pad_pixels
         self.h_transform = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])

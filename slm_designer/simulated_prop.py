@@ -2,15 +2,15 @@ from matplotlib import pyplot as plt
 
 from slm_designer.propagation import holoeye_fraunhofer
 
-
-def simulated_prop(
-    slm_field, propagation_method=holoeye_fraunhofer, *args
-):  # TODO use everywhere?
-    return propagation_method(slm_field, *args)[0, 0, :, :]
+default_prop_method = holoeye_fraunhofer
 
 
-def plot_sim_result(propped_slm_field):
+def simulated_prop(phase_map, propagation_method=default_prop_method, *args):
+    return propagation_method(phase_map, *args)[0, 0, :, :]
+
+
+def plot_sim_result(propped_phase_map):
     # Plot
     _, ax = plt.subplots()
-    ax.imshow(propped_slm_field.abs(), cmap="gray")
+    ax.imshow(propped_phase_map.abs(), cmap="gray")
     plt.show()

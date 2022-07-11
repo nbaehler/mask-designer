@@ -46,10 +46,6 @@ from slm_controller.hardware import (
     slm_devices,
 )
 
-from slm_designer.hardware import (
-    CamParam,
-    cam_devices,
-)
 
 from slm_designer.experimental_setup import (
     PhysicalParams,
@@ -132,6 +128,7 @@ def train_model(
     slm_settle_time = physical_params[PhysicalParams.SLM_SETTLE_TIME]
     prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
+    roi = physical_params[PhysicalParams.ROI]
 
     # channel = channel  # Red:0 / Green:1 / Blue:2
     chan_str = ("red", "green", "blue")[channel]
@@ -143,13 +140,8 @@ def train_model(
         channel
     ]  # propagation distance from SLM plane to target plane
     wavelength = (wavelength, wavelength, wavelength)[channel]
-    feature_size = slm_devices[slm_device][
-        SLMParam.PIXEL_PITCH
-    ]  # SLM pitch #TODO remove this dependency
-
+    feature_size = slm_devices[slm_device][SLMParam.PIXEL_PITCH]  # SLM pitch
     slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
-    image_res = cam_devices[cam_device][CamParam.IMG_SHAPE]  # TODO slm.shape == image.shape?
-    roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
 
     dtype = torch.float32  # default datatype (results may differ if using, e.g., float64)
     # device = "cuda" if torch.cuda.is_available() else "cpu"  # TODO gpu is too small
@@ -187,11 +179,11 @@ def train_model(
         slm_settle_time=slm_settle_time,
         # channel,
         # laser_arduino=True,
-        # roi_res=(roi_res[1], roi_res[0]),  # TODO why inverted
+        roi_res=roi,
         # range_row=(220, 1000),
         # range_col=(300, 1630),
-        # patterns_path=calibration_path,  # path of 21 x 12 calibration patterns, see Supplement.
-        # show_preview=True,
+        patterns_path=calibration_path,  # path of 12 x 21 calibration patterns, see Supplement.
+        show_preview=True,
     )
 
     # Model instance to train
@@ -216,8 +208,8 @@ def train_model(
         train_target_amps_path,
         channel=channel,
         batch_size=batch_size,
-        image_res=image_res,
-        homography_res=roi_res,
+        image_res=slm_res,
+        homography_res=roi,
         crop_to_homography=False,
         shuffle=True,
         vertical_flips=False,
@@ -251,9 +243,7 @@ def train_model(
     # tensorboard writer
     summaries_dir = os.path.join("./citl/runs", run_id)
     utils.cond_mkdir(summaries_dir)
-    writer = SummaryModelWriter(
-        model, f"{summaries_dir}", slm_res=slm_res, roi_res=roi_res, ch=channel
-    )
+    writer = SummaryModelWriter(model, f"{summaries_dir}", slm_res=slm_res, roi_res=roi, ch=channel)
 
     i_acc = 0
     for e in range(num_epochs):
@@ -271,9 +261,9 @@ def train_model(
             for name in target_filenames:
                 _, target_filename = os.path.split(name)
                 idxs.append(target_filename.split("_")[-1])
-            target_amp = utils.crop_image(
-                target_amp, target_shape=roi_res, stacked_complex=False
-            ).to(device)
+            target_amp = utils.crop_image(target_amp, target_shape=roi, stacked_complex=False).to(
+                device
+            )
 
             # load phases
             slm_phases = []
@@ -318,7 +308,7 @@ def train_model(
                 recon_field = model(slm_phases)
                 recon_amp = recon_field.abs()
                 model_amp = utils.crop_image(
-                    recon_amp, target_shape=roi_res, pytorch=True, stacked_complex=False,
+                    recon_amp, target_shape=roi, pytorch=True, stacked_complex=False,
                 )
 
                 # calculate loss and backpropagate to phase
@@ -355,6 +345,10 @@ def train_model(
                     camera_amp.append(camera_prop(slm_phase))
                 camera_amp = torch.cat(camera_amp, 0)
 
+            camera_amp = utils.crop_image(  # TODO needed? Added instead of rescaling
+                camera_amp, target_shape=roi, pytorch=True, stacked_complex=False,
+            )
+
             # 3) model update loop
             model = model.train()
             for _ in range(num_iters_model_update):
@@ -366,28 +360,8 @@ def train_model(
                 recon_field = model(slm_phases)
                 recon_amp = recon_field.abs()
                 model_amp = utils.crop_image(
-                    recon_amp, target_shape=roi_res, pytorch=True, stacked_complex=False,
+                    recon_amp, target_shape=roi, pytorch=True, stacked_complex=False,
                 )
-
-                # ---------------------------------
-                # TODO check rescaling
-                camera_amp_scaled = torch.empty(
-                    (camera_amp.shape[0], camera_amp.shape[1], slm_res[0], slm_res[1]),
-                    device=device,
-                )
-
-                for p in range(camera_amp.shape[0]):
-                    for c in range(camera_amp.shape[1]):
-                        im = Image.fromarray(camera_amp[p, c].cpu().numpy())
-                        im = im.resize(
-                            (slm_res[1], slm_res[0]), Image.BICUBIC,  # Pillow uses width, height
-                        )
-                        camera_amp_scaled[p, c] = torch.from_numpy(np.array(im)).to(device)
-
-                camera_amp = utils.crop_image(
-                    camera_amp_scaled, target_shape=roi_res, pytorch=True, stacked_complex=False,
-                )
-                # ---------------------------------
 
                 # calculate loss and backpropagate to model parameters
                 loss_value_model = loss_model(model_amp, camera_amp)

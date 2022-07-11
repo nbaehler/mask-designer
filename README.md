@@ -181,7 +181,7 @@ This software assumes a experimental setup that uses a convex lens in between th
 the target plane. Neural Holography on the other hand, uses a different setting
 where no lens is placed between the SLM and the target plane, i.e. a lensless
 setting. Those differences impact the resulting phase maps of the mask design
-algorithm. The methods in `slm_designer/transform_fields.py` allow transforming phase maps,
+algorithm. The methods in `slm_designer/transform_phase_maps.py` allow transforming phase maps,
 or fields, back and forth between both settings. Note that Neural Holography encodes
 phase maps, images etc. as 4D PyTorch Tensors where the dimensions are [image,
 channel, height, width]. But again, the wrapper `slm_designer/wrapper.py` does

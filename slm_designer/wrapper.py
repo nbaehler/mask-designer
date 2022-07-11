@@ -19,7 +19,7 @@ from slm_designer.neural_holography.utils import (
     str2bool,
 )
 
-from slm_designer.transform_fields import (
+from slm_designer.transform_phase_maps import (
     lensless_to_lens,
 )  # TODO circular dependency but it works
 from slm_designer.utils import extend_to_complex, quantize_phase_pattern
@@ -33,7 +33,7 @@ def run_dpac(target_amp, slm_shape, prop_distance, wavelength, pixel_pitch, devi
     ----------
     target_amp : torch.Tensor
         The target amplitude
-    slm_shape : Tuple(int)
+    slm_shape : tuple(int)
         The shape or the resolution of the SLM
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -87,7 +87,7 @@ def run_gs(
         The target amplitude
     iterations : int
         The number of iterations to run
-    slm_shape : Tuple(int)
+    slm_shape : tuple(int)
         The shape or the resolution of the SLM
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -124,7 +124,7 @@ def run_sgd(
     target_amp,
     iterations,
     slm_shape,
-    roi_res,
+    roi,
     prop_distance,
     wavelength,
     pixel_pitch,
@@ -141,9 +141,9 @@ def run_sgd(
         The target amplitude
     iterations : int
         The number of iterations to run
-    slm_shape : Tuple(int)
+    slm_shape : tuple(int)
         The shape or the resolution of the SLM
-    roi_res : Tuple(int)
+    roi : tuple(int)
         The region of interest in which errors are more strongly penalized
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -160,9 +160,7 @@ def run_sgd(
         The quantized resulting phase map in 0-255
     """
     # Run Stochastic Gradient Descent based method
-    sgd = SGD(
-        prop_distance, wavelength, pixel_pitch, iterations, roi_res, device=device
-    )
+    sgd = SGD(prop_distance, wavelength, pixel_pitch, iterations, roi, device=device)
     angles = sgd(target_amp, init_phase).cpu().detach()
 
     # Extend the computed angles, aka the phase values, to a complex tensor again

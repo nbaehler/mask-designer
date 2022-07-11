@@ -19,14 +19,14 @@ from waveprop.spherical import spherical_prop
 from waveprop.util import ift2
 
 
-def holoeye_fraunhofer(slm_field):
+def holoeye_fraunhofer(phase_map):
     """
     Simulated propagation with a lens (holoeye setup) between slm and target
     plane using Fraunhofer's equation.
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
 
     Returns
@@ -34,17 +34,17 @@ def holoeye_fraunhofer(slm_field):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    return fftshift(torch.fft.fftn(slm_field, dim=(-2, -1), norm="ortho"))
+    return fftshift(torch.fft.fftn(phase_map, dim=(-2, -1), norm="ortho"))
 
 
-def neural_holography_asm(slm_field, prop_dist, wavelength, pixel_pitch):
+def neural_holography_asm(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     Simulated propagation with a no lens (neural holography setup) between slm
     and target plane using the angular spectrum method.
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
 
     Returns
@@ -53,7 +53,7 @@ def neural_holography_asm(slm_field, prop_dist, wavelength, pixel_pitch):
         The result of the propagation at the target plane
     """
     return propagate_field(
-        slm_field,
+        phase_map,
         propagation_ASM,
         prop_dist,
         wavelength,
@@ -64,13 +64,13 @@ def neural_holography_asm(slm_field, prop_dist, wavelength, pixel_pitch):
     )
 
 
-def wave_prop_fraunhofer(slm_field, prop_dist, wavelength, pixel_pitch):
+def wave_prop_fraunhofer(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     Fraunhofer propagation using waveprop.
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -84,22 +84,22 @@ def wave_prop_fraunhofer(slm_field, prop_dist, wavelength, pixel_pitch):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    slm_field = slm_field[0, 0, :, :]
+    phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = fraunhofer(
-        u_in=slm_field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
+        u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def wave_prop_angular_spectrum(slm_field, prop_dist, wavelength, pixel_pitch):
+def wave_prop_angular_spectrum(phase_map, prop_dist, wavelength, pixel_pitch):
     """
-    Angular Spectrum Method propagation using wavprop.
+    Angular Spectrum Method propagation using waveprop.
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -113,10 +113,10 @@ def wave_prop_angular_spectrum(slm_field, prop_dist, wavelength, pixel_pitch):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    slm_field = slm_field[0, 0, :, :]
+    phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = angular_spectrum(  # TODO flipped
-        u_in=slm_field.numpy(),
+        u_in=phase_map.numpy(),
         wv=wavelength,
         d1=pixel_pitch[0],
         dz=prop_dist,
@@ -124,17 +124,17 @@ def wave_prop_angular_spectrum(slm_field, prop_dist, wavelength, pixel_pitch):
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
-    # return torch.from_numpy(res)[None, None, :, :]
+    # return fftshift(torch.from_numpy(res)[None, None, :, :])
 
 
-def wave_prop_angular_spectrum_np(slm_field, prop_dist, wavelength, pixel_pitch):
+def wave_prop_angular_spectrum_np(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     Band-limited Angular Spectrum Method for Numerical Simulation of Free-Space
-    Propagation in Far and Near Fields propagation using wavprop.
+    Propagation in Far and Near Fields propagation using waveprop.
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -148,22 +148,22 @@ def wave_prop_angular_spectrum_np(slm_field, prop_dist, wavelength, pixel_pitch)
     torch.Tensor
         The result of the propagation at the target plane
     """
-    slm_field = slm_field[0, 0, :, :]
+    phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = angular_spectrum_np(
-        u_in=slm_field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
+        u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_fft_di(slm_field, prop_dist, wavelength, pixel_pitch):
+def wave_prop_fft_di(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_ TODO add those summaries
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -177,22 +177,22 @@ def wave_prop_fft_di(slm_field, prop_dist, wavelength, pixel_pitch):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    slm_field = slm_field[0, 0, :, :]
+    phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = fft_di(
-        u_in=slm_field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
+        u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def wave_prop_direct_integration(slm_field, prop_dist, wavelength, pixel_pitch):
+def wave_prop_direct_integration(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -206,10 +206,10 @@ def wave_prop_direct_integration(slm_field, prop_dist, wavelength, pixel_pitch):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    slm_field = slm_field[0, 0, :, :]
+    phase_map = phase_map[0, 0, :, :]
 
     res = direct_integration(
-        u_in=slm_field.numpy(),
+        u_in=phase_map.numpy(),
         wv=wavelength,
         d1=pixel_pitch[0],
         dz=prop_dist,
@@ -220,13 +220,13 @@ def wave_prop_direct_integration(slm_field, prop_dist, wavelength, pixel_pitch):
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def wave_prop_fresnel_one_step(slm_field, prop_dist, wavelength, pixel_pitch):
+def wave_prop_fresnel_one_step(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -240,22 +240,22 @@ def wave_prop_fresnel_one_step(slm_field, prop_dist, wavelength, pixel_pitch):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    slm_field = slm_field[0, 0, :, :]
+    phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = fresnel_one_step(  # TODO Too small
-        u_in=slm_field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
+        u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_fresnel_two_step(slm_field, prop_dist, wavelength, pixel_pitch):
+def wave_prop_fresnel_two_step(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -269,10 +269,10 @@ def wave_prop_fresnel_two_step(slm_field, prop_dist, wavelength, pixel_pitch):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    slm_field = slm_field[0, 0, :, :]
+    phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = fresnel_two_step(
-        u_in=slm_field.numpy(),
+        u_in=phase_map.numpy(),
         wv=wavelength,
         d1=pixel_pitch[0],
         d2=pixel_pitch[0],
@@ -282,13 +282,13 @@ def wave_prop_fresnel_two_step(slm_field, prop_dist, wavelength, pixel_pitch):
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_fresnel_multi_step(slm_field, prop_dist, wavelength, pixel_pitch):
+def wave_prop_fresnel_multi_step(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -302,10 +302,10 @@ def wave_prop_fresnel_multi_step(slm_field, prop_dist, wavelength, pixel_pitch):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    slm_field = slm_field[0, 0, :, :]
+    phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = fresnel_multi_step(
-        u_in=slm_field.numpy(),
+        u_in=phase_map.numpy(),
         wv=wavelength,
         delta1=pixel_pitch[0],
         deltan=pixel_pitch[0],
@@ -315,13 +315,13 @@ def wave_prop_fresnel_multi_step(slm_field, prop_dist, wavelength, pixel_pitch):
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_fresnel_conv(slm_field, prop_dist, wavelength, pixel_pitch):
+def wave_prop_fresnel_conv(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -335,22 +335,22 @@ def wave_prop_fresnel_conv(slm_field, prop_dist, wavelength, pixel_pitch):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    slm_field = slm_field[0, 0, :, :]
+    phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = fresnel_conv(
-        u_in=slm_field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
+        u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_shifted_fresnel(slm_field, prop_dist, wavelength, pixel_pitch):
+def wave_prop_shifted_fresnel(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -364,22 +364,22 @@ def wave_prop_shifted_fresnel(slm_field, prop_dist, wavelength, pixel_pitch):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    slm_field = slm_field[0, 0, :, :]
+    phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = shifted_fresnel(
-        u_in=slm_field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
+        u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_spherical(slm_field, prop_dist, wavelength, pixel_pitch):
+def wave_prop_spherical(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map to be propagated
     prop_dist : float
         The propagation distance from the SLM to the target plane
@@ -393,10 +393,10 @@ def wave_prop_spherical(slm_field, prop_dist, wavelength, pixel_pitch):
     torch.Tensor
         The result of the propagation at the target plane
     """
-    slm_field = slm_field[0, 0, :, :]
+    phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = spherical_prop(
-        u_in=slm_field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
+        u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(res)[None, None, :, :]

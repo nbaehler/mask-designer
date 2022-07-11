@@ -2,8 +2,11 @@ import abc
 from ids_peak import ids_peak
 from ids_peak_ipl import ids_peak_ipl
 import numpy as np
-
+from slm_controller.hardware import SLMParam, slm_devices
+import torch
+from slm_designer.experimental_setup import slm_device
 from slm_designer.hardware import CamDevices, CamParam, cam_devices
+from slm_designer.utils import resize_image_to_slm_shape
 
 
 class Camera:
@@ -28,17 +31,26 @@ class Camera:
     def frame(self):
         return self._frame_count
 
-    @abc.abstractmethod
-    def set_exposure_time(self, time=200):
+    def acquire_images_and_resize_to_slm_shape(self, number=1):
         """
-        Set the exposure time of the camera to a specific value.
+        Triggers the acquisition of images(s) and then resizes them to the size
+        of the SLM.
 
         Parameters
         ----------
-        time : int, optional
-            New exposure time in milliseconds, by default 200
+        number : int, optional
+            The number of images taken, by default 1
+
+        Returns
+        -------
+        list
+            The list of acquired images that are resized to match the slm shape
         """
-        pass
+        images = self.acquire_images(number)
+
+        return resize_image_to_slm_shape(
+            images, slm_devices[slm_device][SLMParam.SLM_SHAPE]
+        )
 
     @abc.abstractmethod
     def acquire_images(self, number=1):
@@ -52,6 +64,18 @@ class Camera:
         """
         pass
 
+    @abc.abstractmethod
+    def set_exposure_time(self, time=200):
+        """
+        Set the exposure time of the camera to a specific value.
+
+        Parameters
+        ----------
+        time : int, optional
+            New exposure time in milliseconds, by default 200
+        """
+        pass
+
 
 class DummyCamera(Camera):
     def __init__(self):
@@ -61,10 +85,6 @@ class DummyCamera(Camera):
         super().__init__()
 
         # Set height and width
-        self._height, self._width = cam_devices[CamDevices.DUMMY.value][
-            CamParam.IMG_SHAPE
-        ]
-
         self._height, self._width = cam_devices[CamDevices.DUMMY.value][
             CamParam.IMG_SHAPE
         ]

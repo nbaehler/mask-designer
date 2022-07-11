@@ -1,7 +1,13 @@
+from msilib.schema import Error
+from matplotlib import image
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 import torch
+from torch.nn import functional as F
+from slm_designer.neural_holography.utils import (
+    crop_image,
+)  # TODO remove this dependency, via wrapper -> circular
 
 
 def _cell_slice(_slice, cell_m):
@@ -146,11 +152,9 @@ def extend_to_complex(angles):
     return torch.polar(mags, angles)
 
 
-def load_holoeye_slm_pattern(
-    path="images/holoeye_phase_map/holoeye_logo_slm_pattern.png",
-):
+def load_phase_map(path="images/holoeye_phase_map/holoeye_logo_slm_pattern.png",):
     """
-    Load a phase map generate with holoeye software and transform it into a
+    Load a phase map, by default one generated with holoeye software and transform it into a
     compliant form.
 
     Parameters
@@ -166,25 +170,31 @@ def load_holoeye_slm_pattern(
     """
     im = Image.open(path)
     im = torch.from_numpy(np.array(im)).type(torch.FloatTensor)
-    im = torch.mean(im, axis=2)
+
+    if len(im.shape) == 3:
+        if im.shape[2] == 4:
+            im = im[:, :, :3]
+
+        if im.shape[2] == 3:
+            im = torch.mean(im, axis=2)
 
     max_val = torch.max(im)
     angles = (im / max_val) * (2 * np.pi) - np.pi
 
-    holoeye_slm_field = extend_to_complex(angles)
+    phase_map = extend_to_complex(angles)
 
-    return holoeye_slm_field[None, None, :, :]
+    return phase_map[None, None, :, :]
 
 
-def show_plot(slm_field, propped_slm_field, title):
+def show_plot(phase_map, propped_phase_map, title):
     """
     Plotting utility function.
 
     Parameters
     ----------
-    slm_field : torch.Tensor
+    phase_map : torch.Tensor
         The phase map before propagation
-    propped_slm_field : torch.Tensor
+    propped_phase_map : torch.Tensor
         The amplitude after propagation
     title : String
         The title of the plot
@@ -199,10 +209,10 @@ def show_plot(slm_field, propped_slm_field, title):
     ax2.title.set_text("Amplitude on SLM")
     ax3.title.set_text("Phase after propagation to screen")
     ax4.title.set_text("Amplitude after propagation to screen")
-    ax1.imshow(slm_field.angle(), cmap="gray")
-    ax2.imshow(slm_field.abs(), cmap="gray")
-    ax3.imshow(propped_slm_field.angle(), cmap="gray")
-    ax4.imshow(propped_slm_field.abs(), cmap="gray")
+    ax1.imshow(phase_map.angle(), cmap="gray")
+    ax2.imshow(phase_map.abs(), cmap="gray")
+    ax3.imshow(propped_phase_map.angle(), cmap="gray")
+    ax4.imshow(propped_phase_map.abs(), cmap="gray")
     plt.show()
 
 
@@ -231,3 +241,53 @@ def quantize_phase_pattern(phase_map):
     phase_map *= 255.0
 
     return np.rint(phase_map).astype("B")
+
+
+def resize_image_to_slm_shape(images, slm_shape):
+    for i, image in enumerate(images):
+        if i == 0:
+            # Height / Width
+            aspect_ratio_im = image.shape[0] / image.shape[1]
+            aspect_ratio_slm = slm_shape[0] / slm_shape[1]
+
+        if (
+            aspect_ratio_im < aspect_ratio_slm
+        ):  # TODO aspect ratio can't sometimes be exactly equal, hence very slight deformation when resizing
+            image = crop_image_to_shape(
+                image, (image.shape[0], round(image.shape[0] / aspect_ratio_slm))
+            )
+        elif aspect_ratio_im > aspect_ratio_slm:
+            image = crop_image_to_shape(
+                image, (round(image.shape[1] / aspect_ratio_slm), image.shape[1])
+            )
+
+        im = Image.fromarray(image)
+        im = im.resize(
+            (slm_shape[1], slm_shape[0]), Image.BICUBIC,  # Pillow uses width, height
+        )
+        images[i] = np.array(im)
+
+    return images
+
+
+def crop_image_to_shape(image, shape):
+    height_before = (image.shape[0] - shape[0]) // 2
+    height_after = image.shape[0] - shape[0] - height_before
+    width_before = (image.shape[1] - shape[1]) // 2
+    width_after = image.shape[1] - shape[1] - width_before
+
+    return image[
+        height_before : image.shape[0] - height_after,
+        width_before : image.shape[1] - width_after,
+    ]
+
+
+def pad_to_slm_shape(phase_map, slm_shape):
+    height_before = (slm_shape[0] - phase_map.shape[2]) // 2
+    height_after = slm_shape[0] - phase_map.shape[2] - height_before
+    width_before = (slm_shape[1] - phase_map.shape[3]) // 2
+    width_after = slm_shape[1] - phase_map.shape[3] - width_before
+
+    pad_shape = (width_before, width_after, height_before, height_after)
+
+    return F.pad(phase_map, pad_shape, "constant", 0)

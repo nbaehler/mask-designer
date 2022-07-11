@@ -24,12 +24,10 @@ import imageio
 import os
 import skimage.io
 import scipy.io as sio
-from slm_controller.hardware import slm_devices, SLMParam
 
 # import sys
 import torch
 import numpy as np
-from slm_designer.hardware import cam_devices, CamParam
 
 # import configargparse
 
@@ -43,7 +41,6 @@ from slm_designer.experimental_setup import (
     PhysicalParams,
     physical_params,
     slm_device,
-    cam_device,
 )
 
 from slm_controller.hardware import (
@@ -92,6 +89,7 @@ def eval(
     slm_settle_time = physical_params[PhysicalParams.SLM_SETTLE_TIME]
     prop_dist = physical_params[PhysicalParams.PROPAGATION_DISTANCE]
     wavelength = physical_params[PhysicalParams.WAVELENGTH]
+    roi = physical_params[PhysicalParams.ROI]
 
     # Parse
     # opt = p.parse_args()
@@ -104,9 +102,7 @@ def eval(
     # Hyperparameters setting
     prop_dists = (prop_dist, prop_dist, prop_dist)
     wavelengths = (wavelength, wavelength, wavelength)  # wavelength of each color
-    feature_size = slm_devices[slm_device][
-        SLMParam.PIXEL_PITCH
-    ]  # SLM pitch #TODO remove this dependency
+    feature_size = slm_devices[slm_device][SLMParam.PIXEL_PITCH]  # SLM pitch
 
     # Resolutions
     # slm_res = (1080, 1920)  # resolution of SLM
@@ -116,8 +112,6 @@ def eval(
     #     slm_res = (1024, 2048)
 
     slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
-    image_res = cam_devices[cam_device][CamParam.IMG_SHAPE]  # TODO slm.shape == image.shape?
-    roi_res = (round(slm_res[0] * 0.8), round(slm_res[1] * 0.8))
 
     dtype = torch.float32  # default datatype (results may differ if using, e.g., float64)
     device = "cuda" if torch.cuda.is_available() else "cpu"  # TODO gpu is too small
@@ -141,11 +135,11 @@ def eval(
         propagator = PhysicalProp(
             channel,
             laser_arduino=True,
-            roi_res=(roi_res[1], roi_res[0]),
+            roi_res=roi,
             slm_settle_time=slm_settle_time,
-            range_row=(220, 1000),
-            range_col=(300, 1630),
-            patterns_path=calibration_path,  # path of 21 x 12 calibration patterns, see Supplement.
+            # range_row=(220, 1000),
+            # range_col=(300, 1630),
+            patterns_path=calibration_path,  # path of 12 x 21 calibration patterns, see Supplement.
             show_preview=True,
         )
     elif prop_model.upper() == "MODEL":
@@ -177,8 +171,8 @@ def eval(
     image_loader = ImageLoader(
         test_target_amps_path,
         channel=channel if channel < 3 else None,
-        image_res=image_res,
-        homography_res=roi_res,
+        image_res=slm_res,
+        homography_res=roi,
         crop_to_homography=True,
         shuffle=False,
         vertical_flips=False,
@@ -201,7 +195,7 @@ def eval(
         print(f"    - running for {target_filename}...")
 
         # crop to ROI
-        target_amp = utils.crop_image(target_amp, target_shape=roi_res, stacked_complex=False).to(
+        target_amp = utils.crop_image(target_amp, target_shape=roi, stacked_complex=False).to(
             device
         )
 
@@ -241,7 +235,7 @@ def eval(
             recon_amp_c = recon_field.abs()
 
             # crop to ROI
-            recon_amp_c = utils.crop_image(recon_amp_c, target_shape=roi_res, stacked_complex=False)
+            recon_amp_c = utils.crop_image(recon_amp_c, target_shape=roi, stacked_complex=False)
 
             # append to list
             recon_amp.append(recon_amp_c)

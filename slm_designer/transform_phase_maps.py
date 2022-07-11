@@ -31,7 +31,7 @@ def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
-    slm_shape : Tuple(int)
+    slm_shape : tuple(int)
         The shape or the resolution of the SLM
     pixel_pitch : float
         The pixel pitch of the SLM
@@ -89,7 +89,7 @@ def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
 
 
 def lens_to_lensless(
-    holoeye_slm_field, prop_dist, wavelength, slm_shape, pixel_pitch
+    holoeye_phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
 ):  # TODO might not be only linked to lenses, ASM vs Fraunhofer
     """
     Transform from the lens setting (holoeye) to the lensless setting (neural
@@ -97,13 +97,13 @@ def lens_to_lensless(
 
     Parameters
     ----------
-    holoeye_slm_field : torch.Tensor
+    holoeye_phase_map : torch.Tensor
         The phase map that needs to be transformed
     prop_dist : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
-    slm_shape : Tuple(int)
+    slm_shape : tuple(int)
         The shape or the resolution of the SLM
     pixel_pitch : float
         The pixel pitch of the SLM
@@ -119,7 +119,7 @@ def lens_to_lensless(
     return fftshift(
         torch.fft.ifftn(
             torch.fft.fftn(
-                torch.fft.fftn(holoeye_slm_field, dim=(-2, -1), norm="ortho"),
+                torch.fft.fftn(holoeye_phase_map, dim=(-2, -1), norm="ortho"),
                 dim=(-2, -1),
                 norm="ortho",
             )
@@ -131,7 +131,7 @@ def lens_to_lensless(
 
 
 def lensless_to_lens(
-    neural_holography_slm_field, prop_dist, wavelength, slm_shape, pixel_pitch
+    neural_holography_phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
 ):  # TODO might not be only linked to lenses, ASM vs Fraunhofer
     """
     Transform from the lensless setting (neural holography) to the lens setting
@@ -139,13 +139,13 @@ def lensless_to_lens(
 
     Parameters
     ----------
-    neural_holography_slm_field : torch.Tensor
+    neural_holography_phase_map : torch.Tensor
         The phase map that needs to be transformed
     prop_dist : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
-    slm_shape : Tuple(int)
+    slm_shape : tuple(int)
         The shape or the resolution of the SLM
     pixel_pitch : float
         The pixel pitch of the SLM
@@ -161,7 +161,7 @@ def lensless_to_lens(
         torch.fft.ifftn(
             H
             * torch.fft.fftn(
-                ifftshift(neural_holography_slm_field), dim=(-2, -1), norm="ortho"
+                ifftshift(neural_holography_phase_map), dim=(-2, -1), norm="ortho"
             ),
             dim=(-2, -1),
             norm="ortho",
