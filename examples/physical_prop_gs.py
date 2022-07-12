@@ -23,7 +23,7 @@ from slm_designer.wrapper import ImageLoader, run_gs
 @click.option("--show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.")
 def physical_prop_gs(iterations, show_time):
     # Set parameters
-    distance = params[Params.PROPAGATION_DISTANCE]
+    prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     roi = params[Params.ROI]
@@ -61,7 +61,7 @@ def physical_prop_gs(iterations, show_time):
 
     # Run Gerchberg-Saxton
     phase_out = run_gs(
-        init_phase, target_amp, iterations, slm_shape, distance, wavelength, pixel_pitch, device,
+        init_phase, target_amp, iterations, slm_shape, prop_dist, wavelength, pixel_pitch, device,
     )
 
     # Display

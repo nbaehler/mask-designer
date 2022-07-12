@@ -29,5 +29,5 @@ slm_device = (
 )  # TODO does this structure still make sense?
 
 # and a camera device that you want to use
-# cam_device = CamDevices.IDS.value
-cam_device = CamDevices.DUMMY.value
+cam_device = CamDevices.IDS.value
+# cam_device = CamDevices.DUMMY.value

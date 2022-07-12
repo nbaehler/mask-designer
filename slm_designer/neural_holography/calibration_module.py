@@ -26,8 +26,8 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
     Detects the circle of a circle board pattern
 
     :param captured_img: captured image
-    :param num_circles: a tuple of integers, (num_circle_x, num_circle_y)
-    :param spacing: a tuple of integers, in pixels, (space between circles in x, space btw circs in y direction)
+    :param num_circles: a tuple of integers, (num_circle_y, num_circle_x)
+    :param spacing: a tuple of integers, in pixels, (space between circles in y, space btw space between circles in x direction)
     :param show_preview: boolean, default True
     :param pad_pixels: coordinate of the left top corner of warped image.
                        Assuming pad this amount of pixels on the other side.
@@ -38,7 +38,9 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
 
     # Binarization
     # org_copy = org.copy() # Otherwise, we write on the original image!
-    img = (captured_img.copy() * 255).astype(np.uint8)
+    # img = (captured_img.copy() * 255).astype(np.uint8) # TODO already in [0, 255]
+    img = captured_img.copy().astype(np.uint8)
+
     if len(img.shape) > 2:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -110,17 +112,21 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
     if show_preview:
         fig = plt.figure()
 
-        ax = fig.add_subplot(223)
-        ax.imshow(img_gray, cmap="gray")
+        ax1 = fig.add_subplot(221)
+        ax1.set_title("Image after preprocessing")
+        ax1.imshow(img, cmap="gray")
 
-        ax2 = fig.add_subplot(221)
-        ax2.imshow(img, cmap="gray")
+        ax2 = fig.add_subplot(222)
+        ax2.set_title("Captured image")
+        ax2.imshow(captured_img, cmap="gray")
 
-        ax3 = fig.add_subplot(222)
-        ax3.imshow(captured_img, cmap="gray")
+        ax3 = fig.add_subplot(223)
+        ax3.set_title("Image after preprocessing with keypoints")
+        ax3.imshow(img_gray, cmap="gray")
 
         if found_dots:
             ax4 = fig.add_subplot(224)
+            ax4.set_title("Warped image")
             ax4.imshow(captured_img_warp, cmap="gray")
 
         plt.show()
@@ -134,6 +140,7 @@ class Calibration:
             num_circles[1],
             num_circles[0],
         )  # TODO they flipped it earlier, this is more convenient
+
         self.spacing_size = spacing_size
         self.pad_pixels = pad_pixels
         self.h_transform = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])

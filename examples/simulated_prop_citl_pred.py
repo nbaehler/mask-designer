@@ -11,7 +11,7 @@ from slm_designer.simulated_prop import simulated_prop
 
 from slm_designer.utils import (
     load_phase_map,
-    pad_to_slm_shape,
+    pad_tensor_to_shape,
     show_plot,
 )
 from slm_designer.propagation import (
@@ -34,7 +34,7 @@ def simulated_prop_citl_pred():
     holoeye_phase_map = load_phase_map("citl/predictions/0_holoeye_logo_pred_phases_ASM_green.png")
 
     # Pad roi to full slm shape
-    holoeye_phase_map = pad_to_slm_shape(
+    holoeye_phase_map = pad_tensor_to_shape(
         holoeye_phase_map, slm_shape
     )  # TODO padding really needed? Done in citl_pred as well, we'll see
     unpacked_phase_map = holoeye_phase_map[0, 0, :, :]

@@ -64,7 +64,7 @@ def neural_holography_asm(phase_map, prop_dist, wavelength, pixel_pitch):
     )
 
 
-def wave_prop_fraunhofer(phase_map, prop_dist, wavelength, pixel_pitch):
+def waveprop_fraunhofer(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     Fraunhofer propagation using waveprop.
 
@@ -93,7 +93,56 @@ def wave_prop_fraunhofer(phase_map, prop_dist, wavelength, pixel_pitch):
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def wave_prop_angular_spectrum(phase_map, prop_dist, wavelength, pixel_pitch):
+def propagator_waveprop_angular_spectrum(  # TODO still buggy
+    u_in,
+    feature_size,
+    wavelength,
+    z,
+    # linear_conv=True,
+    # padtype="zero",
+    return_H=False,
+    precomped_H=None,
+    return_H_exp=False,
+    precomped_H_exp=None,
+    dtype=torch.float32,
+):
+    if return_H or return_H_exp:
+        return angular_spectrum(
+            u_in=u_in[0, 0, :, :],
+            wv=wavelength,
+            d1=feature_size[0],
+            dz=z,
+            # linear_conv=True, # TODO check those two parameters
+            # padtype="zero",
+            return_H=return_H,
+            H=precomped_H,
+            return_H_exp=return_H_exp,
+            H_exp=precomped_H_exp,
+            dtype=dtype,
+            device="cuda",  # TODO always on gpu?
+        )
+
+    res, _, _ = angular_spectrum(
+        u_in=u_in[0, 0, :, :],
+        wv=wavelength,
+        d1=feature_size[0],
+        dz=z,
+        # linear_conv=True, # TODO check those two parameters
+        # padtype="zero",
+        return_H=False,
+        H=precomped_H,
+        return_H_exp=False,
+        H_exp=precomped_H_exp,
+        dtype=dtype,
+        device="cuda",  # TODO always on gpu?
+    )
+
+    return torch.rot90(ift2(res, delta_f=1), 2)[
+        None, None, :, :
+    ]  # TODO Temporary fix for flipped
+
+
+def waveprop_angular_spectrum(phase_map, prop_dist, wavelength, pixel_pitch, device):
     """
     Angular Spectrum Method propagation using waveprop.
 
@@ -115,19 +164,23 @@ def wave_prop_angular_spectrum(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     phase_map = phase_map[0, 0, :, :]
 
-    res, _, _ = angular_spectrum(  # TODO flipped
-        u_in=phase_map.numpy(),
+    res, _, _ = angular_spectrum(
+        u_in=phase_map,
         wv=wavelength,
         d1=pixel_pitch[0],
         dz=prop_dist,
+        device=device,
         # out_shift=1,  # TODO check this parameter
     )
 
-    return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
-    # return fftshift(torch.from_numpy(res)[None, None, :, :])
+    # return fftshift(res[None, None, :, :])
+
+    return torch.rot90(ift2(res, delta_f=1), 2)[
+        None, None, :, :
+    ]  # TODO Temporary fix for flipped, copy fixes negative stride issue
 
 
-def wave_prop_angular_spectrum_np(phase_map, prop_dist, wavelength, pixel_pitch):
+def waveprop_angular_spectrum_np(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     Band-limited Angular Spectrum Method for Numerical Simulation of Free-Space
     Propagation in Far and Near Fields propagation using waveprop.
@@ -157,9 +210,9 @@ def wave_prop_angular_spectrum_np(phase_map, prop_dist, wavelength, pixel_pitch)
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_fft_di(phase_map, prop_dist, wavelength, pixel_pitch):
+def waveprop_fft_di(phase_map, prop_dist, wavelength, pixel_pitch):
     """
-    _summary_ TODO add those summaries
+    _summary_ #TODO add those summaries
 
     Parameters
     ----------
@@ -186,7 +239,7 @@ def wave_prop_fft_di(phase_map, prop_dist, wavelength, pixel_pitch):
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def wave_prop_direct_integration(phase_map, prop_dist, wavelength, pixel_pitch):
+def waveprop_direct_integration(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_
 
@@ -220,7 +273,7 @@ def wave_prop_direct_integration(phase_map, prop_dist, wavelength, pixel_pitch):
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def wave_prop_fresnel_one_step(phase_map, prop_dist, wavelength, pixel_pitch):
+def waveprop_fresnel_one_step(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_
 
@@ -249,7 +302,7 @@ def wave_prop_fresnel_one_step(phase_map, prop_dist, wavelength, pixel_pitch):
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_fresnel_two_step(phase_map, prop_dist, wavelength, pixel_pitch):
+def waveprop_fresnel_two_step(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_
 
@@ -282,7 +335,7 @@ def wave_prop_fresnel_two_step(phase_map, prop_dist, wavelength, pixel_pitch):
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_fresnel_multi_step(phase_map, prop_dist, wavelength, pixel_pitch):
+def waveprop_fresnel_multi_step(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_
 
@@ -315,7 +368,7 @@ def wave_prop_fresnel_multi_step(phase_map, prop_dist, wavelength, pixel_pitch):
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_fresnel_conv(phase_map, prop_dist, wavelength, pixel_pitch):
+def waveprop_fresnel_conv(phase_map, prop_dist, wavelength, pixel_pitch, device):
     """
     _summary_
 
@@ -338,13 +391,13 @@ def wave_prop_fresnel_conv(phase_map, prop_dist, wavelength, pixel_pitch):
     phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = fresnel_conv(
-        u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
+        u_in=phase_map, wv=wavelength, d1=pixel_pitch[0], dz=prop_dist, device=device,
     )
 
-    return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
+    return ift2(res, delta_f=1)[None, None, :, :]
 
 
-def wave_prop_shifted_fresnel(phase_map, prop_dist, wavelength, pixel_pitch):
+def waveprop_shifted_fresnel(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     _summary_
 
@@ -373,7 +426,7 @@ def wave_prop_shifted_fresnel(phase_map, prop_dist, wavelength, pixel_pitch):
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def wave_prop_spherical(phase_map, prop_dist, wavelength, pixel_pitch):
+def waveprop_spherical(phase_map, prop_dist, wavelength, pixel_pitch, device):
     """
     _summary_
 
@@ -396,7 +449,7 @@ def wave_prop_spherical(phase_map, prop_dist, wavelength, pixel_pitch):
     phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = spherical_prop(
-        u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
+        u_in=phase_map, wv=wavelength, d1=pixel_pitch[0], dz=prop_dist, device=device
     )
 
-    return torch.from_numpy(res)[None, None, :, :]
+    return res[None, None, :, :]

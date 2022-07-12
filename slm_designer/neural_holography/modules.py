@@ -418,7 +418,10 @@ class PhysicalProp(nn.Module):
         # roi_res=(1600, 880),
         # num_circles=(21, 12),
         roi_res=(640, 880),
-        num_circles=(9, 12),
+        num_circles=(
+            9,
+            12,
+        ),  # TODO (3, 3) makes dimension flip: width/height, and does not help the blob detector
         # laser_arduino=False,
         # com_port="COM3",
         # arduino_port_num=(6, 10, 11),

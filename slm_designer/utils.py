@@ -147,7 +147,7 @@ def extend_to_complex(angles):
     return torch.polar(mags, angles)
 
 
-def load_phase_map(path="images/holoeye_phase_map/holoeye_logo_slm_pattern.png",):
+def load_phase_map(path="images/holoeye_phase_map/holoeye_logo.png",):
     """
     Load a phase map, by default one generated with holoeye software and transform it into a
     compliant form.
@@ -156,7 +156,7 @@ def load_phase_map(path="images/holoeye_phase_map/holoeye_logo_slm_pattern.png",
     ----------
     path : str, optional
         The path to the phase map to load, by default
-        "images/holoeye_phase_map/holoeye_logo_slm_pattern.png"
+        "images/holoeye_phase_map/holoeye_logo.png"
 
     Returns
     -------
@@ -238,27 +238,39 @@ def quantize_phase_pattern(phase_map):
     return np.rint(phase_map).astype("B")
 
 
-def resize_image_to_slm_shape(images, slm_shape):
+def resize_image_to_shape(images, shape, pad=False):
     for i, image in enumerate(images):
         if i == 0:
             # Height / Width
-            aspect_ratio_im = image.shape[0] / image.shape[1]
-            aspect_ratio_slm = slm_shape[0] / slm_shape[1]
+            aspect_ratio_im = (
+                image.shape[0] / image.shape[1]
+            )  # TODO must also be done to the target amp images! But how much scaling is needed?
+            aspect_ratio = shape[0] / shape[1]
 
         if (
-            aspect_ratio_im < aspect_ratio_slm
+            aspect_ratio_im < aspect_ratio
         ):  # TODO aspect ratio can't be exactly equal sometimes, hence very slight deformation when resizing
-            image = crop_image_to_shape(
-                image, (image.shape[0], round(image.shape[0] / aspect_ratio_slm))
-            )
-        elif aspect_ratio_im > aspect_ratio_slm:
-            image = crop_image_to_shape(
-                image, (round(image.shape[1] / aspect_ratio_slm), image.shape[1])
-            )
+            if pad:
+                image = pad_image_to_shape(
+                    image, (round(image.shape[1] / aspect_ratio), image.shape[1])
+                )
+            else:
+                image = crop_image_to_shape(
+                    image, (image.shape[0], round(image.shape[0] / aspect_ratio))
+                )
+        elif aspect_ratio_im > aspect_ratio:
+            if pad:
+                image = pad_image_to_shape(
+                    image, (image.shape[0], round(image.shape[0] / aspect_ratio))
+                )
+            else:
+                image = crop_image_to_shape(
+                    image, (round(image.shape[1] / aspect_ratio), image.shape[1])
+                )
 
         im = Image.fromarray(image)
         im = im.resize(
-            (slm_shape[1], slm_shape[0]), Image.BICUBIC,  # Pillow uses width, height
+            (shape[1], shape[0]), Image.BICUBIC,  # Pillow uses width, height
         )
         images[i] = np.array(im)
 
@@ -277,11 +289,22 @@ def crop_image_to_shape(image, shape):
     ]
 
 
-def pad_to_slm_shape(phase_map, slm_shape):
-    height_before = (slm_shape[0] - phase_map.shape[2]) // 2
-    height_after = slm_shape[0] - phase_map.shape[2] - height_before
-    width_before = (slm_shape[1] - phase_map.shape[3]) // 2
-    width_after = slm_shape[1] - phase_map.shape[3] - width_before
+def pad_image_to_shape(image, shape):
+    height_before = (shape[0] - image.shape[0]) // 2
+    height_after = shape[0] - image.shape[0] - height_before
+    width_before = (shape[1] - image.shape[1]) // 2
+    width_after = shape[1] - image.shape[1] - width_before
+
+    pad_shape = ((height_before, height_after), (width_before, width_after))
+
+    return np.pad(image, pad_shape)
+
+
+def pad_tensor_to_shape(phase_map, shape):
+    height_before = (shape[0] - phase_map.shape[2]) // 2
+    height_after = shape[0] - phase_map.shape[2] - height_before
+    width_before = (shape[1] - phase_map.shape[3]) // 2
+    width_after = shape[1] - phase_map.shape[3] - width_before
 
     pad_shape = (width_before, width_after, height_before, height_after)
 

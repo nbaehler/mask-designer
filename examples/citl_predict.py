@@ -1,5 +1,5 @@
 """
-Script that computes a phase map using the CITL model. TODO: not working entirely
+Script that computes a phase map using the CITL model. #TODO: not working entirely
 
 This code is heavily inspired by slm_designer/neural_holography/eval.py. So
 credit where credit is due.
@@ -38,7 +38,7 @@ from slm_designer.experimental_setup import (
     params,
     slm_device,
 )
-from slm_designer.utils import pad_to_slm_shape
+from slm_designer.utils import pad_tensor_to_shape
 
 from slm_designer.wrapper import (
     ModelPropagate,
@@ -156,13 +156,19 @@ def citl_predict(
 
         # for each channel, propagate wave from the SLM plane to the image plane and get the reconstructed image.
         for c in chs:
-            # load and invert phase (our SLM setup) #TODO inversion not needed in our setting
+            # load and invert phase (our SLM setup)
             phase_map = skimage.io.imread(phase_path) / 255.0
 
             phase_map = np.mean(phase_map, axis=2)  # TODO added to make it grayscale
 
+            # phase_map = (  #TODO inversion not needed in our setting?
+            #     torch.tensor((1 - phase_map) * 2 * np.pi - np.pi, dtype=dtype)
+            #     .reshape(1, 1, *slm_shape)
+            #     .to(device)
+            # )
+
             phase_map = (
-                torch.tensor((1 - phase_map) * 2 * np.pi - np.pi, dtype=dtype)
+                torch.tensor(phase_map * 2 * np.pi - np.pi, dtype=dtype)
                 .reshape(1, 1, *slm_shape)
                 .to(device)
             )
@@ -195,7 +201,7 @@ def citl_predict(
         # list to tensor, scaling
         amp = torch.cat(amp, dim=1)
 
-        amp = pad_to_slm_shape(amp, slm_shape)  # TODO need to pad here?
+        amp = pad_tensor_to_shape(amp, slm_shape)  # TODO need to pad here?
 
         # tensor to numpy
         amp = amp.squeeze().cpu().detach().numpy()

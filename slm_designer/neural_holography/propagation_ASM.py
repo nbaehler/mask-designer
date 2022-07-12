@@ -78,7 +78,7 @@ def propagation_ASM(
         # number of pixels
         num_y, num_x = field_resolution[2], field_resolution[3]
 
-        # sampling inteval size
+        # sampling interval size
         dy, dx = feature_size
 
         # size of the field

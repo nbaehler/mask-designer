@@ -105,13 +105,13 @@ def eval(
     feature_size = slm_devices[slm_device][SLMParam.PIXEL_PITCH]  # SLM pitch
 
     # Resolutions
-    # slm_res = (1080, 1920)  # resolution of SLM
+    # slm_shape = (1080, 1920)  # resolution of SLM
     # if "HOLONET" in run_id.upper():
-    #     slm_res = (1072, 1920)
+    #     slm_shape = (1072, 1920)
     # elif "UNET" in run_id.upper():
-    #     slm_res = (1024, 2048)
+    #     slm_shape = (1024, 2048)
 
-    slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
+    slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
 
     dtype = torch.float32  # default datatype (results may differ if using, e.g., float64)
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -123,7 +123,7 @@ def eval(
         propagator = propagation_ASM
         # for c in chs:
         #     precomputed_H[c] = propagator(
-        #         torch.empty(1, 1, *slm_res, 2),
+        #         torch.empty(1, 1, *slm_shape, 2),
         #         feature_size,
         #         wavelengths[c],
         #         prop_dists[c],
@@ -169,7 +169,7 @@ def eval(
     image_loader = ImageLoader(
         test_target_amps_path,
         channel=channel if channel < 3 else None,
-        image_res=slm_res,
+        image_res=slm_shape,
         homography_res=roi,
         crop_to_homography=True,
         shuffle=False,
@@ -201,20 +201,26 @@ def eval(
 
         # for each channel, propagate wave from the SLM plane to the image plane and get the reconstructed image.
         for c in chs:
-            # load and invert phase (our SLM setup) #TODO inversion not needed in our setting
+            # load and invert phase (our SLM setup)
             phase_filename = os.path.join(test_phases_path, chan_strs[c], f"{target_filename}.png")
-            slm_phase = skimage.io.imread(phase_filename) / 255.0
+            phase_map = skimage.io.imread(phase_filename) / 255.0
 
-            slm_phase = np.mean(slm_phase, axis=2)  # TODO added to make it grayscale
+            phase_map = np.mean(phase_map, axis=2)  # TODO added to make it grayscale
 
-            slm_phase = (
-                torch.tensor((1 - slm_phase) * 2 * np.pi - np.pi, dtype=dtype)
-                .reshape(1, 1, *slm_res)
+            # phase_map = (  #TODO inversion not needed in our setting?
+            #     torch.tensor((1 - phase_map) * 2 * np.pi - np.pi, dtype=dtype)
+            #     .reshape(1, 1, *slm_shape)
+            #     .to(device)
+            # )
+
+            phase_map = (
+                torch.tensor(phase_map * 2 * np.pi - np.pi, dtype=dtype)
+                .reshape(1, 1, *slm_shape)
                 .to(device)
             )
 
             # propagate field
-            real, imag = utils.polar_to_rect(torch.ones_like(slm_phase), slm_phase)
+            real, imag = utils.polar_to_rect(torch.ones_like(phase_map), phase_map)
             slm_field = torch.complex(real, imag)
 
             if prop_model.upper() == "MODEL":

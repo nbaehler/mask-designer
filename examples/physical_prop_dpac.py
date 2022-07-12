@@ -23,7 +23,7 @@ from slm_designer.wrapper import ImageLoader, run_dpac
 @click.option("--show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.")
 def physical_prop_dpac(show_time):
     # Set parameters
-    distance = params[Params.PROPAGATION_DISTANCE]
+    prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     roi = params[Params.ROI]
@@ -57,7 +57,7 @@ def physical_prop_dpac(show_time):
     target_amp = target_amp.to(device)
 
     # Run Double Phase Amplitude Coding #TODO DPAC does not work
-    phase_out = run_dpac(target_amp, slm_shape, distance, wavelength, pixel_pitch, device)
+    phase_out = run_dpac(target_amp, slm_shape, prop_dist, wavelength, pixel_pitch, device)
 
     # Display
     s.imshow(phase_out)

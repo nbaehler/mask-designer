@@ -141,7 +141,7 @@ def train_model(
     ]  # propagation distance from SLM plane to target plane
     wavelength = (wavelength, wavelength, wavelength)[channel]
     feature_size = slm_devices[slm_device][SLMParam.PIXEL_PITCH]  # SLM pitch
-    slm_res = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
+    slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
 
     dtype = torch.float32  # default datatype (results may differ if using, e.g., float64)
     # device = "cuda" if torch.cuda.is_available() else "cpu"  # TODO gpu is too small
@@ -194,7 +194,7 @@ def train_model(
         feature_size=feature_size,
         wavelength=wavelength,
         blur=blur,
-        image_res=slm_res,
+        image_res=slm_shape,
     ).to(device)
 
     if pretrained_path != "":
@@ -208,7 +208,7 @@ def train_model(
         train_target_amps_path,
         channel=channel,
         batch_size=batch_size,
-        image_res=slm_res,
+        image_res=slm_shape,
         homography_res=roi,
         crop_to_homography=False,
         shuffle=True,
@@ -243,12 +243,14 @@ def train_model(
     # tensorboard writer
     summaries_dir = os.path.join("./citl/runs", run_id)
     utils.cond_mkdir(summaries_dir)
-    writer = SummaryModelWriter(model, f"{summaries_dir}", slm_res=slm_res, roi_res=roi, ch=channel)
+    writer = SummaryModelWriter(
+        model, f"{summaries_dir}", slm_res=slm_shape, roi_res=roi, ch=channel
+    )
 
     i_acc = 0
     for e in range(num_epochs):
 
-        print(f"   - Epoch {e+1} ...")
+        print(f"   - Epoch {e} ...")
         # visualize all the modules in the model on tensorboard
         with torch.no_grad():
             writer.visualize_model(e)
@@ -266,7 +268,7 @@ def train_model(
             )
 
             # load phases
-            slm_phases = []
+            phase_maps = []
             for k, idx in enumerate(idxs):
                 # Load pre-computed phases
                 # Instead, you can optimize phases from the scratch after a few number of iterations.
@@ -280,26 +282,33 @@ def train_model(
                 if os.path.exists(
                     phase_filename
                 ):  # TODO if added, create random pattern if file does not exist
-                    slm_phase = skimage.io.imread(phase_filename) / np.iinfo(np.uint8).max
+                    phase_map = skimage.io.imread(phase_filename) / np.iinfo(np.uint8).max
                 else:
-                    slm_phase = (
+                    phase_map = (
                         np.random.randint(
-                            low=0, high=np.iinfo(np.uint8).max + 1, size=(1, 1, *slm_res),
+                            low=0, high=np.iinfo(np.uint8).max + 1, size=(1, 1, *slm_shape),
                         )
                         / np.iinfo(np.uint8).max
                     )
 
-                # invert phase (our SLM setup) #TODO inversion not needed in our setting
-                slm_phase = (
-                    torch.tensor((1 - slm_phase) * 2 * np.pi - np.pi, dtype=dtype)
-                    .reshape(1, 1, *slm_res)
+                # invert phase (our SLM setup) #TODO inversion not needed in our setting?
+                # phase_map = (
+                #     torch.tensor((1 - phase_map) * 2 * np.pi - np.pi, dtype=dtype)
+                #     .reshape(1, 1, *slm_shape)
+                #     .to(device)
+                # )
+
+                phase_map = (
+                    torch.tensor(phase_map * 2 * np.pi - np.pi, dtype=dtype)
+                    .reshape(1, 1, *slm_shape)
                     .to(device)
                 )
-                slm_phases.append(slm_phase)
-            slm_phases = torch.cat(slm_phases, 0).detach().requires_grad_(True)
+
+                phase_maps.append(phase_map)
+            phase_maps = torch.cat(phase_maps, 0).detach().requires_grad_(True)
 
             # optimizer for phase
-            optimizer_phase = optim.Adam([slm_phases], lr=lr_phase)
+            optimizer_phase = optim.Adam([phase_maps], lr=lr_phase)
 
             # 1) phase update loop
             model = model.eval()
@@ -307,7 +316,7 @@ def train_model(
                 optimizer_phase.zero_grad()
 
                 # propagate forward through the model
-                recon_field = model(slm_phases)
+                recon_field = model(phase_maps)
                 recon_amp = recon_field.abs()
                 model_amp = utils.crop_image(
                     recon_amp, target_shape=roi, pytorch=True, stacked_complex=False,
@@ -331,20 +340,20 @@ def train_model(
             with torch.no_grad():
                 for k, idx in enumerate(idxs):
                     phase_out_8bit = utils.phasemap_8bit(
-                        slm_phases[k, np.newaxis, ...].cpu().detach(), inverted=True
+                        phase_maps[k, np.newaxis, ...].cpu().detach(), inverted=True
                     )
                     cv2.imwrite(os.path.join(phase_path, f"{idx}.png"), phase_out_8bit)
 
             # make slm phases 8bit variable as displayed
-            slm_phases = utils.quantized_phase(slm_phases)
+            phase_maps = utils.quantized_phase(phase_maps)
 
             # 2) display and capture
             camera_amp = []
             with torch.no_grad():
                 # forward physical pass (display), capture and stack them in batch dimension
                 for k, idx in enumerate(idxs):
-                    slm_phase = slm_phases[k, np.newaxis, ...]
-                    camera_amp.append(camera_prop(slm_phase))
+                    phase_map = phase_maps[k, np.newaxis, ...]
+                    camera_amp.append(camera_prop(phase_map))
                 camera_amp = torch.cat(camera_amp, 0)
 
             camera_amp = utils.crop_image(  # TODO needed? Added instead of rescaling
@@ -359,7 +368,7 @@ def train_model(
                 optimizer_model.zero_grad()
 
                 # propagate forward through the model
-                recon_field = model(slm_phases)
+                recon_field = model(phase_maps)
                 recon_amp = recon_field.abs()
                 model_amp = utils.crop_image(
                     recon_amp, target_shape=roi, pytorch=True, stacked_complex=False,
@@ -388,6 +397,8 @@ def train_model(
                     )
                 if i % 50 == 0:
                     recon = model_amp[0, ...]
+                    if not recon.any():  # TODO not the really black
+                        print("RECON is buggy!!!")
                     captured = camera_amp[0, ...]
                     gt = target_amp[0, ...] / scale_phase[0, ...]
                     max_amp = max(recon.max(), captured.max(), gt.max())

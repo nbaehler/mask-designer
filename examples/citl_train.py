@@ -1,5 +1,5 @@
 """
-Script that runs the CITL training of Neural Holography. TODO: functional but
+Script that runs the CITL training of Neural Holography. #TODO: functional but
 needs more work
 """
 
@@ -65,7 +65,7 @@ def citl_train(
 ):
 
     now = datetime.datetime.now()
-    experiment = f"{now.hour}h{now.minute}_{now.year}_{now.month}_{now.day}"
+    experiment = f"{now.year}_{now.month}_{now.day}_{now.hour}h{now.minute}"
 
     train_model(
         channel,

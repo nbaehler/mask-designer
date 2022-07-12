@@ -95,7 +95,7 @@ want to get this target amplitude.
 
 Any of those algorithms then computes the corresponding phase map.
 
-![Holoeye logo phase](../images/holoeye_phase_map/holoeye_logo_slm_pattern.png)
+![Holoeye logo phase](../images/holoeye_phase_map/holoeye_logo.png)
 
 And finally, this phase map can be sent to a SLM and propagated to the target
 plane where one can observe the resulting image.

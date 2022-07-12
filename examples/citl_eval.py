@@ -1,5 +1,5 @@
 """
-Script that runs the CITL evaluations of Neural Holography. TODO: not working entirely
+Script that runs the CITL evaluations of Neural Holography. #TODO: not working entirely
 """
 
 import click

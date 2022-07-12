@@ -3,10 +3,9 @@ from ids_peak import ids_peak
 from ids_peak_ipl import ids_peak_ipl
 import numpy as np
 from slm_controller.hardware import SLMParam, slm_devices
-import torch
 from slm_designer.experimental_setup import slm_device
 from slm_designer.hardware import CamDevices, CamParam, cam_devices
-from slm_designer.utils import resize_image_to_slm_shape
+from slm_designer.utils import resize_image_to_shape
 
 
 class Camera:
@@ -48,7 +47,7 @@ class Camera:
         """
         images = self.acquire_images(number)
 
-        return resize_image_to_slm_shape(
+        return resize_image_to_shape(
             images, slm_devices[slm_device][SLMParam.SLM_SHAPE]
         )
 
