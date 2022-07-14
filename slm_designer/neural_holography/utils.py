@@ -313,7 +313,8 @@ def phasemap_8bit(phasemap, inverted=True):
 
 def burst_img_processor(img_burst_list):
     img_tensor = np.stack(img_burst_list, axis=0)
-    img_avg = np.mean(img_tensor, axis=0)
+    img_avg = np.mean(img_tensor, axis=0).astype(np.uint8)  # TODO needed to add astype()
+
     return im2float(img_avg)  # changed from int8 to float32
 
 

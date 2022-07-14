@@ -20,7 +20,9 @@ from slm_designer.wrapper import ImageLoader, run_dpac
 
 
 @click.command()
-@click.option("--show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.")
+@click.option(
+    "--slm_show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.",
+)
 def physical_prop_dpac(show_time):
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]

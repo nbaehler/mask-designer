@@ -7,7 +7,7 @@ GitHub: https://github.com/ebezzam
 import numpy as np
 from enum import Enum
 
-from slm_designer.slm import SLM
+from slm_designer.virtual_slm import VirtualSLM
 
 
 class ApertureOptions(Enum):
@@ -23,7 +23,7 @@ class ApertureOptions(Enum):
 
 def rect_aperture(slm_shape, pixel_pitch, apert_dim, center=None):
     """
-    Create and return SLM object with rectangular aperture of desired dimensions.
+    Create and return VirtualSLM object with rectangular aperture of desired dimensions.
 
     Parameters
     ----------
@@ -39,15 +39,15 @@ def rect_aperture(slm_shape, pixel_pitch, apert_dim, center=None):
 
     Returns
     -------
-    slm : :py:class:`~slm_designer.slm.SLM`
-        SLM object with cells programmed to desired rectangular aperture.
+    slm : :py:class:`~slm_designer.virtual_slm.VirtualSLM`
+        VirtualSLM object with cells programmed to desired rectangular aperture.
 
     """
     # check input values
     assert np.all(apert_dim) > 0
 
     # initialize SLM
-    slm = SLM(shape=slm_shape, pixel_pitch=pixel_pitch)
+    slm = VirtualSLM(shape=slm_shape, pixel_pitch=pixel_pitch)
 
     # check / compute center
     if center is None:
@@ -87,7 +87,7 @@ def rect_aperture(slm_shape, pixel_pitch, apert_dim, center=None):
 
 def line_aperture(slm_shape, pixel_pitch, length, vertical=True, center=None):
     """
-    Create and return SLM object with a line aperture of desired length.
+    Create and return VirtualSLM object with a line aperture of desired length.
 
     Parameters
     ----------
@@ -103,8 +103,8 @@ def line_aperture(slm_shape, pixel_pitch, length, vertical=True, center=None):
 
     Returns
     -------
-    slm : :py:class:`~slm_designer.slm.SLM`
-        SLM object with cells programmed to desired line aperture.
+    slm : :py:class:`~slm_designer.virtual_slm.VirtualSLM`
+        VirtualSLM object with cells programmed to desired line aperture.
 
     """
 
@@ -115,7 +115,7 @@ def line_aperture(slm_shape, pixel_pitch, length, vertical=True, center=None):
 
 def square_aperture(slm_shape, pixel_pitch, side, center=None):
     """
-    Create and return SLM object with a square aperture of desired shape.
+    Create and return VirtualSLM object with a square aperture of desired shape.
 
     Parameters
     ----------
@@ -131,8 +131,8 @@ def square_aperture(slm_shape, pixel_pitch, side, center=None):
 
     Returns
     -------
-    slm : :py:class:`~slm_designer.slm.SLM`
-        SLM object with cells programmed to desired square aperture.
+    slm : :py:class:`~slm_designer.virtual_slm.VirtualSLM`
+        VirtualSLM object with cells programmed to desired square aperture.
 
     """
     return rect_aperture(slm_shape, pixel_pitch, (side, side), center)
@@ -140,7 +140,7 @@ def square_aperture(slm_shape, pixel_pitch, side, center=None):
 
 def circ_aperture(slm_shape, pixel_pitch, radius, center=None):
     """
-    Create and return SLM object with a circle aperture of desired shape.
+    Create and return VirtualSLM object with a circle aperture of desired shape.
 
     Parameters
     ----------
@@ -156,15 +156,15 @@ def circ_aperture(slm_shape, pixel_pitch, radius, center=None):
 
     Returns
     -------
-    slm : :py:class:`~slm_designer.slm.SLM`
-        SLM object with cells programmed to desired circle aperture.
+    slm : :py:class:`~slm_designer.virtual_slm.VirtualSLM`
+        VirtualSLM object with cells programmed to desired circle aperture.
 
     """
     # check input values
     assert radius > 0
 
     # initialize SLM
-    slm = SLM(shape=slm_shape, pixel_pitch=pixel_pitch)
+    slm = VirtualSLM(shape=slm_shape, pixel_pitch=pixel_pitch)
 
     # check / compute center
     if center is None:
@@ -172,10 +172,10 @@ def circ_aperture(slm_shape, pixel_pitch, radius, center=None):
     else:
         assert (
             0 <= center[0] < slm.height
-        ), f"Center {center} must lie within SLM dimensions {slm.dim}."
+        ), f"Center {center} must lie within VirtualSLM dimensions {slm.dim}."
         assert (
             0 <= center[1] < slm.width
-        ), f"Center {center} must lie within SLM dimensions {slm.dim}."
+        ), f"Center {center} must lie within VirtualSLM dimensions {slm.dim}."
 
     # compute mask
     i, j = np.meshgrid(

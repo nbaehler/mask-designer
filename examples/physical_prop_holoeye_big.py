@@ -9,7 +9,9 @@ from slm_designer.utils import load_phase_map, quantize_phase_pattern
 
 
 @click.command()
-@click.option("--show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.")
+@click.option(
+    "--slm_show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.",
+)
 def physical_prop_holoeye(show_time):
     # Load the slm pattern generated using the holoeye software
     holoeye_phase_map = load_phase_map("images/holoeye_logo_big.png").angle()

@@ -8,6 +8,7 @@ class Params(Enum):
     WAVELENGTH = "wavelength"
     PROPAGATION_DISTANCE = "prop_distance"
     SLM_SETTLE_TIME = "slm_settle_time"
+    SLM_SHOW_TIME = "slm_show_time"
     ROI = "roi"
 
     @staticmethod
@@ -20,6 +21,7 @@ params = {
     Params.WAVELENGTH: 532e-9,
     Params.PROPAGATION_DISTANCE: 0.34,
     Params.SLM_SETTLE_TIME: 0.25,
+    Params.SLM_SHOW_TIME: 0.1,
     Params.ROI: (640, 880),
 }
 
@@ -29,5 +31,5 @@ slm_device = (
 )  # TODO does this structure still make sense?
 
 # and a camera device that you want to use
-cam_device = CamDevices.IDS.value
-# cam_device = CamDevices.DUMMY.value
+# cam_device = CamDevices.IDS.value
+cam_device = CamDevices.DUMMY.value

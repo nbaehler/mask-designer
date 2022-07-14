@@ -413,7 +413,8 @@ class PhysicalProp(nn.Module):
         self,
         slm_device,
         cam_device,
-        slm_settle_time=0.1,
+        slm_show_time,
+        slm_settle_time,
         channel=1,
         # roi_res=(1600, 880),
         # num_circles=(21, 12),
@@ -444,7 +445,7 @@ class PhysicalProp(nn.Module):
         # self.slm.connect()
         self.slm_settle_time = slm_settle_time
         self.slm = slm.create_slm(slm_device)
-        self.slm.set_show_time(slm_settle_time)
+        self.slm.set_show_time(slm_show_time)
 
         # # 3. Connect to the Arduino that switches rgb color through the laser control box.
         # if laser_arduino:
@@ -574,7 +575,9 @@ class PhysicalProp(nn.Module):
     def _capture_and_average_intensities(self, phase_map, num_grab_images):
         self.slm.imshow(phase_map)
         time.sleep(self.slm_settle_time)
-        captured_intensities = self.camera.acquire_images_and_resize_to_slm_shape(num_grab_images)
+        captured_intensities = self.camera.acquire_multiple_images_and_resize_to_slm_shape(
+            num_grab_images
+        )
         return utils.burst_img_processor(captured_intensities)
 
     # def disconnect(self):

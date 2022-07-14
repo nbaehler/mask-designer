@@ -41,6 +41,7 @@ from slm_designer.experimental_setup import (
     Params,
     params,
     slm_device,
+    cam_device,
 )
 
 from slm_controller.hardware import (
@@ -86,6 +87,7 @@ from slm_controller.hardware import (
 def eval(
     channel, prop_model, test_phases_path, test_target_amps_path, prop_model_dir, calibration_path,
 ):
+    slm_show_time = params[Params.SLM_SHOW_TIME]  # TODO arg or value from experimental setup
     slm_settle_time = params[Params.SLM_SETTLE_TIME]
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -132,10 +134,13 @@ def eval(
 
     elif prop_model.upper() == "CAMERA":
         propagator = PhysicalProp(
+            slm_device,
+            cam_device,
+            slm_show_time,
+            slm_settle_time,
             channel,
             laser_arduino=True,
             roi_res=roi,
-            slm_settle_time=slm_settle_time,
             # range_row=(220, 1000),
             # range_col=(300, 1630),
             patterns_path=calibration_path,  # path of 12 x 21 calibration patterns, see Supplement.

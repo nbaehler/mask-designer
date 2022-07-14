@@ -20,7 +20,9 @@ from slm_designer.wrapper import ImageLoader, run_gs
 
 @click.command()
 @click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
-@click.option("--show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.")
+@click.option(
+    "--slm_show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.",
+)
 def physical_prop_gs(iterations, show_time):
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]

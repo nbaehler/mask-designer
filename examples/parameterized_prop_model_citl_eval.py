@@ -1,5 +1,5 @@
 """
-Script that runs the CITL evaluations of Neural Holography. #TODO: not working entirely
+Script that runs the CITL evaluations of Neural Holography. #TODO not working entirely
 """
 
 import click
@@ -38,7 +38,7 @@ from slm_designer.wrapper import eval
     default="./citl/calibration",
     help="Directory where calibration phases are being stored.",
 )
-def citl_eval(
+def parameterized_prop_model_citl_eval(
     channel, prop_model, test_phases_path, test_target_amps_path, prop_model_dir, calibration_path,
 ):
     eval(
@@ -52,4 +52,4 @@ def citl_eval(
 
 
 if __name__ == "__main__":
-    citl_eval()
+    parameterized_prop_model_citl_eval()

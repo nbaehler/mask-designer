@@ -354,7 +354,7 @@ $ python examples/physical_prop_dpac.py --help
 Usage: physical_prop_dpac.py [OPTIONS]
 
 Options:
-  --show_time FLOAT  Time to show the pattern on the SLM.
+  --slm_show_time FLOAT  Time to show the pattern on the SLM.
   --help             Show this message and exit.
 ```
 
@@ -368,7 +368,7 @@ Usage: physical_prop_gs.py [OPTIONS]
 
 Options:
   --iterations INTEGER  Number of iterations to run.
-  --show_time FLOAT     Time to show the pattern on the SLM.
+  --slm_show_time FLOAT     Time to show the pattern on the SLM.
   --help                Show this message and exit.
 ```
 
@@ -383,7 +383,7 @@ $ python examples/physical_prop_holoeye.py --help
 Usage: physical_prop_holoeye.py [OPTIONS]
 
 Options:
-  --show_time FLOAT  Time to show the pattern on the SLM.
+  --slm_show_time FLOAT  Time to show the pattern on the SLM.
   --help             Show this message and exit.
 ```
 
@@ -396,7 +396,7 @@ Usage: physical_prop_sgd.py [OPTIONS]
 
 Options:
   --iterations INTEGER  Number of iterations to run.
-  --show_time FLOAT     Time to show the pattern on the SLM.
+  --slm_show_time FLOAT     Time to show the pattern on the SLM.
   --help                Show this message and exit.
 ```
 

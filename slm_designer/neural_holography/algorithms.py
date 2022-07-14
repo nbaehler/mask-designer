@@ -202,7 +202,7 @@ def stochastic_gradient_descent(
 
             # use the gradient of proxy, replacing the amplitudes
             # captured_amp is assumed that its size already matches that of recon_amp
-            out_amp = recon_amp + (captured_amp - recon_amp).detach()
+            out_amp = recon_amp + (captured_amp - recon_amp).detach()  # TODO aka captured_amp
         else:
             out_amp = recon_amp
 

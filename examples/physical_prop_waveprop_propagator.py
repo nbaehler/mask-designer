@@ -16,16 +16,18 @@ from slm_designer.experimental_setup import (
     params,
     slm_device,
 )
-from slm_designer.neural_holography.modules import SGD
+
 from slm_designer.propagation import propagator_waveprop_angular_spectrum
 from slm_designer.transform_phase_maps import transform_from_neural_holography_setting
 from slm_designer.utils import extend_to_complex, quantize_phase_pattern
-from slm_designer.wrapper import ImageLoader
+from slm_designer.wrapper import ImageLoader, SGD
 
 
 @click.command()
 @click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
-@click.option("--show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.")
+@click.option(
+    "--slm_show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.",
+)
 def physical_prop_waveprop_propagator(iterations, show_time):
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]

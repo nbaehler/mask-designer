@@ -4,16 +4,16 @@ email: ebezzam@gmail.com,
 GitHub: https://github.com/ebezzam
 """
 
-from slm_designer.slm import SLM
+from slm_designer.virtual_slm import VirtualSLM
 import numpy as np
 
 dim = 10
-s = SLM(shape=(dim, dim), pixel_pitch=(1, 1))
+s = VirtualSLM(shape=(dim, dim), pixel_pitch=(1, 1))
 
 
-class TestSLM:
+class TestVirtualSLM:
     """
-    Test :py:module:`~slm_designer.slm.SLM`.
+    Test :py:module:`~slm_designer.virtual_slm.VirtualSLM`.
     """
 
     def test_row_indexing(self):

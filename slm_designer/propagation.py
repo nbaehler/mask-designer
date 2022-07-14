@@ -137,9 +137,7 @@ def propagator_waveprop_angular_spectrum(  # TODO still buggy
         device="cuda",  # TODO always on gpu?
     )
 
-    return torch.rot90(ift2(res, delta_f=1), 2)[
-        None, None, :, :
-    ]  # TODO Temporary fix for flipped
+    return res[None, None, :, :]
 
 
 def waveprop_angular_spectrum(phase_map, prop_dist, wavelength, pixel_pitch, device):

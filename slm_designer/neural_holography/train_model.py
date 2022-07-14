@@ -125,6 +125,7 @@ def train_model(
     step_lr,
     experiment,
 ):
+    slm_show_time = params[Params.SLM_SHOW_TIME]
     slm_settle_time = params[Params.SLM_SETTLE_TIME]
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -176,8 +177,9 @@ def train_model(
     camera_prop = PhysicalProp(
         slm_device,
         cam_device,
-        slm_settle_time=slm_settle_time,
-        # channel,
+        slm_show_time,
+        slm_settle_time,
+        channel,
         # laser_arduino=True,
         roi_res=roi,
         # range_row=(220, 1000),

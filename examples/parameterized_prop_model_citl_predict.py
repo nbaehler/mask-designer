@@ -1,5 +1,5 @@
 """
-Script that computes a phase map using the CITL model. #TODO: not working entirely
+Script that computes a phase map using the CITL model. #TODO not working entirely
 
 This code is heavily inspired by slm_designer/neural_holography/eval.py. So
 credit where credit is due.
@@ -37,6 +37,7 @@ from slm_designer.experimental_setup import (
     Params,
     params,
     slm_device,
+    cam_device,
 )
 from slm_designer.utils import pad_tensor_to_shape
 
@@ -80,9 +81,10 @@ from slm_designer.wrapper import (
     default="./citl/calibration",
     help="Directory where calibration phases are being stored.",
 )
-def citl_predict(
+def parameterized_prop_model_citl_predict(
     channel, prop_model, pred_phases_path, prop_model_dir, calibration_path,
 ):
+    slm_show_time = params[Params.SLM_SHOW_TIME]  # TODO arg or value from experimental setup
     slm_settle_time = params[Params.SLM_SETTLE_TIME]
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -115,10 +117,13 @@ def citl_predict(
 
     elif prop_model.upper() == "CAMERA":
         propagator = PhysicalProp(
+            slm_device,
+            cam_device,
+            slm_show_time,
+            slm_settle_time,
             channel,
             laser_arduino=True,
             roi_res=roi,
-            slm_settle_time=slm_settle_time,
             # range_row=(220, 1000),
             # range_col=(300, 1630),
             patterns_path=calibration_path,  # path of 12 x 21 calibration patterns, see Supplement.
@@ -222,4 +227,4 @@ def citl_predict(
 
 
 if __name__ == "__main__":
-    citl_predict()
+    parameterized_prop_model_citl_predict()

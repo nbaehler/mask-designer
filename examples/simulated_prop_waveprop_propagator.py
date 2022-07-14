@@ -84,14 +84,22 @@ def simulated_prop_sgd(iterations):
     # Simulate the propagation in the lens setting and show the results
     unpacked_phase_map = holoeye_phase_map[0, 0, :, :]
     propped_phase_map = simulated_prop(holoeye_phase_map, holoeye_fraunhofer)
-    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography SGD with lens")
+    show_plot(
+        unpacked_phase_map,
+        propped_phase_map,
+        "Neural Holography SGD with lens and Holoeye Fraunhofer",
+    )
 
     # Simulate the propagation in the lensless setting and show the results
     unpacked_phase_map = phase_map[0, 0, :, :]
     propped_phase_map = simulated_prop(
         phase_map, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
-    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography SGD without lens")
+    show_plot(
+        unpacked_phase_map,
+        propped_phase_map,
+        "Neural Holography SGD without lens and Neural Holography ASM",
+    )
 
     # Simulate the propagation in the lens setting and show the results
     unpacked_phase_map = holoeye_phase_map[0, 0, :, :]
@@ -107,25 +115,9 @@ def simulated_prop_sgd(iterations):
         .cpu()
         .detach()
     )
-    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography SGD with lens")
-
-    # Simulate the propagation in the lensless setting and show the results
-    unpacked_phase_map = phase_map[0, 0, :, :]
-    propped_phase_map = (
-        simulated_prop(
-            phase_map, waveprop_angular_spectrum, prop_dist, wavelength, pixel_pitch, device,
-        )
-        .cpu()
-        .detach()
-    )
     show_plot(
-        unpacked_phase_map, propped_phase_map, "Neural Holography SGD without lens",
+        unpacked_phase_map, propped_phase_map, "Neural Holography SGD with lens and waveprop ASM",
     )
-
-    # Simulate the propagation in the lens setting and show the results
-    unpacked_phase_map = phase_map[0, 0, :, :]
-    propped_phase_map = simulated_prop(phase_map, holoeye_fraunhofer)
-    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography SGD with lens")
 
 
 if __name__ == "__main__":

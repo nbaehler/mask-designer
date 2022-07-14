@@ -1,5 +1,0 @@
-# TODO discuss this
-
-We might need more of the surface of the slm -> bigger lenses, bigger laser
-beam ... Or use only small subsection, create calibration dots etc. for it.
-

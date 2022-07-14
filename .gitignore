@@ -137,3 +137,5 @@ dmypy.json
 citl/*
 !citl/calibration
 !citl/data
+
+.vscode

@@ -5,7 +5,7 @@ GitHub: https://github.com/ebezzam
 """
 
 import pytest
-from slm_designer.slm import SLM
+from slm_designer.virtual_slm import VirtualSLM
 from slm_designer.aperture import rect_aperture
 
 
@@ -23,20 +23,20 @@ class TestAperture:
         rect_aperture(slm_shape=slm_shape, pixel_pitch=pixel_pitch, apert_dim=apert_dim)
 
         # invalid, outside SLM
-        slm = SLM(shape=slm_shape, pixel_pitch=pixel_pitch)
-        with pytest.raises(AssertionError, match="must lie within SLM dimensions"):
+        virtual_slm = VirtualSLM(shape=slm_shape, pixel_pitch=pixel_pitch)
+        with pytest.raises(AssertionError, match="must lie within VirtualSLM dimensions"):
             rect_aperture(
                 slm_shape=slm_shape,
                 pixel_pitch=pixel_pitch,
                 apert_dim=apert_dim,
-                center=(slm.height, slm.width),
+                center=(virtual_slm.height, virtual_slm.width),
             )
 
         # aperture extends beyond
-        with pytest.raises(ValueError, match="extends past valid SLM dimensions"):
+        with pytest.raises(ValueError, match="extends past valid VirtualSLM dimensions"):
             rect_aperture(
                 slm_shape=slm_shape,
                 pixel_pitch=pixel_pitch,
                 apert_dim=apert_dim,
-                center=(slm.height - pixel_pitch[0], slm.width - pixel_pitch[1]),
+                center=(virtual_slm.height - pixel_pitch[0], virtual_slm.width - pixel_pitch[1],),
             )

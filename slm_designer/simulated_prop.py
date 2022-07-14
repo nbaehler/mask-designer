@@ -1,4 +1,4 @@
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 from slm_designer.propagation import holoeye_fraunhofer
 

@@ -238,43 +238,37 @@ def quantize_phase_pattern(phase_map):
     return np.rint(phase_map).astype("B")
 
 
-def resize_image_to_shape(images, shape, pad=False):
-    for i, image in enumerate(images):
-        if i == 0:
-            # Height / Width
-            aspect_ratio_im = (
-                image.shape[0] / image.shape[1]
-            )  # TODO must also be done to the target amp images! But how much scaling is needed?
-            aspect_ratio = shape[0] / shape[1]
+def resize_image_to_shape(image, shape, pad=False):
+    # Height / Width
+    aspect_ratio_im = (
+        image.shape[0] / image.shape[1]
+    )  # TODO must also be done to the target amp images! But how much scaling is needed?
+    aspect_ratio = shape[0] / shape[1]
 
-        if (
-            aspect_ratio_im < aspect_ratio
-        ):  # TODO aspect ratio can't be exactly equal sometimes, hence very slight deformation when resizing
-            if pad:
-                image = pad_image_to_shape(
-                    image, (round(image.shape[1] / aspect_ratio), image.shape[1])
-                )
-            else:
-                image = crop_image_to_shape(
-                    image, (image.shape[0], round(image.shape[0] / aspect_ratio))
-                )
-        elif aspect_ratio_im > aspect_ratio:
-            if pad:
-                image = pad_image_to_shape(
-                    image, (image.shape[0], round(image.shape[0] / aspect_ratio))
-                )
-            else:
-                image = crop_image_to_shape(
-                    image, (round(image.shape[1] / aspect_ratio), image.shape[1])
-                )
+    if (
+        aspect_ratio_im < aspect_ratio
+    ):  # TODO aspect ratio can't be exactly equal sometimes, hence very slight deformation when resizing
+        if pad:
+            image = pad_image_to_shape(
+                image, (round(image.shape[1] / aspect_ratio), image.shape[1])
+            )
+        else:
+            image = crop_image_to_shape(
+                image, (image.shape[0], round(image.shape[0] / aspect_ratio))
+            )
+    elif aspect_ratio_im > aspect_ratio:
+        if pad:
+            image = pad_image_to_shape(
+                image, (image.shape[0], round(image.shape[0] / aspect_ratio))
+            )
+        else:
+            image = crop_image_to_shape(
+                image, (round(image.shape[1] / aspect_ratio), image.shape[1])
+            )
 
-        im = Image.fromarray(image)
-        im = im.resize(
-            (shape[1], shape[0]), Image.BICUBIC,  # Pillow uses width, height
-        )
-        images[i] = np.array(im)
-
-    return images
+    im = Image.fromarray(image)
+    im = im.resize((shape[1], shape[0]), Image.BICUBIC,)  # Pillow uses width, height
+    return np.array(im)
 
 
 def crop_image_to_shape(image, shape):

@@ -1,6 +1,6 @@
 import abc
-from ids_peak import ids_peak
-from ids_peak_ipl import ids_peak_ipl
+from ids_peak import ids_peak as peak
+from ids_peak_ipl import ids_peak_ipl as peak_ipl
 import numpy as np
 from slm_controller.hardware import SLMParam, slm_devices
 from slm_designer.experimental_setup import slm_device
@@ -15,7 +15,7 @@ class Camera:
         """
         self._width = -1
         self._height = -1
-        self._frame_count = -1
+        self._frame_count = 0
         self._exposure_time = -1
 
     @property
@@ -30,48 +30,70 @@ class Camera:
     def frame(self):
         return self._frame_count
 
-    def acquire_images_and_resize_to_slm_shape(self, number=1):
+    def acquire_multiple_images_and_resize_to_slm_shape(self, number=2):
         """
-        Triggers the acquisition of images(s) and then resizes them to the size
+        Triggers the acquisition of multiple images and then resizes them to the size
         of the SLM.
 
         Parameters
         ----------
         number : int, optional
-            The number of images taken, by default 1
+            The number of images taken, by default 2
 
         Returns
         -------
         list
-            The list of acquired images that are resized to match the slm shape
+            The list of the acquired images that are resized to match the slm shape
         """
-        images = self.acquire_images(number)
+        images = self.acquire_multiple_images(number)
 
-        return resize_image_to_shape(
-            images, slm_devices[slm_device][SLMParam.SLM_SHAPE]
-        )
+        return [
+            resize_image_to_shape(image, slm_devices[slm_device][SLMParam.SLM_SHAPE])
+            for image in images
+        ]
+
+    def acquire_single_image_and_resize_to_slm_shape(self,):
+        """
+        Triggers the acquisition of a single images and then resizes it to the size
+        of the SLM.
+
+        Returns
+        -------
+        ndarray
+            The acquired image that is resized to match the slm shape
+        """
+        image = self.acquire_single_image()
+
+        return resize_image_to_shape(image, slm_devices[slm_device][SLMParam.SLM_SHAPE])
 
     @abc.abstractmethod
-    def acquire_images(self, number=1):
+    def acquire_single_image(self):
         """
-        Triggers the acquisition of images(s).
-
-        Parameters
-        ----------
-        number : int, optional
-            The number of images taken, by default 1
+        Triggers the acquisition of a single image.
         """
         pass
 
     @abc.abstractmethod
-    def set_exposure_time(self, time=200):
+    def acquire_multiple_images(self, number=2):
+        """
+        Triggers the acquisition of multiple images.
+
+        Parameters
+        ----------
+        number : int, optional
+            The number of images taken, by default 2
+        """
+        pass
+
+    @abc.abstractmethod
+    def set_exposure_time(self, time):
         """
         Set the exposure time of the camera to a specific value.
 
         Parameters
         ----------
-        time : int, optional
-            New exposure time in milliseconds, by default 200
+        time : int
+            New exposure time
         """
         pass
 
@@ -89,48 +111,94 @@ class DummyCamera(Camera):
         ]
 
         # Set frame count and exposure time
-        self._frame_count = 0
         self.set_exposure_time()
 
-    def set_exposure_time(self, time=200):
+        import numpy as np  # TODO remove
+        from PIL import Image
+
+        im = Image.open("./citl/calibration/cali.png")
+        im = np.array(im)
+
+        if len(im.shape) == 3:
+            if im.shape[2] == 4:
+                im = im[:, :, :3]
+
+            if im.shape[2] == 3:
+                im = np.mean(im, axis=2)
+
+        self.image = im
+
+    def set_exposure_time(self, time=np.pi):
         """
         Set the exposure time of the camera to a specific value.
 
         Parameters
         ----------
         time : int, optional
-            New exposure time in milliseconds, by default 200
+            New exposure time, by default pi
         """
         self._exposure_time = time
 
-    def acquire_images(self, number=1):
+    def acquire_single_image(self):
         """
-        Acquire dummy image(s).
+        Acquire a single dummy image.
+
+        Returns
+        -------
+        ndarray
+            The acquired dummy image
+        """
+
+        self._frame_count += 1
+        # return np.ones(
+        #     (self._height, self._width)
+        # )  # TODO change comments/documentation to white image (all ones)
+        return self.image
+
+    def acquire_multiple_images(self, number=2):
+        """
+        Acquire multiple dummy images.
 
         Parameters
         ----------
         number : int, optional
-            The number of images to be taken, by default 1
+            The number of images to be taken, by default 2
 
         Returns
         -------
         list
             The list of acquired dummy images
         """
-        images = []
+        self._frame_count += number
 
-        for _ in range(number):
-            self._frame_count += 1
-
-            # Append dummy images as numpy array to list of acquired images
-            images.append(
-                np.ones((self._height, self._width))
-            )  # TODO change comments/documentation to white image (all ones)
-
-        return images
+        # return [
+        #     np.ones((self._height, self._width)) for _ in range(number)
+        # ]  # TODO change comments/documentation to white image (all ones)
+        return [self.image for _ in range(number)]
 
 
 class IDSCamera(Camera):
+    # \file    mainwindow.py # TODO inspired by this, license??
+    # \author  IDS Imaging Development Systems GmbH
+    # \date    2021-01-15
+    # \since   1.2.0
+    #
+    # \version 1.1.1
+    #
+    # Copyright (C) 2021, IDS Imaging Development Systems GmbH.
+    #
+    # The information in this document is subject to change without notice
+    # and should not be construed as a commitment by IDS Imaging Development Systems GmbH.
+    # IDS Imaging Development Systems GmbH does not assume any responsibility for any errors
+    # that may appear in this document.
+    #
+    # This document, or source code, is provided solely as an example of how to utilize
+    # IDS Imaging Development Systems GmbH software libraries in a sample application.
+    # IDS Imaging Development Systems GmbH does not assume any responsibility
+    # for the use or reliability of any portion of this document.
+    #
+    # General permission to copy or modify is hereby granted.
+
     def __init__(self):
         """
         Initializes the camera and sets all the parameters such that acquisition
@@ -149,95 +217,194 @@ class IDSCamera(Camera):
         ]
 
         # Initialize library
-        ids_peak.Library.Initialize()
+        peak.Library.Initialize()
 
         # Create a device manager object
-        device_manager = ids_peak.DeviceManager.Instance()
+        device_manager = peak.DeviceManager.Instance()
 
-        self.__datastream = None
+        self.__data_stream = None
 
         # Update device manager
         try:
             device_manager.Update()
         except:
             raise IOError(
-                "Failed to update the IDS device manager. Check its connection and setup."
+                "Failed to update the IDS device manager. Check the cameras connection and setup."
             )
 
         # Raise exception if no device was found
         if device_manager.Devices().empty():
-            raise IOError("Failed to load IDS camera. Check its connection and setup.")
+            raise IOError(
+                "Failed to load IDS camera in the device manager. Check its connection and setup."
+            )
 
-        # Open first device
-        self.__device = device_manager.Devices()[0].OpenDevice(
-            ids_peak.DeviceAccessType_Control
-        )
+        self.__device = None
+
+        # Open the first openable device in the managers device list
+        for device in device_manager.Devices():
+            if device.IsOpenable():
+                self.__device = device.OpenDevice(peak.DeviceAccessType_Control)
+                break
+
+        if self.__device is None:
+            raise IOError("Failed to open IDS camera. Check its connection and setup.")
 
         # Get nodemap of the remote device for all accesses to the genicam nodemap tree
-        node_map = self.__device.RemoteDevice().NodeMaps()[0]
+        self.__node_map = self.__device.RemoteDevice().NodeMaps()[0]
 
         # Load default settings
-        node_map.FindNode("UserSetSelector").SetCurrentEntry("Default")
-        node_map.FindNode("UserSetLoad").Execute()
-        node_map.FindNode("UserSetLoad").WaitUntilDone()
+        self.__node_map.FindNode("UserSetSelector").SetCurrentEntry("Default")
+        self.__node_map.FindNode("UserSetLoad").Execute()
+        self.__node_map.FindNode("UserSetLoad").WaitUntilDone()
 
-        # Set acquisition mode to single frame
-        node_map.FindNode("AcquisitionMode").SetCurrentEntry(
-            node_map.FindNode("EnumEntry_AcquisitionMode_SingleFrame")
-        )
+        # Use single frame mode
+        self.__node_map.FindNode("AcquisitionMode").SetCurrentEntry("SingleFrame")
 
-        # Set the exposure time to 200 ms
-        self.set_exposure_time()
+        # https://de.ids-imaging.com/manuals/ids-peak/ids-peak-user-manual/1.3.0/en/operate-single-frame-acquisition.html?q=SingleFrame
+        self.__node_map.FindNode("TriggerSelector").SetCurrentEntry("ExposureStart")
+        self.__node_map.FindNode("TriggerMode").SetCurrentEntry("Off")
+
+        # Lock critical features to prevent them from changing
+        self.__node_map.FindNode("TLParamsLocked").SetValue(1)
+
+        data_streams = self.__device.DataStreams()
+        if data_streams.empty():
+            # no data streams available
+            raise IOError(
+                "Failed to access the IDS camera data streams. Check its connection and setup."
+            )
 
         # Open standard data stream
-        self.__datastream = self.__device.DataStreams()[0].OpenDataStream()
+        self.__data_stream = data_streams[0].OpenDataStream()
 
-        # Get the payload size for correct buffer allocation
-        payload_size = node_map.FindNode("PayloadSize").Value()
+        self.__flush_and_revoke_buffers()
+        self.__allocate_buffers()
 
-        # Get minimum number of buffers that must be announced
-        buffer_count_min = self.__datastream.NumBuffersAnnouncedMinRequired()
+        # Set the exposure time to default value
+        self.set_exposure_time()
 
-        # Allocate and announce image buffers and queue them
-        for _ in range(buffer_count_min):
-            buffer = self.__datastream.AllocAndAnnounceBuffer(payload_size)
-            self.__datastream.QueueBuffer(buffer)
+    def __allocate_buffers(self):
+        if self.__data_stream:
+            payload_size = self.__node_map.FindNode("PayloadSize").Value()
 
-        # Hacky fix for a bug with exposure time
-        self.acquire_images()  # TODO Bug, first image seems not use newly set parameters
+            # Get number of minimum required buffers
+            num_buffers_min_required = (
+                self.__data_stream.NumBuffersAnnouncedMinRequired()
+            )
 
-    def set_exposure_time(self, time=200):
+            # Allocate buffers
+            for _ in range(num_buffers_min_required):
+                buffer = self.__data_stream.AllocAndAnnounceBuffer(payload_size)
+                self.__data_stream.QueueBuffer(buffer)
+
+    def __flush_and_revoke_buffers(self):
+        if self.__data_stream:
+            # Flush queue and prepare all buffers for revoking
+            self.__data_stream.Flush(peak.DataStreamFlushMode_DiscardAll)
+
+            # Clear all old buffers
+            for buffer in self.__data_stream.AnnouncedBuffers():
+                self.__data_stream.RevokeBuffer(buffer)
+
+    def __single_acquisition(self):
+        # Start acquisition on camera
+        acquisition_start = self.__node_map.FindNode("AcquisitionStart")
+        self.__data_stream.StartAcquisition()
+        acquisition_start.Execute()
+        acquisition_start.WaitUntilDone()
+
+        # Get data from device's data stream, in milliseconds
+        buffer = self.__data_stream.WaitForFinishedBuffer(5000)
+
+        # Stop acquisition on camera
+        self.__data_stream.StopAcquisition()  # TODO move up?
+
+        # Flush data stream
+        self.__data_stream.Flush(peak.DataStreamFlushMode_DiscardAll)
+
+        # Queue buffer so that it can be used again
+        self.__data_stream.QueueBuffer(buffer)
+
+        return buffer
+
+    def __print_supported_nodes(self, node):  # TODO for development
+        all_entries = self.__node_map.FindNode(node).Entries()
+        available_entries = [
+            entry.SymbolicValue()
+            for entry in all_entries
+            if entry.AccessStatus()
+            not in [
+                peak.NodeAccessStatus_NotAvailable,
+                peak.NodeAccessStatus_NotImplemented,
+            ]
+        ]
+
+        print(available_entries)
+
+    def set_exposure_time(self, time=33.189):
         """
         Set the exposure time of the camera to a specific value.
 
         Parameters
         ----------
         time : int, optional
-            New exposure time in milliseconds, by default 200
+            New exposure time in microseconds, by default 33.189 (which is the
+            minimal value supported by the camera)
         """
         # Store the new exposure time
         self._exposure_time = time
 
-        # Get nodemap of the remote device for all accesses to the genicam nodemap tree
-        node_map = self.__device.RemoteDevice().NodeMaps()[0]
-
         # Unlock the parameters lock
-        node_map.FindNode("TLParamsLocked").SetValue(0)
+        self.__node_map.FindNode("TLParamsLocked").SetValue(0)
 
-        # Change exposure time (in milliseconds)
-        node_map.FindNode("ExposureTime").SetValue(time)
+        # Change exposure time (in microseconds)
+        self.__node_map.FindNode("ExposureTime").SetValue(time)
 
-        # Lock critical features to prevent them from changing during acquisition
-        node_map.FindNode("TLParamsLocked").SetValue(1)
+        # Lock critical features to prevent them from changing
+        self.__node_map.FindNode("TLParamsLocked").SetValue(1)
 
-    def acquire_images(self, number=1):
+        # Hacky fix for a bug with exposure time
+        self.__single_acquisition()  # TODO Bug, parameters are only committed after a capture
+
+    def acquire_single_image(self):
         """
-        Acquire image(s).
+        Acquire a single image.
+
+        Returns
+        -------
+        ndarray
+            Acquired image
+        """
+        self._frame_count += 1
+
+        # Perform a single image acquisition
+        buffer = self.__single_acquisition()
+
+        # Create IDS peak IPL image
+        ipl_image = peak_ipl.Image_CreateFromSizeAndBuffer(
+            buffer.PixelFormat(),
+            buffer.BasePtr(),
+            buffer.Size(),
+            self._width,
+            self._height,
+        )
+
+        # # Create IDS peak IPL image for debayering and convert it to RGBa8 format # TODO needed?
+        # ipl_image = ipl_image.ConvertTo(
+        #     peak_ipl.PixelFormatName.BGRa8, peak_ipl.ConversionMode.Fast
+        # )
+
+        # Return image as numpy array
+        return ipl_image.get_numpy_2D().copy()
+
+    def acquire_multiple_images(self, number=2):
+        """
+        Acquire multiple images.
 
         Parameters
         ----------
         number : int, optional
-            The number of images to be taken, by default 1
+            The number of images to be taken, by default 2
 
         Returns
         -------
@@ -245,33 +412,13 @@ class IDSCamera(Camera):
             The list of acquired images
         """
         images = []
+        self._frame_count += number
 
         for _ in range(number):
-            self._frame_count += 1
-
-            # Get nodemap of the remote device for all accesses to the genicam nodemap tree
-            node_map = self.__device.RemoteDevice().NodeMaps()[0]
-
-            # Start acquisition on camera
-            acquisition_start = node_map.FindNode("AcquisitionStart")
-            self.__datastream.StartAcquisition()
-            acquisition_start.Execute()
-            acquisition_start.WaitUntilDone()
-
-            # Get buffer from device's datastream
-            buffer = self.__datastream.WaitForFinishedBuffer(5000)
-
-            # Stop acquisition on camera
-            self.__datastream.StopAcquisition()
-
-            # Flush datastream
-            self.__datastream.Flush(ids_peak.DataStreamFlushMode_DiscardAll)
-
-            # Queue buffer so that it can be used again
-            self.__datastream.QueueBuffer(buffer)
+            buffer = self.__single_acquisition()
 
             # Create IDS peak IPL image
-            ipl_image = ids_peak_ipl.Image_CreateFromSizeAndBuffer(
+            ipl_image = peak_ipl.Image_CreateFromSizeAndBuffer(
                 buffer.PixelFormat(),
                 buffer.BasePtr(),
                 buffer.Size(),
@@ -280,7 +427,7 @@ class IDSCamera(Camera):
             )
 
             # Append images as numpy array to list of acquired images
-            images.append(ipl_image.get_numpy_2D())
+            images.append(ipl_image.get_numpy_2D().copy())
 
         return images
 
@@ -288,15 +435,10 @@ class IDSCamera(Camera):
         """
         Clean up before exit.
         """
-        if self.__datastream:
-            # Stop and flush the datastream
-            self.__datastream.KillWait()
-            self.__datastream.Flush(ids_peak.DataStreamFlushMode_DiscardAll)
 
-            for buffer in self.__datastream.AnnouncedBuffers():
-                self.__datastream.RevokeBuffer(buffer)
+        self.__flush_and_revoke_buffers()
 
-        ids_peak.Library.Close()
+        peak.Library.Close()
 
 
 def create_camera(device_key):

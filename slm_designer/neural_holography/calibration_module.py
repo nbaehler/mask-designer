@@ -38,8 +38,7 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
 
     # Binarization
     # org_copy = org.copy() # Otherwise, we write on the original image!
-    # img = (captured_img.copy() * 255).astype(np.uint8) # TODO already in [0, 255]
-    img = captured_img.copy().astype(np.uint8)
+    img = (captured_img.copy() * 255).astype(np.uint8)
 
     if len(img.shape) > 2:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -85,7 +84,9 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
     )
 
     # Drawing the keypoints
-    cv2.drawChessboardCorners(captured_img, num_circles, centers, found_dots)
+    captured_img_centers = cv2.drawChessboardCorners(
+        captured_img.copy(), num_circles, centers, found_dots
+    )
     img_gray = cv2.drawKeypoints(
         img_gray, keypoints, np.array([]), (0, 255, 0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS,
     )
@@ -107,7 +108,7 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
                 int((num_circs - 1) * space + 2 * pad_pixs)
                 for num_circs, space, pad_pixs in zip(num_circles, spacing, pad_pixels)
             ]
-            captured_img_warp = cv2.warpPerspective(captured_img, H, tuple(dsize))
+            captured_img_warp = cv2.warpPerspective(captured_img_centers, H, tuple(dsize))
 
     if show_preview:
         fig = plt.figure()
@@ -121,12 +122,12 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
         ax2.imshow(captured_img, cmap="gray")
 
         ax3 = fig.add_subplot(223)
-        ax3.set_title("Image after preprocessing with keypoints")
+        ax3.set_title("Image after partial preprocessing with marked keypoints")
         ax3.imshow(img_gray, cmap="gray")
 
         if found_dots:
             ax4 = fig.add_subplot(224)
-            ax4.set_title("Warped image")
+            ax4.set_title("Warped image with marked centers")
             ax4.imshow(captured_img_warp, cmap="gray")
 
         plt.show()

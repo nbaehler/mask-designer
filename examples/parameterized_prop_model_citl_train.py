@@ -1,5 +1,5 @@
 """
-Script that runs the CITL training of Neural Holography. #TODO: functional but
+Script that runs the CITL training of Neural Holography. #TODO functional but
 needs more work
 """
 
@@ -49,7 +49,7 @@ import datetime
 #     "--step_lr", type=str2bool, default=True, help="Use of lr scheduler"
 # )
 # @click.option("--experiment", type=str, default="", help="Name of the experiment")
-def citl_train(
+def parameterized_prop_model_citl_train(
     channel,
     pretrained_path,
     model_path,
@@ -84,4 +84,4 @@ def citl_train(
 
 
 if __name__ == "__main__":
-    citl_train()
+    parameterized_prop_model_citl_train()

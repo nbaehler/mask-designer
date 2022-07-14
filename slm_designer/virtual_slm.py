@@ -10,10 +10,10 @@ from slm_designer.utils import prepare_index_vals, rgb2gray
 import matplotlib.pyplot as plt
 
 
-class SLM:
+class VirtualSLM:
     def __init__(self, shape, pixel_pitch):
         """
-        Class for defining SLM.
+        Class for defining VirtualSLM.
 
         Parameters
         ----------
@@ -66,12 +66,12 @@ class SLM:
 
     def at(self, physical_coord, value=None):
         """
-        Get/set values of SLM at physical coordinate in meters.
+        Get/set values of VirtualSLM at physical coordinate in meters.
 
         Parameters
         ----------
         physical_coord : int, float, slice tuples
-            Physical coordinates to get/set SLM values.
+            Physical coordinates to get/set VirtualSLM values.
         value : int, float, :py:class:`~numpy.ndarray`
             [Optional] values to set, otherwise return values at specified coordinates.
         """
@@ -91,7 +91,7 @@ class SLM:
 
     def plot(self, show_tick_labels=False):
         """
-        Plot SLM pattern.
+        Plot VirtualSLM pattern.
 
         Parameters
         ----------
