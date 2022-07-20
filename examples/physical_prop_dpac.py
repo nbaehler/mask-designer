@@ -3,7 +3,6 @@ Physical propagation of slm patterns generated using the DPAC algorithm.
 """
 
 import torch
-import click
 from slm_controller import slm
 from slm_controller.hardware import (
     SLMParam,
@@ -19,11 +18,7 @@ from slm_designer.experimental_setup import (
 from slm_designer.wrapper import ImageLoader, run_dpac
 
 
-@click.command()
-@click.option(
-    "--slm_show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.",
-)
-def physical_prop_dpac(show_time):
+def physical_prop_dpac():
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -46,7 +41,6 @@ def physical_prop_dpac(show_time):
 
     # Instantiate SLM object
     s = slm.create_slm(slm_device)
-    s.set_show_time(show_time)
 
     # Load the the first image in the folder
     target_amp, _, _ = image_loader.load_image(0)

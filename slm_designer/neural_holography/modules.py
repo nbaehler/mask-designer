@@ -411,10 +411,9 @@ class PhysicalProp(nn.Module):
 
     def __init__(
         self,
-        slm_device,
-        cam_device,
-        slm_show_time,
+        slm,
         slm_settle_time,
+        cam,
         channel=1,
         # roi_res=(1600, 880),
         # num_circles=(21, 12),
@@ -437,15 +436,14 @@ class PhysicalProp(nn.Module):
 
         # 1. Connect Camera
         # self.camera = CameraCapture()
-        self.camera = camera.create_camera(cam_device)
+        self.camera = cam
         # self.camera.connect(0)  # specify the camera to use, 0 for main cam, 1 for the second cam
 
         # 2. Connect SLM
         # self.slm = SLMDisplay()
         # self.slm.connect()
+        self.slm = slm
         self.slm_settle_time = slm_settle_time
-        self.slm = slm.create_slm(slm_device)
-        self.slm.set_show_time(slm_show_time)
 
         # # 3. Connect to the Arduino that switches rgb color through the laser control box.
         # if laser_arduino:

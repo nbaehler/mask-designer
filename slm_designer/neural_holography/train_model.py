@@ -41,10 +41,12 @@ import torch.nn as nn
 import torch.optim as optim
 from PIL import Image
 
+from slm_controller import slm
 from slm_controller.hardware import (
     SLMParam,
     slm_devices,
 )
+from slm_designer import camera
 
 
 from slm_designer.experimental_setup import (
@@ -173,12 +175,16 @@ def train_model(
     # phase_path = phase_path  # path of precomputed phase pool
     # data_path = "./citl/data"  # path of targets
 
+    s = slm.create_slm(slm)
+    s.set_show_time(slm_show_time)
+
+    cam = camera.create_camera(cam_device)
+
     # Hardware setup
     camera_prop = PhysicalProp(
-        slm_device,
-        cam_device,
-        slm_show_time,
+        s,
         slm_settle_time,
+        cam,
         channel,
         # laser_arduino=True,
         roi_res=roi,

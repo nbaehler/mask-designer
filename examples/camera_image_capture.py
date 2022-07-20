@@ -17,7 +17,7 @@ def camera_image_capture():
 
     # and plot it using matplotlib
     _, ax = plt.subplots()
-    ax.imshow(image, cmap="gray")
+    ax.imshow(image, cmap="gray", vmin=0, vmax=255)  # TODO do I need this everywhere?
     plt.show()
 
     # Change the exposure time, take another image

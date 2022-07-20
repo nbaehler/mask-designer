@@ -28,11 +28,12 @@ import numpy as np
 from pathlib import Path
 
 
+from slm_controller import slm
 from slm_controller.hardware import (
     SLMParam,
     slm_devices,
 )
-
+from slm_designer import camera
 from slm_designer.experimental_setup import (
     Params,
     params,
@@ -116,11 +117,15 @@ def parameterized_prop_model_citl_predict(
         propagator = propagation_ASM
 
     elif prop_model.upper() == "CAMERA":
+        s = slm.create_slm(slm)
+        s.set_show_time(slm_show_time)
+
+        cam = camera.create_camera(cam_device)
+
         propagator = PhysicalProp(
-            slm_device,
-            cam_device,
-            slm_show_time,
+            s,
             slm_settle_time,
+            cam,
             channel,
             laser_arduino=True,
             roi_res=roi,

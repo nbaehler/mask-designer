@@ -37,6 +37,9 @@ import slm_designer.neural_holography.utils as utils
 from slm_designer.neural_holography.modules import PhysicalProp
 from slm_designer.neural_holography.propagation_model import ModelPropagate
 
+from slm_controller import slm
+from slm_designer import camera
+
 from slm_designer.experimental_setup import (
     Params,
     params,
@@ -133,11 +136,15 @@ def eval(
         #     ).to(device)
 
     elif prop_model.upper() == "CAMERA":
+        s = slm.create_slm(slm)
+        s.set_show_time(slm_show_time)
+
+        cam = camera.create_camera(cam_device)
+
         propagator = PhysicalProp(
-            slm_device,
-            cam_device,
-            slm_show_time,
+            s,
             slm_settle_time,
+            cam,
             channel,
             laser_arduino=True,
             roi_res=roi,

@@ -16,9 +16,8 @@ def temp():
 
     image = Image.open("images/target_amplitude/holoeye_logo.png")
     image = np.array(image)
-    images = [image]
 
-    resized_image = resize_image_to_shape(images, slm_shape, pad=True)[0]
+    resized_image = resize_image_to_shape(image, slm_shape, pad=True)
     resized_image = Image.fromarray(resized_image)
 
     resized_image.save("images/test/holoeye_logo_big.png")

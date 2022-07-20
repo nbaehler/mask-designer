@@ -9,6 +9,7 @@ from slm_controller.hardware import (
     SLMParam,
     slm_devices,
 )
+from slm_designer import camera
 
 from slm_designer.experimental_setup import (
     Params,
@@ -17,8 +18,9 @@ from slm_designer.experimental_setup import (
     cam_device,
 )
 
-# from slm_designer.transform_phase_maps import
-# transform_from_neural_holography_setting #TODO circular import
+# from slm_designer.transform_phase_maps import (
+#     transform_from_neural_holography_setting,
+# )  # TODO circular import
 from slm_designer.utils import extend_to_complex, quantize_phase_pattern
 from slm_designer.wrapper import ImageLoader, SGD, PhysicalProp
 
@@ -73,11 +75,16 @@ def physical_prop_sgd(iterations, slm_show_time, slm_settle_time):
     # Setup a random initial slm phase map with values in [-0.5, 0.5]
     init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_shape)).to(device)
 
+    s = slm.create_slm(slm_device)
+    s.set_show_time(slm_show_time)
+
+    cam = camera.create_camera(cam_device)
+    cam.use_image()
+
     camera_prop = PhysicalProp(
-        slm_device,
-        cam_device,
-        slm_show_time,
+        s,
         slm_settle_time,
+        cam,
         # channel,
         # laser_arduino=True,
         roi_res=roi,
@@ -103,16 +110,19 @@ def physical_prop_sgd(iterations, slm_show_time, slm_settle_time):
     # Extend the computed angles, aka the phase values, to a complex tensor again
     extended = extend_to_complex(angles)
 
-    # # Transform the results to the hardware setting using a lens
+    # Transform the results to the hardware setting using a lens # TODO circular import
     # final_phase_sgd = transform_from_neural_holography_setting(
     #     extended, prop_dist, wavelength, slm_shape, pixel_pitch
     # ).angle()
 
-    # # Quantize the the angles, aka phase values, to a bit values
-    # phase_out = quantize_phase_pattern(final_phase_sgd)
+    final_phase_sgd = extended.angle()
 
-    # # Display
-    # s.imshow(phase_out)
+    # Quantize the the angles, aka phase values, to a bit values
+    phase_out = quantize_phase_pattern(final_phase_sgd)
+
+    # Display
+    s.set_show_time()
+    s.imshow(phase_out)
 
 
 if __name__ == "__main__":

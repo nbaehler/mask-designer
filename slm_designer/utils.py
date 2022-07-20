@@ -245,26 +245,20 @@ def resize_image_to_shape(image, shape, pad=False):
     )  # TODO must also be done to the target amp images! But how much scaling is needed?
     aspect_ratio = shape[0] / shape[1]
 
-    if (
-        aspect_ratio_im < aspect_ratio
-    ):  # TODO aspect ratio can't be exactly equal sometimes, hence very slight deformation when resizing
+    if aspect_ratio_im != aspect_ratio:
+        if (
+            aspect_ratio_im < aspect_ratio
+            and pad
+            or aspect_ratio_im > aspect_ratio
+            and not pad
+        ):
+            target_shape = (round(image.shape[1] * aspect_ratio), image.shape[1])
+        elif (aspect_ratio_im < aspect_ratio) or aspect_ratio_im > aspect_ratio:
+            target_shape = (image.shape[0], round(image.shape[0] / aspect_ratio))
         if pad:
-            image = pad_image_to_shape(
-                image, (round(image.shape[1] / aspect_ratio), image.shape[1])
-            )
+            image = pad_image_to_shape(image, target_shape)
         else:
-            image = crop_image_to_shape(
-                image, (image.shape[0], round(image.shape[0] / aspect_ratio))
-            )
-    elif aspect_ratio_im > aspect_ratio:
-        if pad:
-            image = pad_image_to_shape(
-                image, (image.shape[0], round(image.shape[0] / aspect_ratio))
-            )
-        else:
-            image = crop_image_to_shape(
-                image, (round(image.shape[1] / aspect_ratio), image.shape[1])
-            )
+            image = crop_image_to_shape(image, target_shape)
 
     im = Image.fromarray(image)
     im = im.resize((shape[1], shape[0]), Image.BICUBIC,)  # Pillow uses width, height
@@ -303,3 +297,36 @@ def pad_tensor_to_shape(phase_map, shape):
     pad_shape = (width_before, width_after, height_before, height_after)
 
     return F.pad(phase_map, pad_shape, "constant", 0)
+
+
+def load_image(path):
+    """
+    Load an image from a path.
+
+    Parameters
+    ----------
+    path : String
+        The path to the image
+
+    Returns
+    -------
+    numpy.ndarray
+        The image
+    """
+    img = Image.open(path)
+    img = np.array(img)
+    dtype = img.dtype
+
+    if len(img.shape) == 3:
+        if img.shape[2] == 4:
+            img = img[:, :, :3]
+
+        if img.shape[2] == 3:
+            img = np.mean(img, axis=2)
+
+    if issubclass(dtype.type, np.floating):
+        img = img / np.finfo(dtype).max
+    elif issubclass(dtype.type, np.integer):
+        img = img / np.iinfo(dtype).max
+
+    return np.round(img * 255).astype(np.uint8)

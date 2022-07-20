@@ -2,10 +2,11 @@ import abc
 from ids_peak import ids_peak as peak
 from ids_peak_ipl import ids_peak_ipl as peak_ipl
 import numpy as np
+
 from slm_controller.hardware import SLMParam, slm_devices
 from slm_designer.experimental_setup import slm_device
 from slm_designer.hardware import CamDevices, CamParam, cam_devices
-from slm_designer.utils import resize_image_to_shape
+from slm_designer.utils import load_image, resize_image_to_shape
 
 
 class Camera:
@@ -101,7 +102,7 @@ class Camera:
 class DummyCamera(Camera):
     def __init__(self):
         """
-        Initializes the dummy camera returning only black images.
+        Initializes the dummy camera returning only black images. # TODO update comments/documentation
         """
         super().__init__()
 
@@ -113,20 +114,10 @@ class DummyCamera(Camera):
         # Set frame count and exposure time
         self.set_exposure_time()
 
-        import numpy as np  # TODO remove
-        from PIL import Image
-
-        im = Image.open("./citl/calibration/cali.png")
-        im = np.array(im)
-
-        if len(im.shape) == 3:
-            if im.shape[2] == 4:
-                im = im[:, :, :3]
-
-            if im.shape[2] == 3:
-                im = np.mean(im, axis=2)
-
-        self.image = im
+        # Default image is just a white image
+        self._image = (
+            np.ones((self._height, self._width), dtype=np.uint8) * 255
+        )  # TODO change comments/documentation to white image (all 255)
 
     def set_exposure_time(self, time=np.pi):
         """
@@ -139,6 +130,10 @@ class DummyCamera(Camera):
         """
         self._exposure_time = time
 
+    def use_image(self, path="citl/calibration/cali.png"):  # TODO documentation
+        image = load_image(path)  # TODO scale up and scale down of calibration image...
+        self._image = resize_image_to_shape(image, (self._height, self._width))
+
     def acquire_single_image(self):
         """
         Acquire a single dummy image.
@@ -150,10 +145,7 @@ class DummyCamera(Camera):
         """
 
         self._frame_count += 1
-        # return np.ones(
-        #     (self._height, self._width)
-        # )  # TODO change comments/documentation to white image (all ones)
-        return self.image
+        return self._image.copy()
 
     def acquire_multiple_images(self, number=2):
         """
@@ -170,11 +162,7 @@ class DummyCamera(Camera):
             The list of acquired dummy images
         """
         self._frame_count += number
-
-        # return [
-        #     np.ones((self._height, self._width)) for _ in range(number)
-        # ]  # TODO change comments/documentation to white image (all ones)
-        return [self.image for _ in range(number)]
+        return [self._image.copy() for _ in range(number)]
 
 
 class IDSCamera(Camera):

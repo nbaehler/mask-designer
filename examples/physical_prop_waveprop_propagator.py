@@ -25,10 +25,7 @@ from slm_designer.wrapper import ImageLoader, SGD
 
 @click.command()
 @click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
-@click.option(
-    "--slm_show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.",
-)
-def physical_prop_waveprop_propagator(iterations, show_time):
+def physical_prop_waveprop_propagator(iterations):
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -51,7 +48,6 @@ def physical_prop_waveprop_propagator(iterations, show_time):
 
     # Instantiate SLM object
     s = slm.create_slm(slm_device)
-    s.set_show_time(show_time)
 
     # Load the the first image in the folder
     target_amp, _, _ = image_loader.load_image(0)
