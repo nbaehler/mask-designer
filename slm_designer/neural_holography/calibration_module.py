@@ -38,7 +38,9 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
 
     # Binarization
     # org_copy = org.copy() # Otherwise, we write on the original image!
-    img = (captured_img.copy() * 255).astype(np.uint8)
+    # img = (captured_img.copy() * 255).astype(np.uint8) # TODO no need to go
+    # through floats
+    img = captured_img.copy()
 
     if len(img.shape) > 2:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)

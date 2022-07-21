@@ -20,9 +20,12 @@ class Params(Enum):
 params = {
     Params.WAVELENGTH: 532e-9,
     Params.PROPAGATION_DISTANCE: 0.34,
+    # Params.SLM_SETTLE_TIME: 7,
+    # Params.SLM_SHOW_TIME: 0.5,
     Params.SLM_SETTLE_TIME: 0.25,
-    Params.SLM_SHOW_TIME: 0.1,
-    Params.ROI: (640, 880),
+    Params.SLM_SHOW_TIME: 1,
+    # Params.ROI: (640, 880),
+    Params.ROI: (320, 560),
 }
 
 # Choose a slm device
@@ -31,5 +34,5 @@ slm_device = (
 )  # TODO does this structure still make sense?
 
 # and a camera device that you want to use
-# cam_device = CamDevices.IDS.value
-cam_device = CamDevices.DUMMY.value
+cam_device = CamDevices.IDS.value
+# cam_device = CamDevices.DUMMY.value

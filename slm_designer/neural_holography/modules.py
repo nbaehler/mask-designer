@@ -18,11 +18,19 @@ All rights reserved.
 Refer to the LICENSE file for more information.
 """
 
+from multiprocessing import Process
+from pathlib import Path
+import pickle
 import numpy as np
+from slm_controller.hardware import SLMParam
 import torch
 import torch.nn as nn
 from slm_controller import slm
 from slm_designer import camera
+from slm_designer.capture import capture
+from slm_designer.hardware import CamParam, cam_devices
+from slm_controller.hardware import SLMParam, slm_devices
+
 
 from slm_designer.neural_holography.algorithms import (
     gerchberg_saxton,
@@ -37,7 +45,16 @@ import slm_designer.neural_holography.utils as utils
 from slm_designer.neural_holography.propagation_ASM import propagation_ASM
 from slm_designer.neural_holography.calibration_module import Calibration
 
+from slm_designer.experimental_setup import (
+    Params,
+    params,
+    cam_device,
+    slm_device,
+)
+
 import platform
+
+from slm_designer.utils import resize_image_to_shape
 
 # my_os = platform.system()
 # if my_os == "Windows":
@@ -414,14 +431,16 @@ class PhysicalProp(nn.Module):
         slm,
         slm_settle_time,
         cam,
+        roi_res,
         channel=1,
         # roi_res=(1600, 880),
         # num_circles=(21, 12),
-        roi_res=(640, 880),
-        num_circles=(
-            9,
-            12,
-        ),  # TODO (3, 3) makes dimension flip: width/height, and does not help the blob detector
+        # =(640, 880),
+        # num_circles=(
+        #     9,
+        #     12,
+        # ),  # TODO (3, 3) makes dimension flip: width/height, and does not help the blob detector
+        num_circles=(5, 8),
         # laser_arduino=False,
         # com_port="COM3",
         # arduino_port_num=(6, 10, 11),
@@ -491,21 +510,106 @@ class PhysicalProp(nn.Module):
         :return:
         """
 
+        # -----------------------------------------------------
+
+        # self.calibrator = Calibration(num_circles, space_btw_circs)
+
+        # camera_setup_time = self.slm_settle_time  # TODO clean up
+
+        # self.slm.set_show_time(
+        #     camera_setup_time + num_grab_images * params[Params.SLM_SHOW_TIME]
+        # )
+
+        # self.captured_blank = np.zeros(
+        #     slm_devices[slm_device][SLMParam.SLM_SHAPE], dtype=np.uint8
+        # )
+
+        # captured_blank = self._capture_and_average_intensities(
+        #     num_grab_images, False, self.captured_blank,
+        # )
+
+        # self.captured_blank = resize_image_to_shape(
+        #     captured_blank, slm_devices[slm_device][SLMParam.SLM_SHAPE]
+        # )
+
+        # import matplotlib.pyplot as plt
+
+        # _, ax = plt.subplots()
+        # ax.imshow(self.captured_blank, cmap="gray")
+        # plt.show()
+
+        # # captured_blank = np.zeros(slm_devices[slm_device][SLMParam.SLM_SHAPE], dtype=np.uint8)
+
+        # # supposed to be a grid pattern image for calibration
+        # calib_phase_img = skimage.io.imread(calibration_pattern_path)
+        # calib_phase_img = np.mean(calib_phase_img[:, :, 0:3], axis=2)
+
+        # import matplotlib.pyplot as plt
+
+        # _, ax = plt.subplots()
+        # ax.imshow(calib_phase_img, cmap="gray")
+        # plt.show()
+
+        # captured_img = self._capture_and_average_intensities(
+        #     num_grab_images, True, calib_phase_img
+        # )
+
+        # _, ax = plt.subplots()
+        # ax.imshow(captured_img, cmap="gray")
+        # plt.show()
+
+        # self.slm.set_show_time(camera_setup_time + params[Params.SLM_SHOW_TIME])
+
+        # -----------------------------------------------------
+
         self.calibrator = Calibration(num_circles, space_btw_circs)
+
+        self.slm.set_show_time(num_grab_images * params[Params.SLM_SHOW_TIME])
+
+        self.captured_blank = np.zeros(slm_devices[slm_device][SLMParam.SLM_SHAPE], dtype=np.uint8)
+
+        captured_blank = self._capture_and_average_intensities(
+            num_grab_images,
+            False,
+            np.zeros(slm_devices[slm_device][SLMParam.SLM_SHAPE], dtype=np.uint8,),
+        )
+
+        import matplotlib.pyplot as plt
+
+        _, ax = plt.subplots()
+        ax.imshow(captured_blank, cmap="gray")
+        plt.show()
+
+        # captured_blank = np.zeros(slm_devices[slm_device][SLMParam.SLM_SHAPE], dtype=np.uint8)
+
+        self.camera.set_correction(captured_blank)
 
         # supposed to be a grid pattern image for calibration
         calib_phase_img = skimage.io.imread(calibration_pattern_path)
-
         calib_phase_img = np.mean(calib_phase_img[:, :, 0:3], axis=2)
 
-        captured_img = self._capture_and_average_intensities(calib_phase_img, num_grab_images)
+        import matplotlib.pyplot as plt
+
+        _, ax = plt.subplots()
+        ax.imshow(calib_phase_img, cmap="gray")
+        plt.show()
+
+        captured_img = self._capture_and_average_intensities(num_grab_images, True, calib_phase_img)
+
+        _, ax = plt.subplots()
+        ax.imshow(captured_img, cmap="gray")
+        plt.show()
+
+        self.slm.set_show_time(params[Params.SLM_SHOW_TIME])
+
+        # -----------------------------------------------------
 
         # masking out dot pattern region for homography
-        captured_img_masked = captured_img[
+        corrected_img_masked = captured_img[
             range_row[0] : range_row[1], range_col[0] : range_col[1], ...
         ]
 
-        calib_success = self.calibrator.calibrate(captured_img_masked, show_preview=show_preview)
+        calib_success = self.calibrator.calibrate(corrected_img_masked, show_preview=show_preview)
 
         self.calibrator.start_row, self.calibrator.end_row = range_row
         self.calibrator.start_col, self.calibrator.end_col = range_col
@@ -558,7 +662,7 @@ class PhysicalProp(nn.Module):
         """
 
         captured_intensity_raw_avg = self._capture_and_average_intensities(
-            slm_phase, num_grab_images
+            num_grab_images, True, slm_phase
         )
 
         # crop ROI as calibrated
@@ -570,13 +674,73 @@ class PhysicalProp(nn.Module):
         # apply homography
         return self.calibrator(captured_intensity_raw_cropped)
 
-    def _capture_and_average_intensities(self, phase_map, num_grab_images):
-        self.slm.imshow(phase_map)
+    def _imshow(self, slm, phase_map):
+        import datetime
+
+        print(datetime.datetime.now().time(), "Inside imshow")
+        slm.imshow(phase_map)  # TODO comment out
+        print(datetime.datetime.now().time(), "End imshow")
+
+    def _capture_and_average_intensities(self, num_grab_images, resize, phase_map):
+        import datetime
+
+        slm_process = Process(target=self._imshow, args=[self.slm, phase_map])
+
+        print(datetime.datetime.now().time(), "Start imshow")
+
+        slm_process.start()
+
+        print(datetime.datetime.now().time(), "Start settle")
         time.sleep(self.slm_settle_time)
-        captured_intensities = self.camera.acquire_multiple_images_and_resize_to_slm_shape(
-            num_grab_images
-        )
+        print(datetime.datetime.now().time(), "End settle, start capture")
+
+        if resize:
+            captured_intensities = self.camera.acquire_multiple_images_and_resize_to_slm_shape(
+                num_grab_images
+            )
+        else:
+            captured_intensities = self.camera.acquire_multiple_images(num_grab_images)
+
+        print(datetime.datetime.now().time(), "End capture")
+
+        slm_process.join()
+        slm_process.terminate()
+
         return utils.burst_img_processor(captured_intensities)
+
+        # ----------------------------------------------------------------------
+
+        # import datetime
+        # import subprocess
+
+        # exposure_time = 1200
+
+        # subprocess.Popen(
+        #     [
+        #         "python",
+        #         "slm_designer/capture.py",
+        #         f"{exposure_time}",
+        #         f"{num_grab_images}",
+        #         f"{resize}",
+        #         f"{self.slm_settle_time}",
+        #     ]
+        # )
+
+        # print(datetime.datetime.now().time(), "Inside imshow")
+        # self.slm.imshow(phase_map)  # TODO comment out
+        # print(datetime.datetime.now().time(), "End imshow")
+
+        # captures_path = Path("captures.pkl")
+
+        # if not captures_path.exists():
+        #     raise ValueError("Your show time is too short")
+
+        # with open(captures_path, "rb") as f:
+        #     captures = pickle.load(f)
+
+        # captures_path.unlink()
+
+        # return utils.burst_img_processor(captures) - self.captured_blank
 
     # def disconnect(self):
     #     self.camera.disconnect()

@@ -239,6 +239,8 @@ def quantize_phase_pattern(phase_map):
 
 
 def resize_image_to_shape(image, shape, pad=False):
+    dtype = image.dtype
+
     # Height / Width
     aspect_ratio_im = (
         image.shape[0] / image.shape[1]
@@ -262,7 +264,7 @@ def resize_image_to_shape(image, shape, pad=False):
 
     im = Image.fromarray(image)
     im = im.resize((shape[1], shape[0]), Image.BICUBIC,)  # Pillow uses width, height
-    return np.array(im)
+    return np.array(im).astype(dtype)
 
 
 def crop_image_to_shape(image, shape):

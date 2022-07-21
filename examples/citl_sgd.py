@@ -39,15 +39,13 @@ from slm_designer.wrapper import ImageLoader, SGD, PhysicalProp
     default=params[Params.SLM_SETTLE_TIME],
     help="Time to let the SLM to settle before taking images of the amplitude at the target plane.",
 )
-def physical_prop_sgd(iterations, slm_show_time, slm_settle_time):
+def citl_sgd(iterations, slm_show_time, slm_settle_time):
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     roi = params[Params.ROI]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
-
-    calibration_path = "./citl/calibration"
 
     # Use GPU if detected in system
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -75,22 +73,66 @@ def physical_prop_sgd(iterations, slm_show_time, slm_settle_time):
     # Setup a random initial slm phase map with values in [-0.5, 0.5]
     init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_shape)).to(device)
 
-    s = slm.create_slm(slm_device)
+    # --------------------------------------------------------------------------
+
+    from multiprocessing.managers import BaseManager
+
+    BaseManager.register("HoloeyeSLM", slm.HoloeyeSLM)
+    BaseManager.register("IDSCamera", camera.IDSCamera)
+    manager = BaseManager()
+    manager.start()
+    s = manager.HoloeyeSLM()
     s.set_show_time(slm_show_time)
 
-    cam = camera.create_camera(cam_device)
-    cam.use_image()
+    cam = manager.IDSCamera()
+    cam.set_exposure_time(1200)
+
+    # --------------------------------------------------------------------------
+
+    # s = slm.create_slm(slm_device)
+    # s.set_show_time(slm_show_time)
+
+    # cam = camera.create_camera(cam_device)
+    # cam.set_exposure_time(1200)
+
+    # --------------------------------------------------------------------------
+
+    # from multiprocessing.managers import BaseManager
+
+    # BaseManager.register("IDSCamera", camera.IDSCamera)
+    # manager = BaseManager()
+    # manager.start()
+
+    # cam = manager.IDSCamera()
+    # cam.set_exposure_time(1200)
+
+    # s = None
+
+    # --------------------------------------------------------------------------
+
+    # s = None
+
+    # cam = camera.create_camera(cam_device)
+    # cam.set_exposure_time(1200)
+
+    # --------------------------------------------------------------------------
+
+    # s = slm.create_slm(slm_device)
+    # # s.set_show_time(slm_show_time)
+    # cam = None
+
+    # --------------------------------------------------------------------------
 
     camera_prop = PhysicalProp(
         s,
         slm_settle_time,
         cam,
+        roi_res=roi,
         # channel,
         # laser_arduino=True,
-        roi_res=roi,
         # range_row=(220, 1000),
         # range_col=(300, 1630),
-        patterns_path=calibration_path,  # path of 12 x 21 calibration patterns, see Supplement.
+        # patterns_path=calibration_path,  # path of 12 x 21 calibration patterns, see Supplement.
         show_preview=True,
     )
 
@@ -126,4 +168,4 @@ def physical_prop_sgd(iterations, slm_show_time, slm_settle_time):
 
 
 if __name__ == "__main__":
-    physical_prop_sgd()
+    citl_sgd()

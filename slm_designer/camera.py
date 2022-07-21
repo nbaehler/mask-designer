@@ -18,6 +18,7 @@ class Camera:
         self._height = -1
         self._frame_count = 0
         self._exposure_time = -1
+        self._correction = None
 
     @property
     def height(self):
@@ -26,6 +27,10 @@ class Camera:
     @property
     def width(self):
         return self._width
+
+    @property
+    def shape(self):
+        return (self._height, self._width)
 
     @property
     def frame(self):
@@ -53,7 +58,7 @@ class Camera:
             for image in images
         ]
 
-    def acquire_single_image_and_resize_to_slm_shape(self,):
+    def acquire_single_image_and_resize_to_slm_shape(self):
         """
         Triggers the acquisition of a single images and then resizes it to the size
         of the SLM.
@@ -98,6 +103,28 @@ class Camera:
         """
         pass
 
+    def set_correction(
+        self,
+        correction=np.zeros(
+            cam_devices[CamDevices.DUMMY.value][CamParam.IMG_SHAPE], dtype=np.uint8
+        ),
+    ):  # TODO remove maybe
+        """
+        Set the correction of the camera to a specific value.
+
+        Parameters
+        ----------
+        correction : ndarray
+            New correction
+        """
+
+        if correction.shape != cam_devices[CamDevices.DUMMY.value][CamParam.IMG_SHAPE]:
+            raise ValueError(
+                "The correction must have the same shape as the camera image"
+            )
+
+        self._correction = correction
+
 
 class DummyCamera(Camera):
     def __init__(self):
@@ -113,6 +140,8 @@ class DummyCamera(Camera):
 
         # Set frame count and exposure time
         self.set_exposure_time()
+
+        self.set_correction()
 
         # Default image is just a white image
         self._image = (
@@ -130,8 +159,10 @@ class DummyCamera(Camera):
         """
         self._exposure_time = time
 
-    def use_image(self, path="citl/calibration/cali.png"):  # TODO documentation
-        image = load_image(path)  # TODO scale up and scale down of calibration image...
+    def use_image(self, path="citl/calibration/cali_roi.png"):  # TODO documentation
+        image = (
+            load_image(path) - self._correction
+        )  # TODO scale up and scale down of calibration image...
         self._image = resize_image_to_shape(image, (self._height, self._width))
 
     def acquire_single_image(self):
@@ -268,6 +299,8 @@ class IDSCamera(Camera):
         self.__flush_and_revoke_buffers()
         self.__allocate_buffers()
 
+        self.set_correction()
+
         # Set the exposure time to default value
         self.set_exposure_time()
 
@@ -346,7 +379,7 @@ class IDSCamera(Camera):
         self.__node_map.FindNode("TLParamsLocked").SetValue(0)
 
         # Change exposure time (in microseconds)
-        self.__node_map.FindNode("ExposureTime").SetValue(time)
+        self.__node_map.FindNode("ExposureTime").SetValue(float(time))
 
         # Lock critical features to prevent them from changing
         self.__node_map.FindNode("TLParamsLocked").SetValue(1)
@@ -383,7 +416,7 @@ class IDSCamera(Camera):
         # )
 
         # Return image as numpy array
-        return ipl_image.get_numpy_2D().copy()
+        return ipl_image.get_numpy_2D().copy() - self._correction
 
     def acquire_multiple_images(self, number=2):
         """
@@ -415,7 +448,7 @@ class IDSCamera(Camera):
             )
 
             # Append images as numpy array to list of acquired images
-            images.append(ipl_image.get_numpy_2D().copy())
+            images.append(ipl_image.get_numpy_2D().copy() - self._correction)
 
         return images
 

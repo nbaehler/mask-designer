@@ -145,9 +145,9 @@ def eval(
             s,
             slm_settle_time,
             cam,
+            roi,
             channel,
-            laser_arduino=True,
-            roi_res=roi,
+            # laser_arduino=True,
             # range_row=(220, 1000),
             # range_col=(300, 1630),
             patterns_path=calibration_path,  # path of 12 x 21 calibration patterns, see Supplement.
