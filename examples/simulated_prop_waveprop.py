@@ -3,15 +3,15 @@ Simulated propagation using waveprop of the slm pattern generated using the holo
 """
 
 import torch
-from slm_designer.experimental_setup import (
+from mask_designer.experimental_setup import (
     Params,
     params,
     slm_device,
 )
-from slm_designer.simulated_prop import simulated_prop
+from mask_designer.simulated_prop import simulated_prop
 
-from slm_designer.utils import load_phase_map, show_plot
-from slm_designer.propagation import (
+from mask_designer.utils import load_phase_map, show_plot
+from mask_designer.propagation import (
     holoeye_fraunhofer,
     neural_holography_asm,
     waveprop_angular_spectrum,
@@ -26,7 +26,7 @@ from slm_designer.propagation import (
     waveprop_shifted_fresnel,
     waveprop_spherical,
 )
-from slm_designer.transform_phase_maps import transform_to_neural_holography_setting
+from mask_designer.transform_phase_maps import transform_to_neural_holography_setting
 
 from slm_controller.hardware import SLMParam, slm_devices
 

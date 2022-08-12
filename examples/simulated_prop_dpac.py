@@ -2,22 +2,22 @@
 Simulated propagation of slm patterns generated using the DPAC algorithm.
 """
 
-from slm_designer.simulated_prop import simulated_prop
-from slm_designer.utils import extend_to_complex, show_plot
-from slm_designer.propagation import holoeye_fraunhofer, neural_holography_asm
-from slm_designer.transform_phase_maps import transform_from_neural_holography_setting
+from mask_designer.simulated_prop import simulated_prop
+from mask_designer.utils import extend_to_complex, show_plot
+from mask_designer.propagation import holoeye_fraunhofer, neural_holography_asm
+from mask_designer.transform_phase_maps import transform_from_neural_holography_setting
 import torch
 
 from slm_controller.hardware import (
     SLMParam,
     slm_devices,
 )
-from slm_designer.experimental_setup import (
+from mask_designer.experimental_setup import (
     Params,
     params,
     slm_device,
 )
-from slm_designer.wrapper import DPAC, ImageLoader
+from mask_designer.wrapper import DPAC, ImageLoader
 
 
 def simulated_prop_dpac():

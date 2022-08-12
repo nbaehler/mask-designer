@@ -113,7 +113,7 @@ pattern. For now those simulations are not performed with our in house package
 [waveprop](https://github.com/ebezzam/waveprop) but it is our goal to use it
 throughout the code.
 
-The slm-designer includes more features but mask designing is the main problem
+The mask-designer includes more features but mask designing is the main problem
 it tackles. The different strategies are more or less directly imported from [Neural
 Holography](https://github.com/computational-imaging/neural-holography). As
 shown in the
@@ -427,8 +427,8 @@ as desired. In diagrammatic form we have the following situation:
 ![Transformation](images/transformation.svg)
 
 Both these transformations are implemented in
-`slm_designer/transform_phase_maps.py`. Note that the wrapper
-`slm_designer/wrapper.py` provides interfacing methods for Neural Holography phase retrieval
+`mask_designer/transform_phase_maps.py`. Note that the wrapper
+`mask_designer/wrapper.py` provides interfacing methods for Neural Holography phase retrieval
 algorithms that also handle the transformation to our setup which includes a
 convex lens.
 

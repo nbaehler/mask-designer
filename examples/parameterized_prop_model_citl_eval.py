@@ -3,7 +3,7 @@ Script that runs the CITL evaluations of Neural Holography. #TODO not working en
 """
 
 import click
-from slm_designer.wrapper import eval
+from mask_designer.wrapper import eval
 
 
 @click.command()

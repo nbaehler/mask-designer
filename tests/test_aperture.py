@@ -5,13 +5,13 @@ GitHub: https://github.com/ebezzam
 """
 
 import pytest
-from slm_designer.virtual_slm import VirtualSLM
-from slm_designer.aperture import rect_aperture
+from mask_designer.virtual_slm import VirtualSLM
+from mask_designer.aperture import rect_aperture
 
 
 class TestAperture:
     """
-    Test :py:module:`~slm_designer.aperture`.
+    Test :py:module:`~mask_designer.aperture`.
     """
 
     def test_rect_aperture(self):

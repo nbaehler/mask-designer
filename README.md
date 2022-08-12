@@ -1,9 +1,9 @@
-# slm-designer
+# mask-designer
 
 Collection of different approaches to phase retrieval,
 i.e. mask design for phase SLM devices.
 
-- [slm-designer](#slm-designer)
+- [mask-designer](#mask-designer)
   - [Installation](#installation)
   - [Manual installation needed for enabling some features](#manual-installation-needed-for-enabling-some-features)
   - [Neural Holography](#neural-holography)
@@ -56,7 +56,7 @@ To install, simply run the following script:
 
 The script will:
 
-1. Create a Python3 virtual environment called `.slm_designer_env`.
+1. Create a Python3 virtual environment called `.mask_designer_env`.
 2. Install Python dependencies in the virtual environment.
 3. Install both [slm-controller](https://github.com/ebezzam/slm-controller) and
    [waveprop](https://github.com/ebezzam/waveprop) in setuptools “develop mode”
@@ -124,12 +124,12 @@ with the remainder of the project:
 - Double Phase Amplitude Coding (DPAC)
 - Camera-In-The-Loop (CITL)
 
-GS, SGD and DPAC are all implemented inside `slm_designer/neural_holography/algorithms.py`
+GS, SGD and DPAC are all implemented inside `mask_designer/neural_holography/algorithms.py`
 and PyTorch modules that go along with them are provided in
-`slm_designer/neural_holography/module.py`. CITL on the other hand is located in a separate
-script `slm_designer/neural_holography/train_model.py`. Note that you do
+`mask_designer/neural_holography/module.py`. CITL on the other hand is located in a separate
+script `mask_designer/neural_holography/train_model.py`. Note that you do
 generally not need to interact with the Neural Holography code directly. A
-wrapper for it is provided at `slm_designer/wrapper.py` which does simply import
+wrapper for it is provided at `mask_designer/wrapper.py` which does simply import
 code from Neural Holography so that you do not need to go look for it in their
 code and also contains some interfacing methods to run the different phase
 retrieval algorithms. We'd like to remind that
@@ -165,7 +165,7 @@ final version we settled for.
 
 ![Experimental setup](documentation/images/setup.svg)
 
-Further, the `slm_designer/experimental_setup.py` allows to set which camera and SLM are
+Further, the `mask_designer/experimental_setup.py` allows to set which camera and SLM are
 used and how long patterns are shown on the SLM, what wavelength the laser is operating at and, finally, the propagation
 distance (distance form the SLM to the camera sensor). Those parameters are then
 used in the remainder of the code base.
@@ -181,10 +181,10 @@ This software assumes a experimental setup that uses a convex lens in between th
 the target plane. Neural Holography on the other hand, uses a different setting
 where no lens is placed between the SLM and the target plane, i.e. a lensless
 setting. Those differences impact the resulting phase maps of the mask design
-algorithm. The methods in `slm_designer/transform_phase_maps.py` allow transforming phase maps,
+algorithm. The methods in `mask_designer/transform_phase_maps.py` allow transforming phase maps,
 or fields, back and forth between both settings. Note that Neural Holography encodes
 phase maps, images etc. as 4D PyTorch Tensors where the dimensions are [image,
-channel, height, width]. But again, the wrapper `slm_designer/wrapper.py` does
+channel, height, width]. But again, the wrapper `mask_designer/wrapper.py` does
 provide interfacing methods for the different algorithms that handle all those
 complications for you and you are not required to dig any deeper than that.
 
@@ -222,7 +222,7 @@ debugging when not having access to all the material needed to do the physical
 propagation. As explained earlier ([Propagation](#propagation)), Holoeye and
 Neural Holography assume different experimental setups. Hence, methods are
 provided to simulated propagation in both settings in
-`slm_designer/simulated_prop.py`. Additionally, a whole bunch of methods from
+`mask_designer/simulated_prop.py`. Additionally, a whole bunch of methods from
 waveprop are added in the script, unfortunately not all those are properly
 working for now. Usage examples will be presented in the
 subsequent [Example scripts](#example-scripts) section.
@@ -232,7 +232,7 @@ subsequent [Example scripts](#example-scripts) section.
 As explained earlier, generally what we do in phase retrieval is actually an
 inverse problem. The forward version consists of choosing a pattern, in this
 case mostly an aperture (circular, rectangular, etc.) and then observe the
-resulting amplitude at the target plane. The `slm_designer/aperture.py` provides
+resulting amplitude at the target plane. The `mask_designer/aperture.py` provides
 an easy way to set different apertures:
 
 - rectangle,
@@ -240,7 +240,7 @@ an easy way to set different apertures:
 - line and
 - circle
 
-aperture. Then, `slm_designer/slm.py` is used to simulate a SLM and provide
+aperture. Then, `mask_designer/slm.py` is used to simulate a SLM and provide
 plotting capabilities of those apertures. Additionally, you can also physically
 send those apertures to real SLM devices. Usage examples will be presented in the
 subsequent [Example scripts](#example-scripts) section.
@@ -253,7 +253,7 @@ the features integrated into the project.
 First, activate the virtual environment:
 
 ```sh
-source .slm_designer_env/bin/activate
+source .mask_designer_env/bin/activate
 ```
 
 You can exit the virtual environment by running `deactivate`.
@@ -265,7 +265,7 @@ You can exit the virtual environment by running `deactivate`.
 This section does show how the CITL can be used. Note though that this is still
 very much in development, so not bug free. More work will be needed here.
 
-This script calls via the `slm_designer/wrapper.py` Neural Holography code that
+This script calls via the `mask_designer/wrapper.py` Neural Holography code that
 evaluates the resulting amplitudes using different measures.
 
 ```sh
@@ -284,7 +284,7 @@ Options:
   --help                   Show this message and exit.
 ```
 
-This code is very similar to the `slm_designer/neural_holography/eval.py` code
+This code is very similar to the `mask_designer/neural_holography/eval.py` code
 and needs further adaptions to simply output the phase map without doing evaluation.
 
 ```sh
@@ -342,7 +342,7 @@ This section contains example scripts, for sending both phase maps created using
 Holoeye software and phase maps generated using Neural Holography methods to
 real SLM devices. Those patterns are then propagated through our experimental
 setup. Note that the
-methods in `slm_designer/wrapper.py` are extensively used here to compute the
+methods in `mask_designer/wrapper.py` are extensively used here to compute the
 phase maps. We are going through them one by one now.
 
 This script simply sets some parameters like wavelength etc., then loads a
@@ -524,6 +524,6 @@ python examples/plot_aperture.py --shape square --n_cells 2 --device rgb
 
 ## Adding a new camera
 
-1. Add configuration in `slm_designer/hardware.py:cam_devices`.
-2. Create class in `slm_designer/camera.py`.
-3. Add to factory method `create_camera` in `slm_designer/camera.py`.
+1. Add configuration in `mask_designer/hardware.py:cam_devices`.
+2. Create class in `mask_designer/camera.py`.
+3. Add to factory method `create_camera` in `mask_designer/camera.py`.

@@ -4,7 +4,7 @@ Physical propagation of the slm pattern generated using the holoeye software.
 
 from slm_controller.hardware import SLMDevices
 from slm_controller import slm
-from slm_designer.utils import load_phase_map, quantize_phase_pattern
+from mask_designer.utils import load_phase_map, quantize_phase_pattern
 
 
 def physical_prop_holoeye():

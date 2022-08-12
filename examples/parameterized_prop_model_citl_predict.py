@@ -1,7 +1,7 @@
 """
 Script that computes a phase map using the CITL model. #TODO not working entirely
 
-This code is heavily inspired by slm_designer/neural_holography/eval.py. So
+This code is heavily inspired by mask_designer/neural_holography/eval.py. So
 credit where credit is due.
 
 This code and data is released under the Creative Commons Attribution-NonCommercial 4.0 International license (CC BY-NC.) In a nutshell:
@@ -33,16 +33,16 @@ from slm_controller.hardware import (
     SLMParam,
     slm_devices,
 )
-from slm_designer import camera
-from slm_designer.experimental_setup import (
+from mask_designer import camera
+from mask_designer.experimental_setup import (
     Params,
     params,
     slm_device,
     cam_device,
 )
-from slm_designer.utils import pad_tensor_to_shape
+from mask_designer.utils import pad_tensor_to_shape
 
-from slm_designer.wrapper import (
+from mask_designer.wrapper import (
     ModelPropagate,
     propagation_ASM,
     get_image_filenames,

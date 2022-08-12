@@ -5,7 +5,7 @@ needs more work
 
 
 import click
-from slm_designer.wrapper import train_model, str2bool
+from mask_designer.wrapper import train_model, str2bool
 import datetime
 
 

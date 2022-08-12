@@ -9,20 +9,21 @@ from slm_controller.hardware import (
     SLMParam,
     slm_devices,
 )
-from slm_designer import camera
+from mask_designer import camera, simulated_prop
 
-from slm_designer.experimental_setup import (
+from mask_designer.experimental_setup import (
     Params,
     params,
     slm_device,
     cam_device,
 )
+from mask_designer.propagation import neural_holography_asm
 
-# from slm_designer.transform_phase_maps import (
+# from mask_designer.transform_phase_maps import (
 #     transform_from_neural_holography_setting,
 # )  # TODO circular import
-from slm_designer.utils import extend_to_complex, quantize_phase_pattern
-from slm_designer.wrapper import ImageLoader, SGD, PhysicalProp
+from mask_designer.utils import extend_to_complex, quantize_phase_pattern, show_plot
+from mask_designer.wrapper import ImageLoader, SGD, PhysicalProp
 
 
 @click.command()
@@ -78,13 +79,16 @@ def citl_sgd(iterations, slm_show_time, slm_settle_time):
     from multiprocessing.managers import BaseManager
 
     BaseManager.register("HoloeyeSLM", slm.HoloeyeSLM)
-    BaseManager.register("IDSCamera", camera.IDSCamera)
+    # BaseManager.register("IDSCamera", camera.IDSCamera)
+    BaseManager.register("DummyCamera", camera.DummyCamera)
+
     manager = BaseManager()
     manager.start()
     s = manager.HoloeyeSLM()
     s.set_show_time(slm_show_time)
 
-    cam = manager.IDSCamera()
+    # cam = manager.IDSCamera()
+    cam = manager.DummyCamera()
     cam.set_exposure_time(1200)
 
     # --------------------------------------------------------------------------
@@ -155,12 +159,22 @@ def citl_sgd(iterations, slm_show_time, slm_settle_time):
     # Transform the results to the hardware setting using a lens # TODO circular import
     # final_phase_sgd = transform_from_neural_holography_setting(
     #     extended, prop_dist, wavelength, slm_shape, pixel_pitch
-    # ).angle()
+    # )
 
-    final_phase_sgd = extended.angle()
+    final_phase_sgd = extended
+
+    unpacked_phase_map = final_phase_sgd
+    propped_phase_map = simulated_prop(
+        final_phase_sgd[None, None, :, :],
+        neural_holography_asm,
+        prop_dist,
+        wavelength,
+        pixel_pitch,
+    )
+    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography GS without lens")
 
     # Quantize the the angles, aka phase values, to a bit values
-    phase_out = quantize_phase_pattern(final_phase_sgd)
+    phase_out = quantize_phase_pattern(final_phase_sgd.angle())
 
     # Display
     s.set_show_time()

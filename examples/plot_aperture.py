@@ -4,7 +4,7 @@ Plot aperture example.
 
 import matplotlib.pyplot as plt
 import click
-from slm_designer.aperture import (
+from mask_designer.aperture import (
     ApertureOptions,
     rect_aperture,
     line_aperture,

@@ -11,16 +11,16 @@ from slm_controller.hardware import (
     slm_devices,
 )
 
-from slm_designer.experimental_setup import (
+from mask_designer.experimental_setup import (
     Params,
     params,
     slm_device,
 )
 
-from slm_designer.propagation import propagator_waveprop_angular_spectrum
-from slm_designer.transform_phase_maps import transform_from_neural_holography_setting
-from slm_designer.utils import extend_to_complex, quantize_phase_pattern
-from slm_designer.wrapper import ImageLoader, SGD
+from mask_designer.propagation import propagator_waveprop_angular_spectrum
+from mask_designer.transform_phase_maps import transform_from_neural_holography_setting
+from mask_designer.utils import extend_to_complex, quantize_phase_pattern
+from mask_designer.wrapper import ImageLoader, SGD
 
 
 @click.command()

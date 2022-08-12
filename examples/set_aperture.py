@@ -3,7 +3,7 @@ Set aperture example.
 """
 
 import click
-from slm_designer.aperture import (
+from mask_designer.aperture import (
     rect_aperture,
     line_aperture,
     square_aperture,

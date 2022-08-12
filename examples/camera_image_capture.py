@@ -2,8 +2,8 @@
 Camera image capture example.
 """
 
-from slm_designer import camera
-from slm_designer.experimental_setup import cam_device
+from mask_designer import camera
+from mask_designer.experimental_setup import cam_device
 
 import matplotlib.pyplot as plt
 

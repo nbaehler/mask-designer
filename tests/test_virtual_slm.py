@@ -4,7 +4,7 @@ email: ebezzam@gmail.com,
 GitHub: https://github.com/ebezzam
 """
 
-from slm_designer.virtual_slm import VirtualSLM
+from mask_designer.virtual_slm import VirtualSLM
 import numpy as np
 
 dim = 10
@@ -13,7 +13,7 @@ s = VirtualSLM(shape=(dim, dim), pixel_pitch=(1, 1))
 
 class TestVirtualSLM:
     """
-    Test :py:module:`~slm_designer.virtual_slm.VirtualSLM`.
+    Test :py:module:`~mask_designer.virtual_slm.VirtualSLM`.
     """
 
     def test_row_indexing(self):
