@@ -47,10 +47,12 @@ refer to the `documentation/DOCUMENTATION.md`.
 Below is a schematic of how `mask-designer` would typically interact with other
 components.
 
-<!-- TODO "Below is a schematic of how mask-designer would typically interact with other components" can link other components as well. Can also link slides you prepared for the final presentation. Add CITL on top of arrow between "slm-designer" and "Camera"? And below schematic can say CITL arrow are only present for CITL. -->
-
 ![Schematic representation of the interactions between different
 components](documentation/images/structure.svg)
+
+The interactions marked with _CITL_ are only necessary for the CITL approach.
+You can find animated gif-files showing those interactions in more details in
+`documentation/DOCUMENTATION.md`.
 
 ## Installation
 

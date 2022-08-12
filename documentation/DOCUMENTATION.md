@@ -10,6 +10,11 @@
     - [2. Stochastic Gradient Descent (SGD)](#2-stochastic-gradient-descent-sgd)
     - [3. Double Phase Amplitude Coding (DPAC)](#3-double-phase-amplitude-coding-dpac)
     - [4. Camera-In-The-Loop (CITL)](#4-camera-in-the-loop-citl)
+  - [Typical interactions between software and hardware](#typical-interactions-between-software-and-hardware)
+    - [Set a pattern using `slm-controller`](#set-a-pattern-using-slm-controller)
+    - [Perform phase retrieval (not CITL)](#perform-phase-retrieval-not-citl)
+    - [Perform phase retrieval using CITL](#perform-phase-retrieval-using-citl)
+    - [Perform phase retrieval using CITL and `waveprop` for simulation](#perform-phase-retrieval-using-citl-and-waveprop-for-simulation)
   - [Experimental setup](#experimental-setup)
     - [Final setup](#final-setup)
     - [Incremental development of final setup](#incremental-development-of-final-setup)
@@ -131,6 +136,9 @@ software and hardware modules that normal use cases would produce.
 ![Schematic representation of the interactions between different
 components](images/structure.svg)
 
+The interactions marked with _CITL_ are only necessary for the CITL approach.
+More details are given in the [Typical interactions between software and hardware](#typical-interactions-between-software-and-hardware) section.
+
 ## Holoeye SLM Pattern Generator
 
 Holoeye does also provide a piece of software called [SLM Pattern
@@ -208,6 +216,31 @@ Additionally, it is technically the most challenging one. But as shown in the Ne
 Holography paper it performs better than all the other methods. At the current
 state of the project. the training of the CITL is functional but more work needs to be done in
 order to make it truly useable and testable.
+
+## Typical interactions between software and hardware
+
+The following gif-files illustrate the interactions between software and hardware
+components that arise normally in typical use cases.
+
+### Set a pattern using `slm-controller`
+
+![Schematic representation of the interactions between different
+components](gifs/slm-controller.gif)
+
+### Perform phase retrieval (not CITL)
+
+![Schematic representation of the interactions between different
+components](gifs/neural-holo.gif)
+
+### Perform phase retrieval using CITL
+
+![Schematic representation of the interactions between different
+components](gifs/citl.gif)
+
+### Perform phase retrieval using CITL and `waveprop` for simulation
+
+![Schematic representation of the interactions between different
+components](gifs/waveprop.gif)
 
 ## Experimental setup
 

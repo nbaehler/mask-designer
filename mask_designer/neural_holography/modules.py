@@ -705,7 +705,7 @@ class PhysicalProp(nn.Module):
 
         print(datetime.datetime.now().time(), "End capture")
 
-        pickle.dump(captured_intensities, open("captures.pkl", "wb"))
+        pickle.dump(captured_intensities, open("citl/captures.pkl", "wb"))
 
     def _capture_and_average_intensities(self, num_grab_images, resize, phase_map):
         import datetime
@@ -720,7 +720,7 @@ class PhysicalProp(nn.Module):
         self.slm.imshow(phase_map)
         print(datetime.datetime.now().time(), "End imshow")
 
-        captures_path = Path("captures.pkl")
+        captures_path = Path("citl/captures.pkl")
 
         if not captures_path.exists():
             raise ValueError("Your show time is too short")
@@ -781,7 +781,7 @@ class PhysicalProp(nn.Module):
         # self.slm.imshow(phase_map)  # TODO comment out
         # print(datetime.datetime.now().time(), "End imshow")
 
-        # captures_path = Path("captures.pkl")
+        # captures_path = Path("citl/captures.pkl")
 
         # if not captures_path.exists():
         #     raise ValueError("Your show time is too short")

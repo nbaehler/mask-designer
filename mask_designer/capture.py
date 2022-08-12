@@ -27,7 +27,7 @@ def capture(exposure_time, num_grab_images, resize, slm_settle_time):
 
     print(datetime.datetime.now().time(), "End capture")
 
-    pickle.dump(captured_intensities, open("captures.pkl", "wb"))
+    pickle.dump(captured_intensities, open("citl/captures.pkl", "wb"))
 
 
 if __name__ == "__main__":

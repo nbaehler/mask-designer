@@ -7,7 +7,7 @@
                 <mxCell id="2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="60" y="100" width="360" height="360" as="geometry"/>
                 </mxCell>
-                <mxCell id="4WJjTBDca-TGej2Zey_a-18" value="" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;fillColor=#000000;" parent="1" edge="1">
+                <mxCell id="4WJjTBDca-TGej2Zey_a-18" value="" style="shape=flexArrow;endArrow=block;startArrow=none;html=1;rounded=0;fillColor=#000000;endFill=0;startFill=0;" parent="1" edge="1">
                     <mxGeometry width="100" height="100" relative="1" as="geometry">
                         <mxPoint x="349.84000000000003" y="330" as="sourcePoint"/>
                         <mxPoint x="349.5" y="230" as="targetPoint"/>
@@ -55,7 +55,7 @@
                 <mxCell id="5" value="Camera" style="text;html=1;strokeColor=default;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="520" y="340" width="320" height="100" as="geometry"/>
                 </mxCell>
-                <mxCell id="6" value="" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;fillColor=#000000;" parent="1" edge="1">
+                <mxCell id="6" value="" style="shape=flexArrow;endArrow=none;startArrow=block;html=1;rounded=0;fillColor=#000000;startFill=0;endFill=0;" parent="1" edge="1">
                     <mxGeometry width="100" height="100" relative="1" as="geometry">
                         <mxPoint x="510" y="169.5799999999999" as="sourcePoint"/>
                         <mxPoint x="410" y="169.5799999999999" as="targetPoint"/>
@@ -72,6 +72,9 @@
                 </mxCell>
                 <mxCell id="9" value="Hardware" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="650" y="70" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="CITL" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="430" y="350" width="60" height="30" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
