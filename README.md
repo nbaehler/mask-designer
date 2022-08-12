@@ -1,7 +1,8 @@
 # mask-designer
 
-Collection of different approaches to phase retrieval,
-i.e. mask design for phase SLM devices.
+Collection of techniques to design mask patterns, e.g. fixed apertures for
+amplitude masks and phase retrieval for determining a phase pattern under an
+incoherent light source.
 
 - [mask-designer](#mask-designer)
   - [Installation](#installation)
