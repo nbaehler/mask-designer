@@ -13,7 +13,7 @@ def physical_prop_holoeye():
     holoeye_phase_map = quantize_phase_pattern(holoeye_phase_map)
 
     # Initialize slm
-    s = slm.create_slm(SLMDevices.HOLOEYE_LC_2012.value)
+    s = slm.create(SLMDevices.HOLOEYE_LC_2012.value)
 
     # display
     s.imshow(holoeye_phase_map)

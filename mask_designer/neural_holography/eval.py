@@ -136,10 +136,10 @@ def eval(
         #     ).to(device)
 
     elif prop_model.upper() == "CAMERA":
-        s = slm.create_slm(slm)
+        s = slm.create(slm)
         s.set_show_time(slm_show_time)
 
-        cam = camera.create_camera(cam_device)
+        cam = camera.create(cam_device)
 
         propagator = PhysicalProp(
             s,

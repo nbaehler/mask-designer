@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 def camera_image_capture():
     # Initialize camera
-    cam = camera.create_camera(cam_device)
+    cam = camera.create(cam_device)
 
     # Acquire one image
     image = cam.acquire_single_image()

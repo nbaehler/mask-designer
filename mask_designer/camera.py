@@ -462,7 +462,7 @@ class IDSCamera(Camera):
         peak.Library.Close()
 
 
-def create_camera(device_key):
+def create(device_key):
     """
     Factory method to create `Camera` object.
 

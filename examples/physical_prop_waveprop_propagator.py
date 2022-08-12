@@ -47,7 +47,7 @@ def physical_prop_waveprop_propagator(iterations):
     )
 
     # Instantiate SLM object
-    s = slm.create_slm(slm_device)
+    s = slm.create(slm_device)
 
     # Load the the first image in the folder
     target_amp, _, _ = image_loader.load_image(0)

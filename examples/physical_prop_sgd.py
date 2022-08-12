@@ -45,7 +45,7 @@ def physical_prop_sgd(iterations, show_time):
     )
 
     # Instantiate SLM object
-    s = slm.create_slm(slm_device)
+    s = slm.create(slm_device)
     s.set_show_time(show_time)
 
     # Load the the first image in the folder

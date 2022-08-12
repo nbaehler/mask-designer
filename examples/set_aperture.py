@@ -11,7 +11,7 @@ from mask_designer.aperture import (
     ApertureOptions,
 )
 
-from slm_controller.slm import create_slm
+from slm_controller.slm import create
 from slm_controller.hardware import slm_devices, SLMDevices, SLMParam
 
 
@@ -127,7 +127,7 @@ def set_aperture(shape, n_cells, rect_shape, center, vertical, device):
     assert ap is not None
 
     # set aperture to device
-    slm = create_slm(device_key=device)
+    slm = create(device_key=device)
     if device_config[SLMParam.MONOCHROME]:
         slm.imshow(ap.grayscale_values)
     else:

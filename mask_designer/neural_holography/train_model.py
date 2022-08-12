@@ -175,10 +175,10 @@ def train_model(
     # phase_path = phase_path  # path of precomputed phase pool
     # data_path = "./citl/data"  # path of targets
 
-    s = slm.create_slm(slm)
+    s = slm.create(slm)
     s.set_show_time(slm_show_time)
 
-    cam = camera.create_camera(cam_device)
+    cam = camera.create(cam_device)
 
     # Hardware setup
     camera_prop = PhysicalProp(

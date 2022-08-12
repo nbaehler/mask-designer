@@ -9,7 +9,7 @@ from mask_designer.experimental_setup import cam_device
 def capture(exposure_time, num_grab_images, resize, slm_settle_time):
     import datetime
 
-    cam = camera.create_camera(cam_device)
+    cam = camera.create(cam_device)
     cam.set_exposure_time(exposure_time)
 
     # print(datetime.datetime.now().time(), "Start settle")

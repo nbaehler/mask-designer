@@ -93,7 +93,7 @@ def citl_sgd(iterations, slm_show_time, slm_settle_time):
 
     # --------------------------------------------------------------------------
 
-    # s = slm.create_slm(slm_device)
+    # s = slm.create(slm_device)
     # s.set_show_time(slm_show_time)
 
     # cam = camera.create_camera(cam_device)
@@ -121,7 +121,7 @@ def citl_sgd(iterations, slm_show_time, slm_settle_time):
 
     # --------------------------------------------------------------------------
 
-    # s = slm.create_slm(slm_device)
+    # s = slm.create(slm_device)
     # # s.set_show_time(slm_show_time)
     # cam = None
 

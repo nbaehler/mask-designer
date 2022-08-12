@@ -6,14 +6,13 @@ incoherent light source.
 
 - [mask-designer](#mask-designer)
   - [Installation](#installation)
-  - [Manual installation needed for enabling some features](#manual-installation-needed-for-enabling-some-features)
-  - [Neural Holography](#neural-holography)
+    - [Optional setup for Camera-In-The-Loop](#optional-setup-for-camera-in-the-loop)
+  - [Phase retrieval algorithms](#phase-retrieval-algorithms)
   - [Camera](#camera)
   - [Experimental setup](#experimental-setup)
   - [Propagation](#propagation)
     - [Physical propagation](#physical-propagation)
-    - [Simulated propagation](#simulated-propagation)
-  - [Forward Problem](#forward-problem)
+  - [Setting common apertures](#setting-common-apertures)
   - [Example scripts](#example-scripts)
     - [CITL examples](#citl-examples)
     - [Camera examples](#camera-examples)
@@ -25,27 +24,33 @@ incoherent light source.
 The main goal of the project is tackle the inverse problem called phase retrieval,
 i.e. mask design for SLMs.
 But it also allows to explore the forward problem by setting a phase
-pattern and then simply observing the output amplitude at the target plane. Mainly though, it
-consists of mask design techniques that were introduced in `Neural Holography` ([paper](https://www.computationalimaging.org/wp-content/uploads/2020/08/NeuralHolography_SIGAsia2020.pdf) &
-[repository](https://github.com/computational-imaging/neural-holography))
-and adapted to be compliant with the remainder of this project.
-Further, another part of the code does add support for cameras. Neural
-Holography, amongst others, follows a `Camera-In-The-Loop` approach which involves a
+pattern and then simply observing the output amplitude at the target plane.
+Mainly though, it
+
+consists of mask design techniques that were introduced in the [Neural
+Holography](https://www.computationalimaging.org/publications/neuralholography/)
+work by Prof. Gordon Wetzstein's group at Stanford, and adapted to be compliant
+with the SLM of this project - the [Holoeye LC
+2012](https://holoeye.com/lc-2012-spatial-light-modulator/). Further, another
+part of the code does add support for cameras. Neural Holography, amongst
+others, follows a **Camera-In-The-Loop** approach which involves a
 camera taking pictures of the resulting interference patterns at the target
 plane and then using this information to improve the designed mask iteratively.
-Finally, functions that allow to transform
-generated phase maps using Holoeye's software or Neural Holography code into
-each others assumed experimental setup and simulated propagation functions for both
-settings as well are provided.
+Finally, utility functions are provided so that patterns designed by Holoeye's
+(closed-source) software or Neural Holography's code can be used
+interchangeably for either setup (as Holoeye and Neural Holography assume
+different physical setups).
 
-If you wish to learn more about the evolution of our experimental setup, some
-information bout different propagation methods etc. you
-can refer to the `documentation/DOCUMENTATION.md`.
+If you wish to learn more about the evolution of our experimental setup, please
+refer to the `documentation/DOCUMENTATION.md`.
 
-Here an schematic representation of the interactions between different components
-used in this project.
+Below is a schematic of how `mask-designer` would typically interact with other
+components.
 
-![Schematic representation of the interactions between different components](documentation/images/structure.svg)
+<!-- TODO "Below is a schematic of how mask-designer would typically interact with other components" can link other components as well. Can also link slides you prepared for the final presentation. Add CITL on top of arrow between "slm-designer" and "Camera"? And below schematic can say CITL arrow are only present for CITL. -->
+
+![Schematic representation of the interactions between different
+components](documentation/images/structure.svg)
 
 ## Installation
 
@@ -61,7 +66,7 @@ The script will:
 2. Install Python dependencies in the virtual environment.
 3. Install both [slm-controller](https://github.com/ebezzam/slm-controller) and
    [waveprop](https://github.com/ebezzam/waveprop) in setuptools “develop mode”
-   from GitHub directly
+   from GitHub directly.
 
 This project is using those two repositories to access physical SLMs after the phase
 pattern has been computed and to simulate the light propagation in the different
@@ -72,15 +77,17 @@ If you plan to use this code base more in depth you can install additional
 dependencies intended for developing while the virtual environment is activated.
 
 ```sh
-pip install -e .[dev] #TODO does not work, dev not found
+source .mask_designer/bin/activate
+# pip install -e .[dev] #TODO does not work, dev not found
+pip install click black pytest tensorboard torch_tb_profiler
 ```
 
-## Manual installation needed for enabling some features
+### Optional setup for Camera-In-The-Loop
 
-If you plan to use the [Thorlabs
-DCC3260M](https://www.thorlabs.com/thorproduct.cfm?partnumber=DCC3260M) camera
-for the Camera-In-The-Loop phase retrieval method introduced by Neural
-Holography you will
+Camera-In-The-Loop (CITL) obviously requires a camera. For this project we made
+use of this camera [Thorlabs
+DCC3260M](https://www.thorlabs.com/thorproduct.cfm?partnumber=DCC3260M) (which is unfortunately obsolete). If you would like to use
+the same camera for the CITL technique introduced by Neural Holography, you will
 have to install IDS software as well. First, install [IDS Software
 Suite](https://en.ids-imaging.com/download-details/AB00695.html), simply follow
 the installation instructions. Next, you need [IDS
@@ -94,7 +101,7 @@ important feature. Once in this selection prompt,
 check the box additionally installing `Support of uEye cameras` and continue.
 After the installation is completed go to the installation directory. Note
 that you should have activated the virtual environment created earlier from now
-on. Next, go to `ids_peak/generic_sdk/api/binding/python/wheel` and
+on (`source .mask_designer/bin/activate`). Next, go to `ids_peak/generic_sdk/api/binding/python/wheel` and
 install the appropriate wheel like so, for example:
 
 ```sh
@@ -112,17 +119,16 @@ pip install x86_64/ids_peak_ipl-1.3.2.7-cp39-cp39-win_amd64.whl
 Now, you should be good to go to use all the features implemented in this
 project.
 
-## Neural Holography
+## Phase retrieval algorithms
 
-The authors of `Neural Holography` ([paper](https://www.computationalimaging.org/wp-content/uploads/2020/08/NeuralHolography_SIGAsia2020.pdf) &
-[repository](https://github.com/computational-imaging/neural-holography))
-provide implementations to different phase retrieval approaches. Here a
-list of the methods that were slightly modified and hence compatible
-with the remainder of the project:
+The authors of [Neural Holography](https://www.computationalimaging.org/publications/neuralholography/)
+provide implementations to different phase retrieval approaches. Here is a list
+of methods that were modified in order to be compatible with the hardware and
+software components as shown in the above schematic:
 
 - Gerchberg-Saxton (GS)
 - Stochastic Gradient Descent (SGD)
-- Double Phase Amplitude Coding (DPAC)
+- Double Phase Amplitude Coding (DPAC) <!-- TODO Remove if it's not working -->
 - Camera-In-The-Loop (CITL)
 
 GS, SGD and DPAC are all implemented inside `mask_designer/neural_holography/algorithms.py`
@@ -149,8 +155,8 @@ real camera, the [Thorlabs
 DCC3260M](https://www.thorlabs.com/thorproduct.cfm?partnumber=DCC3260M) and a
 dummy camera that simply "takes" black snapshots. The later can be useful during
 development. In the future this list is going to be extended (for example with
-the [Raspberry Pi HQ Camera](https://www.adafruit.com/product/4561)), but here its
-current state.
+the [Raspberry Pi HQ Camera](https://www.adafruit.com/product/4561)), but here
+is its current state.
 
 Supported cameras:
 
@@ -160,30 +166,37 @@ Supported cameras:
 ## Experimental setup
 
 The experimental setup is an incremental improvement of an initial setup proposed
-by Holoeye in the manual that came with their SLM. Again, for more information
-refer to the `documentation/DOCUMENTATION.md`. Here, we simply present the
-final version we settled for.
+by Holoeye in the manual that came with their their [LC 2012
+SLM](https://holoeye.com/lc-2012-spatial-light-modulator/). For more information
+on how we converged to the setup below, please refer to `documentation/DOCUMENTATION.md`.
 
 ![Experimental setup](documentation/images/setup.svg)
 
-Further, the `mask_designer/experimental_setup.py` allows to set which camera and SLM are
-used and how long patterns are shown on the SLM, what wavelength the laser is operating at and, finally, the propagation
-distance (distance form the SLM to the camera sensor). Those parameters are then
-used in the remainder of the code base.
+Further, the `mask_designer/experimental_setup.py` allows one to set:
+
+- which camera and SLM are used,
+- how long patterns are shown on the SLM,
+- what wavelength the laser is operating at and, finally,
+- the propagation distance (distance form the SLM to the camera sensor).
+
+Those parameters are then used in the remainder of the code base.
 
 <!-- TODO might not be only linked to lenses, ASM vs Fraunhofer -->
 
-Holoeye does also provide a piece of software called [SLM Pattern
+Holoeye provides a graphical software called [SLM Pattern
 Generator](https://customers.holoeye.com/slm-pattern-generator-v5-1-1-windows/)
-which amongst others has a feature that does perform phase retrieval for a given
+that has built-in functionality for performing phase retrieval for a given
 target amplitude. One such example can be found in `images/holoeye_phase_map`
 and its corresponding amplitude at the target plane under `images/target_amplitude`.
-This software assumes a experimental setup that uses a convex lens in between the SLM and
-the target plane. Neural Holography on the other hand, uses a different setting
+This software assumes an experimental setup that uses a convex lens in between the SLM and
+the target plane.
+
+Neural Holography on the other hand, uses a different setting
 where no lens is placed between the SLM and the target plane, i.e. a lensless
 setting. Those differences impact the resulting phase maps of the mask design
-algorithm. The methods in `mask_designer/transform_phase_maps.py` allow transforming phase maps,
-or fields, back and forth between both settings. Note that Neural Holography encodes
+algorithm. The methods in `mask_designer/transform_phase_maps.py` allow
+transforming phase maps, or fields, back and forth between both experimental
+setups. Note that Neural Holography encodes
 phase maps, images etc. as 4D PyTorch Tensors where the dimensions are [image,
 channel, height, width]. But again, the wrapper `mask_designer/wrapper.py` does
 provide interfacing methods for the different algorithms that handle all those
@@ -195,12 +208,17 @@ complications for you and you are not required to dig any deeper than that.
 
 This section will briefly discuss the propagation of a phase map to the target
 plane. More precisely, propagation simulation is a crucial element in most of the
-mask designing algorithms. Holoeye's SLM Pattern Generator uses
-[Fraunhofer](https://en.wikipedia.org/wiki/Fraunhofer_diffraction_equation) and
-Neural Holography mostly uses [Angular spectrum
-method](https://en.wikipedia.org/wiki/Angular_spectrum_method) (ASM). In a next step
-we plan to replace the ASM implemented in Neural Holography with a propagation
-method from [waveprop](https://github.com/ebezzam/waveprop).
+mask designing algorithms. Although we cannot be absolutely certain due to the code being closed-source, we
+have good reason to believe that Holoeye's SLM Pattern Generator uses
+[Fraunhofer](https://en.wikipedia.org/wiki/Fraunhofer_diffraction_equation), as
+we have identified a single Fourier Transform between the SLM and target plane
+when playing around with their patterns. Neural Holography on the other hand,
+uses the [Angular spectrum
+method](https://en.wikipedia.org/wiki/Angular_spectrum_method) (ASM). Currently,
+we make use of the ASM implementation by Neural Holography. However we plan to
+replace this implementation with the
+[`waveprop`](https://github.com/ebezzam/waveprop) library, which provides
+support for Fraunhofer, ASM, and other propagation techniques.
 
 <!-- TODO replace prop with waveprop -->
 
@@ -209,47 +227,29 @@ method from [waveprop](https://github.com/ebezzam/waveprop).
 Physical propagation refers to the process of physically displaying a phase map
 on a SLM and then observing the resulting images at the target plane. That's where the
 [slm-controller](https://github.com/ebezzam/slm-controller) comes in handy to
-communicate with the physical SLMs. Note that this software package simply plots
+communicate with the physical SLMs, and the camera in order to measure the
+response at the target plane.
+
+<!-- TODO must change if we decide to always plot the pattern -->
+
+Note that this software package simply plots
 the phase map whenever something goes wrong with showing it on the physical
-device so that you can still get an idea of the resulting phase maps. Usage
-examples will be presented in the
+device so that you can still get an idea of the resulting phase maps.
+
+Usage examples will be presented in the
 subsequent [Example scripts](#example-scripts) section.
 
-### Simulated propagation
+## Setting common apertures
 
-Opposed to physical propagation, here the propagation is only simulated. No
-physical SLM is involved. This feature is specially useful for working, testing or
-debugging when not having access to all the material needed to do the physical
-propagation. As explained earlier ([Propagation](#propagation)), Holoeye and
-Neural Holography assume different experimental setups. Hence, methods are
-provided to simulated propagation in both settings in
-`mask_designer/simulated_prop.py`. Additionally, a whole bunch of methods from
-waveprop are added in the script, unfortunately not all those are properly
-working for now. Usage examples will be presented in the
-subsequent [Example scripts](#example-scripts) section.
-
-## Forward Problem
-
-As explained earlier, generally what we do in phase retrieval is actually an
-inverse problem. The forward version consists of choosing a pattern, in this
-case mostly an aperture (circular, rectangular, etc.) and then observe the
-resulting amplitude at the target plane. The `mask_designer/aperture.py` provides
-an easy way to set different apertures:
-
-- rectangle,
-- square,
-- line and
-- circle
-
-aperture. Then, `mask_designer/slm.py` is used to simulate a SLM and provide
-plotting capabilities of those apertures. Additionally, you can also physically
-send those apertures to real SLM devices. Usage examples will be presented in the
-subsequent [Example scripts](#example-scripts) section.
+The `mask_designer/aperture.py` provides
+an easy way to set different apertures: rectangle, square, line, and circle.
+These apertures can be programmed to real SLM devices. Usage example will be
+presented in the subsequent [Example scripts](#example-scripts) section.
 
 ## Example scripts
 
-In `examples` are various example scripts that showcase all
-the features integrated into the project.
+In `examples` are various example scripts that showcase the main functionality
+of this repository.
 
 First, activate the virtual environment:
 
@@ -263,7 +263,7 @@ You can exit the virtual environment by running `deactivate`.
 
 <!-- TODO adapt here -->
 
-This section does show how the CITL can be used. Note though that this is still
+This section does show how CITL can be used. Note though that this is still
 very much in development, so not bug free. More work will be needed here.
 
 This script calls via the `mask_designer/wrapper.py` Neural Holography code that
@@ -350,6 +350,8 @@ This script simply sets some parameters like wavelength etc., then loads a
 target image (Holoeye logo) and runs the DPAC method. The resulting phase
 pattern is finally submitted to a real SLM.
 
+<!-- TODO might just remove DPAC -->
+
 ```sh
 $ python examples/physical_prop_dpac.py --help
 Usage: physical_prop_dpac.py [OPTIONS]
@@ -373,7 +375,7 @@ Options:
   --help                Show this message and exit.
 ```
 
-Different to before, this script does not perform any computation. Instead it
+Unlike before, this script does not perform any computation. Instead it
 only loads a precomputed phase map
 generated using Holoeye's [SLM Pattern
 Generator](https://customers.holoeye.com/slm-pattern-generator-v5-1-1-windows/)
@@ -525,6 +527,12 @@ python examples/plot_aperture.py --shape square --n_cells 2 --device rgb
 
 ## Adding a new camera
 
-1. Add configuration in `mask_designer/hardware.py:cam_devices`.
-2. Create class in `mask_designer/camera.py`.
-3. Add to factory method `create_camera` in `mask_designer/camera.py`.
+In order to add support for a new camera, a few steps need to be taken. These are
+done to avoid hard-coded values, but rather have global variables/definitions
+that are accessible throughout the whole code base.
+
+1. Add camera configuration in `mask_designer/hardware.py:cam_devices`.
+2. Define a new class in `mask_designer/camera.py` for interfacing with the new
+   camera (set parameters, take images, etc.).
+3. Add to factory method `create` in `mask_designer/camera.py` for a
+   conveniently one-liner to instantiate an object of the new camera.
