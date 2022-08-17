@@ -250,6 +250,8 @@ presented in the subsequent [Example scripts](#example-scripts) section.
 
 ## Example scripts
 
+<!-- TODO adapt example paths -->
+
 In `examples` are various example scripts that showcase the main functionality
 of this repository.
 

@@ -32,5 +32,5 @@ params = {
 slm_device = SLMDevices.HOLOEYE_LC_2012.value  # TODO does this structure still make sense?
 
 # and a camera device that you want to use
-# cam_device = CamDevices.IDS.value
-cam_device = CamDevices.DUMMY.value
+cam_device = CamDevices.IDS.value
+# cam_device = CamDevices.DUMMY.value

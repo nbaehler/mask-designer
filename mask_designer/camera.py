@@ -265,6 +265,8 @@ class IDSCamera(Camera):
         # Get nodemap of the remote device for all accesses to the genicam nodemap tree
         self.__node_map = self.__device.RemoteDevice().NodeMaps()[0]
 
+        self.__print_supported_nodes()
+
         # Load default settings
         self.__node_map.FindNode("UserSetSelector").SetCurrentEntry("Default")
         self.__node_map.FindNode("UserSetLoad").Execute()
@@ -340,7 +342,22 @@ class IDSCamera(Camera):
 
         return buffer
 
-    def __print_supported_nodes(self, node):  # TODO for development
+    def __print_supported_nodes(self):  # TODO for development
+        all_nodes = self.__node_map.Nodes()
+
+        available_nodes = [
+            node.DisplayName()
+            for node in all_nodes
+            if node.AccessStatus()
+            not in [peak.NodeAccessStatus_NotAvailable, peak.NodeAccessStatus_NotImplemented,]
+        ]
+
+        available_nodes.sort()
+
+        for node in available_nodes:
+            print(node)
+
+    def __print_supported_entries(self, node):  # TODO for development
         all_entries = self.__node_map.FindNode(node).Entries()
         available_entries = [
             entry.SymbolicValue()
@@ -349,7 +366,10 @@ class IDSCamera(Camera):
             not in [peak.NodeAccessStatus_NotAvailable, peak.NodeAccessStatus_NotImplemented,]
         ]
 
-        print(available_entries)
+        available_entries.sort()
+
+        for entry in available_entries:
+            print(entry)
 
     def set_exposure_time(self, time=33.189):
         """

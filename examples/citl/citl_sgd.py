@@ -2,6 +2,7 @@
 Physical propagation of slm patterns generated using the SGD algorithm.
 """
 
+
 from os.path import dirname, abspath, join
 import sys
 
@@ -107,7 +108,7 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     from multiprocessing.managers import BaseManager
 
-    BaseManager.register("HoloeyeSLM", slm.HoloeyeSLM)
+    BaseManager.register("HoloeyeSLM", slm.HoloeyeSLM)  # TODO shouldn't to be shared
     BaseManager.register("IDSCamera", camera.IDSCamera)
     # BaseManager.register("DummyCamera", camera.DummyCamera)
 
