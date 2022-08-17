@@ -74,8 +74,7 @@ def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
     fy_max = 1 / np.sqrt((2 * prop_dist * (1 / y)) ** 2 + 1) / wavelength
     fx_max = 1 / np.sqrt((2 * prop_dist * (1 / x)) ** 2 + 1) / wavelength
     H_filter = torch.tensor(
-        ((np.abs(FX) < fx_max) & (np.abs(FY) < fy_max)).astype(np.uint8),
-        dtype=torch.float32,
+        ((np.abs(FX) < fx_max) & (np.abs(FY) < fy_max)).astype(np.uint8), dtype=torch.float32,
     )
 
     # get real/img components
@@ -159,10 +158,7 @@ def transform_from_neural_holography_setting(
 
     return torch.fft.ifftn(
         torch.fft.ifftn(
-            H
-            * torch.fft.fftn(
-                ifftshift(neural_holography_phase_map), dim=(-2, -1), norm="ortho"
-            ),
+            H * torch.fft.fftn(ifftshift(neural_holography_phase_map), dim=(-2, -1), norm="ortho"),
             dim=(-2, -1),
             norm="ortho",
         ),

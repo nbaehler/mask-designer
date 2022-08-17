@@ -2,10 +2,16 @@
 Script that runs the CITL training of Neural Holography. #TODO functional but
 needs more work
 """
+from os.path import dirname, abspath, join
+import sys
 
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, "../.."))
+sys.path.append(CODE_DIR)
 
 import click
-from mask_designer.wrapper import train_model, str2bool
+from mask_designer.wrapper import train_model
 import datetime
 
 
@@ -49,7 +55,7 @@ import datetime
 #     "--step_lr", type=str2bool, default=True, help="Use of lr scheduler"
 # )
 # @click.option("--experiment", type=str, default="", help="Name of the experiment")
-def parameterized_prop_model_citl_train(
+def main(
     channel,
     pretrained_path,
     model_path,
@@ -84,4 +90,4 @@ def parameterized_prop_model_citl_train(
 
 
 if __name__ == "__main__":
-    parameterized_prop_model_citl_train()
+    main()

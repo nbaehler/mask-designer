@@ -2,6 +2,14 @@
 Simulated propagation of the slm pattern generated using the holoeye software.
 """
 
+from os.path import dirname, abspath, join
+import sys
+
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, "../.."))
+sys.path.append(CODE_DIR)
+
 from mask_designer.experimental_setup import (
     Params,
     params,
@@ -9,37 +17,39 @@ from mask_designer.experimental_setup import (
 )
 from mask_designer.simulated_prop import simulated_prop
 
-from mask_designer.utils import load_phase_map, show_plot
+from mask_designer.utils import (
+    load_phase_map,
+    pad_tensor_to_shape,
+    show_plot,
+)
 from mask_designer.propagation import (
     holoeye_fraunhofer,
     neural_holography_asm,
 )
 from mask_designer.transform_phase_maps import transform_to_neural_holography_setting
 
-from slm_controller.hardware import (
-    SLMParam,
-    slm_devices,
-)
+from slm_controller.hardware import SLMParam, slm_devices
 
 
-def simulated_prop_holoeye():
+def main():
     # Define parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
-    # Load slm phase map computed with holoeye software
-    holoeye_phase_map = load_phase_map()
+    # Load slm phase map computed with CITL
+    holoeye_phase_map = load_phase_map("citl/predictions/0_holoeye_logo_pred_phases_ASM_green.png")
 
-    # Make it compliant with the data structure used in the project
+    # Pad roi to full slm shape
+    holoeye_phase_map = pad_tensor_to_shape(
+        holoeye_phase_map, slm_shape
+    )  # TODO padding really needed? Done in citl_pred as well, we'll see
     unpacked_phase_map = holoeye_phase_map[0, 0, :, :]
 
     # Simulate the propagation in the lens setting and show the results
     propped_phase_map = simulated_prop(holoeye_phase_map, holoeye_fraunhofer)
-    show_plot(
-        unpacked_phase_map, propped_phase_map, "Holoeye with lens"
-    )  # TODO Holoeye pattern is dark, normalize image to be in [0, 255]?
+    show_plot(unpacked_phase_map, propped_phase_map, "CITL with lens")
 
     # Transform the initial phase map to the lensless setting
     neural_holography_phase_map = transform_to_neural_holography_setting(
@@ -51,8 +61,8 @@ def simulated_prop_holoeye():
     propped_phase_map = simulated_prop(
         neural_holography_phase_map, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
-    show_plot(unpacked_phase_map, propped_phase_map, "Holoeye without lens")
+    show_plot(unpacked_phase_map, propped_phase_map, "CITL without lens")
 
 
 if __name__ == "__main__":
-    simulated_prop_holoeye()
+    main()

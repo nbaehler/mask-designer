@@ -2,6 +2,14 @@
 Plot aperture example.
 """
 
+from os.path import dirname, abspath, join
+import sys
+
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, ".."))
+sys.path.append(CODE_DIR)
+
 import matplotlib.pyplot as plt
 import click
 from mask_designer.aperture import (
@@ -62,7 +70,7 @@ from slm_controller.hardware import SLMDevices, slm_devices, SLMParam
     type=click.Choice(SLMDevices.values()),
     help="Which device to program with aperture.",
 )
-def plot_aperture(
+def main(
     shape, n_cells, rect_shape, vertical, show_tick_labels, pixel_pitch, slm_shape, device,
 ):
     """
@@ -129,4 +137,4 @@ def plot_aperture(
 
 
 if __name__ == "__main__":
-    plot_aperture()
+    main()

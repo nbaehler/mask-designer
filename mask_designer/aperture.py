@@ -28,7 +28,7 @@ def rect_aperture(slm_shape, pixel_pitch, apert_dim, center=None):
     Parameters
     ----------
     slm_shape : tuple(int)
-        Dimensions (height, width) of SLM in cells.
+        Dimensions (height, width) of VirtualSLM in cells.
     pixel_pitch : tuple(float)
         Dimensions (height, width) of each cell in meters.
     apert_dim : tuple(float)
@@ -55,10 +55,10 @@ def rect_aperture(slm_shape, pixel_pitch, apert_dim, center=None):
     else:
         assert (
             0 <= center[0] < slm.height
-        ), f"Center {center} must lie within SLM dimensions {slm.dim}."
+        ), f"Center {center} must lie within VirtualSLM dimensions {slm.dim}."
         assert (
             0 <= center[1] < slm.width
-        ), f"Center {center} must lie within SLM dimensions {slm.dim}."
+        ), f"Center {center} must lie within VirtualSLM dimensions {slm.dim}."
 
     # compute mask
     apert_dim = np.array(apert_dim)
@@ -73,13 +73,10 @@ def rect_aperture(slm_shape, pixel_pitch, apert_dim, center=None):
         raise ValueError(
             f"Aperture ({top_left[0]}:{bottom_right[0]}, "
             f"{top_left[1]}:{bottom_right[1]}) extends past valid "
-            f"SLM dimensions {slm.dim}"
+            f"VirtualSLM dimensions {slm.dim}"
         )
     slm.at(
-        physical_coord=np.s_[
-            top_left[0] : bottom_right[0], top_left[1] : bottom_right[1]
-        ],
-        value=1,
+        physical_coord=np.s_[top_left[0] : bottom_right[0], top_left[1] : bottom_right[1]], value=1,
     )
 
     return slm
@@ -92,7 +89,7 @@ def line_aperture(slm_shape, pixel_pitch, length, vertical=True, center=None):
     Parameters
     ----------
     slm_shape : tuple(int)
-        Dimensions (height, width) of SLM in cells.
+        Dimensions (height, width) of VirtualSLM in cells.
     pixel_pitch : tuple(float)
         Dimensions (height, width) of each cell in meters.
     length : float
@@ -120,7 +117,7 @@ def square_aperture(slm_shape, pixel_pitch, side, center=None):
     Parameters
     ----------
     slm_shape : tuple(int)
-        Dimensions (height, width) of SLM in cells.
+        Dimensions (height, width) of VirtualSLM in cells.
     pixel_pitch : tuple(float)
         Dimensions (height, width) of each cell in meters.
     side : float
@@ -145,7 +142,7 @@ def circ_aperture(slm_shape, pixel_pitch, radius, center=None):
     Parameters
     ----------
     slm_shape : tuple(int)
-        Dimensions (height, width) of SLM in cells.
+        Dimensions (height, width) of VirtualSLM in cells.
     pixel_pitch : tuple(float)
         Dimensions (height, width) of each cell in meters.
     radius : float

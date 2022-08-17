@@ -1,6 +1,13 @@
 """
 Script that runs the CITL evaluations of Neural Holography. #TODO not working entirely
 """
+from os.path import dirname, abspath, join
+import sys
+
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, "../.."))
+sys.path.append(CODE_DIR)
 
 import click
 from mask_designer.wrapper import eval
@@ -38,7 +45,7 @@ from mask_designer.wrapper import eval
     default="./citl/calibration",
     help="Directory where calibration phases are being stored.",
 )
-def parameterized_prop_model_citl_eval(
+def main(
     channel, prop_model, test_phases_path, test_target_amps_path, prop_model_dir, calibration_path,
 ):
     eval(
@@ -52,4 +59,4 @@ def parameterized_prop_model_citl_eval(
 
 
 if __name__ == "__main__":
-    parameterized_prop_model_citl_eval()
+    main()

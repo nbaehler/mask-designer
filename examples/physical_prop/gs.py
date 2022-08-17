@@ -2,6 +2,14 @@
 Physical propagation of slm patterns generated using the GS algorithm.
 """
 
+from os.path import dirname, abspath, join
+import sys
+
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, "../.."))
+sys.path.append(CODE_DIR)
+
 import torch
 import click
 from slm_controller import slm
@@ -20,7 +28,7 @@ from mask_designer.wrapper import ImageLoader, run_gs
 
 @click.command()
 @click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
-def physical_prop_gs(iterations):
+def main(iterations):
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -33,7 +41,7 @@ def physical_prop_gs(iterations):
 
     # Initialize image loader
     image_loader = ImageLoader(
-        "images/target_amplitude",
+        abspath(join(CODE_DIR, "images/target_amplitude")),
         image_res=slm_shape,
         homography_res=roi,
         shuffle=False,
@@ -67,4 +75,4 @@ def physical_prop_gs(iterations):
 
 
 if __name__ == "__main__":
-    physical_prop_gs()
+    main()

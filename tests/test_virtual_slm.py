@@ -4,6 +4,14 @@ email: ebezzam@gmail.com,
 GitHub: https://github.com/ebezzam
 """
 
+from os.path import dirname, abspath, join
+import sys
+
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, ".."))
+sys.path.append(CODE_DIR)
+
 from mask_designer.virtual_slm import VirtualSLM
 import numpy as np
 

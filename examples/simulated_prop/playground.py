@@ -2,6 +2,14 @@
 Simulated propagation using waveprop of the slm pattern generated using the holoeye software.
 """
 
+from os.path import dirname, abspath, join
+import sys
+
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, "../.."))
+sys.path.append(CODE_DIR)
+
 import torch
 from mask_designer.experimental_setup import (
     Params,
@@ -31,7 +39,7 @@ from mask_designer.transform_phase_maps import transform_to_neural_holography_se
 from slm_controller.hardware import SLMParam, slm_devices
 
 
-def simulated_prop_waveprop():
+def main():
     # Define parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -164,4 +172,4 @@ def simulated_prop_waveprop():
 
 
 if __name__ == "__main__":
-    simulated_prop_waveprop()
+    main()

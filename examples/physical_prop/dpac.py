@@ -2,6 +2,14 @@
 Physical propagation of slm patterns generated using the DPAC algorithm.
 """
 
+from os.path import dirname, abspath, join
+import sys
+
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, "../.."))
+sys.path.append(CODE_DIR)
+
 import torch
 from slm_controller import slm
 from slm_controller.hardware import (
@@ -18,7 +26,7 @@ from mask_designer.experimental_setup import (
 from mask_designer.wrapper import ImageLoader, run_dpac
 
 
-def physical_prop_dpac():
+def main():
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -31,7 +39,7 @@ def physical_prop_dpac():
 
     # Initialize image loader
     image_loader = ImageLoader(
-        "images/target_amplitude",
+        abspath(join(CODE_DIR, "images/target_amplitude")),
         image_res=slm_shape,
         homography_res=roi,
         shuffle=False,
@@ -60,4 +68,4 @@ def physical_prop_dpac():
 
 
 if __name__ == "__main__":
-    physical_prop_dpac()
+    main()

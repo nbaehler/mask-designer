@@ -2,13 +2,21 @@
 Camera image capture example.
 """
 
+from os.path import dirname, abspath, join
+import sys
+
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, ".."))
+sys.path.append(CODE_DIR)
+
 from mask_designer import camera
 from mask_designer.experimental_setup import cam_device
 
 import matplotlib.pyplot as plt
 
 
-def camera_image_capture():
+def main():
     # Initialize camera
     cam = camera.create(cam_device)
 
@@ -72,4 +80,4 @@ def camera_image_capture():
 
 
 if __name__ == "__main__":
-    camera_image_capture()
+    main()

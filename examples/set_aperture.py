@@ -2,6 +2,14 @@
 Set aperture example.
 """
 
+from os.path import dirname, abspath, join
+import sys
+
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, ".."))
+sys.path.append(CODE_DIR)
+
 import click
 from mask_designer.aperture import (
     rect_aperture,
@@ -49,13 +57,13 @@ from slm_controller.hardware import slm_devices, SLMDevices, SLMParam
     type=click.Choice(SLMDevices.values()),
     help="Which device to program with aperture.",
 )
-def set_aperture(shape, n_cells, rect_shape, center, vertical, device):
+def main(shape, n_cells, rect_shape, center, vertical, device):
     """
     Set aperture on a physical device.
     """
 
     if device is None:
-        device = SLMDevices.ADAFRUIT_RGB.value
+        device = SLMDevices.ADAFRUIT.value
     if rect_shape is None:
         rect_shape = []
     if center is None:
@@ -135,4 +143,4 @@ def set_aperture(shape, n_cells, rect_shape, center, vertical, device):
 
 
 if __name__ == "__main__":
-    set_aperture()
+    main()

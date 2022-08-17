@@ -1,8 +1,15 @@
 """
-Simulated propagation of slm patterns generated using the SGD algorithm.
+Simulated propagation of slm patterns generated using the DPAC algorithm.
 """
+from os.path import dirname, abspath, join
+import sys
 
-import click
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, "../.."))
+sys.path.append(CODE_DIR)
+
+
 from mask_designer.simulated_prop import simulated_prop
 from mask_designer.utils import extend_to_complex, show_plot
 from mask_designer.propagation import holoeye_fraunhofer, neural_holography_asm
@@ -18,12 +25,10 @@ from mask_designer.experimental_setup import (
     params,
     slm_device,
 )
-from mask_designer.wrapper import SGD, ImageLoader
+from mask_designer.wrapper import DPAC, ImageLoader
 
 
-@click.command()
-@click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
-def simulated_prop_sgd(iterations):
+def main():
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -36,7 +41,7 @@ def simulated_prop_sgd(iterations):
 
     # Initialize image loader
     image_loader = ImageLoader(
-        "images/target_amplitude",
+        abspath(join(CODE_DIR, "images/target_amplitude")),
         image_res=slm_shape,
         homography_res=roi,
         shuffle=False,
@@ -52,12 +57,10 @@ def simulated_prop_sgd(iterations):
     target_amp = target_amp[None, None, :, :]
     target_amp = target_amp.to(device)
 
-    # Setup a random initial slm phase map with values in [-0.5, 0.5]
-    init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_shape)).to(device)
-
-    # Run Stochastic Gradient Descent based method
-    sgd = SGD(prop_dist, wavelength, pixel_pitch, iterations, roi, device=device)
-    angles = sgd(target_amp, init_phase).cpu().detach()
+    # Run Double Phase Amplitude Coding #TODO DPAC does not work
+    dpac = DPAC(prop_dist, wavelength, pixel_pitch, device=device)
+    angles = dpac(target_amp)
+    angles = angles.cpu().detach()
 
     # Extend the computed angles, aka the phase values, to a complex tensor again
     neural_holography_phase_map = extend_to_complex(angles)
@@ -70,15 +73,15 @@ def simulated_prop_sgd(iterations):
     # Simulate the propagation in the lens setting and show the results
     unpacked_phase_map = holoeye_phase_map[0, 0, :, :]
     propped_phase_map = simulated_prop(holoeye_phase_map, holoeye_fraunhofer)
-    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography SGD with lens")
+    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography DPAC with lens")
 
     # Simulate the propagation in the lensless setting and show the results
     unpacked_phase_map = neural_holography_phase_map[0, 0, :, :]
     propped_phase_map = simulated_prop(
         neural_holography_phase_map, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
-    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography SGD without lens")
+    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography DPAC without lens")
 
 
 if __name__ == "__main__":
-    simulated_prop_sgd()
+    main()

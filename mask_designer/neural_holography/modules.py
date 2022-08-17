@@ -19,7 +19,6 @@ Refer to the LICENSE file for more information.
 """
 
 from multiprocessing import Process
-import multiprocessing
 from pathlib import Path
 import pickle
 import numpy as np
@@ -28,7 +27,7 @@ import torch
 import torch.nn as nn
 from slm_controller import slm
 from mask_designer import camera
-from mask_designer.capture import capture
+from mask_designer.temp.capture import capture
 from mask_designer.hardware import CamParam, cam_devices
 from slm_controller.hardware import SLMParam, slm_devices
 
@@ -565,9 +564,11 @@ class PhysicalProp(nn.Module):
 
         self.calibrator = Calibration(num_circles, space_btw_circs)
 
-        self.slm.set_show_time(num_grab_images * params[Params.SLM_SHOW_TIME])
+        # self.slm.set_show_time(num_grab_images * params[Params.SLM_SHOW_TIME]) # TODO must come from caller
 
-        self.captured_blank = np.zeros(slm_devices[slm_device][SLMParam.SLM_SHAPE], dtype=np.uint8)
+        # self.captured_blank = np.zeros(
+        #     slm_devices[slm_device][SLMParam.SLM_SHAPE], dtype=np.uint8
+        # )
 
         captured_blank = self._capture_and_average_intensities(
             num_grab_images,
@@ -575,11 +576,11 @@ class PhysicalProp(nn.Module):
             np.zeros(slm_devices[slm_device][SLMParam.SLM_SHAPE], dtype=np.uint8,),
         )
 
-        import matplotlib.pyplot as plt
+        # import matplotlib.pyplot as plt
 
-        _, ax = plt.subplots()
-        ax.imshow(captured_blank, cmap="gray")
-        plt.show()
+        # _, ax = plt.subplots()
+        # ax.imshow(captured_blank, cmap="gray")
+        # plt.show()
 
         # captured_blank = np.zeros(slm_devices[slm_device][SLMParam.SLM_SHAPE], dtype=np.uint8)
 
@@ -589,19 +590,19 @@ class PhysicalProp(nn.Module):
         calib_phase_img = skimage.io.imread(calibration_pattern_path)
         calib_phase_img = np.mean(calib_phase_img[:, :, 0:3], axis=2)
 
-        import matplotlib.pyplot as plt
+        # import matplotlib.pyplot as plt
 
-        _, ax = plt.subplots()
-        ax.imshow(calib_phase_img, cmap="gray")
-        plt.show()
+        # _, ax = plt.subplots()
+        # ax.imshow(calib_phase_img, cmap="gray")
+        # plt.show()
 
         captured_img = self._capture_and_average_intensities(num_grab_images, True, calib_phase_img)
 
-        _, ax = plt.subplots()
-        ax.imshow(captured_img, cmap="gray")
-        plt.show()
+        # _, ax = plt.subplots()
+        # ax.imshow(captured_img, cmap="gray")
+        # plt.show()
 
-        self.slm.set_show_time(params[Params.SLM_SHOW_TIME])
+        self.slm.set_show_time(params[Params.SLM_SHOW_TIME])  # TODO must come from caller
 
         # -----------------------------------------------------
 
@@ -610,7 +611,11 @@ class PhysicalProp(nn.Module):
             range_row[0] : range_row[1], range_col[0] : range_col[1], ...
         ]
 
-        calib_success = self.calibrator.calibrate(corrected_img_masked, show_preview=show_preview)
+        # calib_success = self.calibrator.calibrate(
+        #     corrected_img_masked, show_preview=show_preview
+        # )
+
+        calib_success = self.calibrator.calibrate(corrected_img_masked, show_preview=False)
 
         self.calibrator.start_row, self.calibrator.end_row = range_row
         self.calibrator.start_col, self.calibrator.end_col = range_col
@@ -678,12 +683,12 @@ class PhysicalProp(nn.Module):
     def _imshow(self, slm, phase_map):
         import datetime
 
-        print(datetime.datetime.now().time(), "Inside imshow")
-        slm.imshow(phase_map)  # TODO comment out
+        print(datetime.datetime.now().time(), "Start imshow")
+        slm.imshow(phase_map)
         print(datetime.datetime.now().time(), "End imshow")
 
     def _capture(
-        self, cam, slm_settle_time, num_grab_images, resize,
+        self, cam, slm_settle_time, num_grab_images, resize, captures_path,
     ):
         import datetime
 
@@ -694,8 +699,6 @@ class PhysicalProp(nn.Module):
         time.sleep(slm_settle_time)
         print(datetime.datetime.now().time(), "End settle, start capture")
 
-        print(datetime.datetime.now().time(), "Start capture")
-
         if resize:
             captured_intensities = cam.acquire_multiple_images_and_resize_to_slm_shape(
                 num_grab_images
@@ -705,13 +708,19 @@ class PhysicalProp(nn.Module):
 
         print(datetime.datetime.now().time(), "End capture")
 
-        pickle.dump(captured_intensities, open("citl/captures.pkl", "wb"))
+        pickle.dump(captured_intensities, open(captures_path, "wb"))
 
     def _capture_and_average_intensities(self, num_grab_images, resize, phase_map):
         import datetime
 
+        captures_path = Path("citl/captures.pkl")
+
+        if captures_path.exists():
+            captures_path.unlink()
+
         cam_process = Process(
-            target=self._capture, args=[self.camera, self.slm_settle_time, num_grab_images, resize],
+            target=self._capture,
+            args=[self.camera, self.slm_settle_time, num_grab_images, resize, captures_path,],
         )
 
         cam_process.start()
@@ -720,20 +729,29 @@ class PhysicalProp(nn.Module):
         self.slm.imshow(phase_map)
         print(datetime.datetime.now().time(), "End imshow")
 
-        captures_path = Path("citl/captures.pkl")
-
         if not captures_path.exists():
-            raise ValueError("Your show time is too short")
+            if cam_process.is_alive():
+                cam_process.terminate()
+
+            raise ValueError("Image capturing process timed out!")
 
         with open(captures_path, "rb") as f:
             captures = pickle.load(f)
 
+        if cam_process.is_alive():
+            cam_process.terminate()
+
         captures_path.unlink()
 
-        cam_process.join()
-        cam_process.terminate()
+        img = utils.burst_img_processor(captures)
 
-        return utils.burst_img_processor(captures)
+        from PIL import Image
+
+        img_file = Image.fromarray(img)
+        name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+        img_file.save(f"citl/snapshots/img_{name}.png")
+
+        return img
 
         # ----------------------------------------------------------------------
 
@@ -754,10 +772,61 @@ class PhysicalProp(nn.Module):
 
         # print(datetime.datetime.now().time(), "End capture")
 
-        # slm_process.join()
         # slm_process.terminate()
+        # # slm_process.kill()
 
         # return utils.burst_img_processor(captured_intensities)
+
+        # ----------------------------------------------------------------------
+
+        # import datetime
+
+        # captures_path = Path("citl/captures.pkl")
+
+        # if captures_path.exists():
+        #     captures_path.unlink()
+
+        # slm_process = Process(target=self._imshow, args=[self.slm, phase_map])
+
+        # cam_process = Process(
+        #     target=self._capture,
+        #     args=[
+        #         self.camera,
+        #         self.slm_settle_time,
+        #         num_grab_images,
+        #         resize,
+        #         captures_path,
+        #     ],
+        # )
+
+        # print(datetime.datetime.now().time(), "Start imshow process")
+        # slm_process.start()
+        # print(datetime.datetime.now().time(), "Start capture process")
+        # cam_process.start()
+
+        # while not captures_path.exists() and slm_process.is_alive():
+        #     time.sleep(0.1)
+
+        # if not captures_path.exists():
+        #     slm_process.terminate()
+
+        #     if cam_process.is_alive():
+        #         cam_process.terminate()
+
+        #     raise ValueError("Image capturing Process timed out!")
+
+        # with open(captures_path, "rb") as f:
+        #     captures = pickle.load(f)
+
+        # if slm_process.is_alive():
+        #     slm_process.terminate()
+
+        # if cam_process.is_alive():
+        #     cam_process.terminate()
+
+        # captures_path.unlink()
+
+        # return utils.burst_img_processor(captures)
 
         # ----------------------------------------------------------------------
 
@@ -765,30 +834,53 @@ class PhysicalProp(nn.Module):
         # import subprocess
 
         # exposure_time = 1200
+        # captures_path = Path("citl/captures.pkl")
+        # phase_map_path = Path("citl/phase_map.pkl")
 
-        # subprocess.Popen(
+        # if phase_map_path.exists():
+        #     phase_map_path.unlink()
+
+        # if captures_path.exists():
+        #     captures_path.unlink()
+
+        # pickle.dump(phase_map, open(phase_map_path, "wb"))
+
+        # show_process = subprocess.Popen(
+        #     ["python", "mask_designer/temp/show.py", phase_map_path,]
+        # )
+
+        # capture_process = subprocess.Popen(
         #     [
         #         "python",
-        #         "mask_designer/capture.py",
+        #         "mask_designer/temp/capture.py",
         #         f"{exposure_time}",
         #         f"{num_grab_images}",
         #         f"{resize}",
         #         f"{self.slm_settle_time}",
+        #         captures_path,
         #     ]
         # )
 
-        # print(datetime.datetime.now().time(), "Inside imshow")
-        # self.slm.imshow(phase_map)  # TODO comment out
-        # print(datetime.datetime.now().time(), "End imshow")
+        # print(show_process.poll() is None)
 
-        # captures_path = Path("citl/captures.pkl")
+        # while not captures_path.exists() and show_process.poll() is None:
+        #     time.sleep(0.1)
 
         # if not captures_path.exists():
+        #     print("Not captured")
+
+        #     subprocess.Popen.kill(show_process)
+        #     subprocess.Popen.kill(capture_process)
+
         #     raise ValueError("Your show time is too short")
 
         # with open(captures_path, "rb") as f:
         #     captures = pickle.load(f)
 
+        # subprocess.Popen.kill(show_process)
+        # subprocess.Popen.kill(capture_process)
+
+        # phase_map_path.unlink()
         # captures_path.unlink()
 
         # return utils.burst_img_processor(captures) - self.captured_blank

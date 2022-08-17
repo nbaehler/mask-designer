@@ -11,7 +11,7 @@ from slm_controller.hardware import (
 from mask_designer.utils import resize_image_to_shape
 
 
-def temp():
+def main():
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
     image = Image.open("images/target_amplitude/holoeye_logo.png")
@@ -21,7 +21,3 @@ def temp():
     resized_image = Image.fromarray(resized_image)
 
     resized_image.save("images/test/holoeye_logo_big.png")
-
-
-if __name__ == "__main__":
-    temp()

@@ -67,14 +67,7 @@ def run_dpac(target_amp, slm_shape, prop_distance, wavelength, pixel_pitch, devi
 
 
 def run_gs(
-    init_phase,
-    target_amp,
-    iterations,
-    slm_shape,
-    prop_distance,
-    wavelength,
-    pixel_pitch,
-    device,
+    init_phase, target_amp, iterations, slm_shape, prop_distance, wavelength, pixel_pitch, device,
 ):
     """
     Run the GS algorithm and quantize the result.

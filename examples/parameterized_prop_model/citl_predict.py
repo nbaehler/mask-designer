@@ -18,6 +18,13 @@ All rights reserved.
 
 Refer to the LICENSE file for more information.
 """
+from os.path import dirname, abspath, join
+import sys
+
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, "../.."))
+sys.path.append(CODE_DIR)
 
 import click
 import imageio
@@ -82,7 +89,7 @@ from mask_designer.wrapper import (
     default="./citl/calibration",
     help="Directory where calibration phases are being stored.",
 )
-def parameterized_prop_model_citl_predict(
+def main(
     channel, prop_model, pred_phases_path, prop_model_dir, calibration_path,
 ):
     slm_show_time = params[Params.SLM_SHOW_TIME]  # TODO arg or value from experimental setup
@@ -232,4 +239,4 @@ def parameterized_prop_model_citl_predict(
 
 
 if __name__ == "__main__":
-    parameterized_prop_model_citl_predict()
+    main()

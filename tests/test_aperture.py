@@ -4,6 +4,14 @@ email: ebezzam@gmail.com,
 GitHub: https://github.com/ebezzam
 """
 
+from os.path import dirname, abspath, join
+import sys
+
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, ".."))
+sys.path.append(CODE_DIR)
+
 import pytest
 from mask_designer.virtual_slm import VirtualSLM
 from mask_designer.aperture import rect_aperture

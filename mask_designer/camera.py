@@ -119,9 +119,7 @@ class Camera:
         """
 
         if correction.shape != cam_devices[CamDevices.DUMMY.value][CamParam.IMG_SHAPE]:
-            raise ValueError(
-                "The correction must have the same shape as the camera image"
-            )
+            raise ValueError("The correction must have the same shape as the camera image")
 
         self._correction = correction
 
@@ -134,9 +132,7 @@ class DummyCamera(Camera):
         super().__init__()
 
         # Set height and width
-        self._height, self._width = cam_devices[CamDevices.DUMMY.value][
-            CamParam.IMG_SHAPE
-        ]
+        self._height, self._width = cam_devices[CamDevices.DUMMY.value][CamParam.IMG_SHAPE]
 
         # Set frame count and exposure time
         self.set_exposure_time()
@@ -231,9 +227,7 @@ class IDSCamera(Camera):
         super().__init__()
 
         # Set height and width
-        self._height, self._width = cam_devices[CamDevices.IDS.value][
-            CamParam.IMG_SHAPE
-        ]
+        self._height, self._width = cam_devices[CamDevices.IDS.value][CamParam.IMG_SHAPE]
 
         # Initialize library
         peak.Library.Initialize()
@@ -309,9 +303,7 @@ class IDSCamera(Camera):
             payload_size = self.__node_map.FindNode("PayloadSize").Value()
 
             # Get number of minimum required buffers
-            num_buffers_min_required = (
-                self.__data_stream.NumBuffersAnnouncedMinRequired()
-            )
+            num_buffers_min_required = self.__data_stream.NumBuffersAnnouncedMinRequired()
 
             # Allocate buffers
             for _ in range(num_buffers_min_required):
@@ -354,10 +346,7 @@ class IDSCamera(Camera):
             entry.SymbolicValue()
             for entry in all_entries
             if entry.AccessStatus()
-            not in [
-                peak.NodeAccessStatus_NotAvailable,
-                peak.NodeAccessStatus_NotImplemented,
-            ]
+            not in [peak.NodeAccessStatus_NotAvailable, peak.NodeAccessStatus_NotImplemented,]
         ]
 
         print(available_entries)
@@ -403,11 +392,7 @@ class IDSCamera(Camera):
 
         # Create IDS peak IPL image
         ipl_image = peak_ipl.Image_CreateFromSizeAndBuffer(
-            buffer.PixelFormat(),
-            buffer.BasePtr(),
-            buffer.Size(),
-            self._width,
-            self._height,
+            buffer.PixelFormat(), buffer.BasePtr(), buffer.Size(), self._width, self._height,
         )
 
         # # Create IDS peak IPL image for debayering and convert it to RGBa8 format # TODO needed?
@@ -440,11 +425,7 @@ class IDSCamera(Camera):
 
             # Create IDS peak IPL image
             ipl_image = peak_ipl.Image_CreateFromSizeAndBuffer(
-                buffer.PixelFormat(),
-                buffer.BasePtr(),
-                buffer.Size(),
-                self._width,
-                self._height,
+                buffer.PixelFormat(), buffer.BasePtr(), buffer.Size(), self._width, self._height,
             )
 
             # Append images as numpy array to list of acquired images

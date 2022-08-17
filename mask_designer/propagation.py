@@ -53,14 +53,7 @@ def neural_holography_asm(phase_map, prop_dist, wavelength, pixel_pitch):
         The result of the propagation at the target plane
     """
     return propagate_field(
-        phase_map,
-        propagation_ASM,
-        prop_dist,
-        wavelength,
-        pixel_pitch,
-        "ASM",
-        torch.float32,
-        None,
+        phase_map, propagation_ASM, prop_dist, wavelength, pixel_pitch, "ASM", torch.float32, None,
     )
 
 
@@ -86,9 +79,7 @@ def waveprop_fraunhofer(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     phase_map = phase_map[0, 0, :, :]
 
-    res, _, _ = fraunhofer(
-        u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
-    )
+    res, _, _ = fraunhofer(u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,)
 
     return torch.from_numpy(res)[None, None, :, :]
 
@@ -230,9 +221,7 @@ def waveprop_fft_di(phase_map, prop_dist, wavelength, pixel_pitch):
     """
     phase_map = phase_map[0, 0, :, :]
 
-    res, _, _ = fft_di(
-        u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
-    )
+    res, _, _ = fft_di(u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,)
 
     return torch.from_numpy(res)[None, None, :, :]
 
@@ -323,11 +312,7 @@ def waveprop_fresnel_two_step(phase_map, prop_dist, wavelength, pixel_pitch):
     phase_map = phase_map[0, 0, :, :]
 
     res, _, _ = fresnel_two_step(
-        u_in=phase_map.numpy(),
-        wv=wavelength,
-        d1=pixel_pitch[0],
-        d2=pixel_pitch[0],
-        dz=prop_dist,
+        u_in=phase_map.numpy(), wv=wavelength, d1=pixel_pitch[0], d2=pixel_pitch[0], dz=prop_dist,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]

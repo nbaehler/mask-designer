@@ -248,12 +248,7 @@ def resize_image_to_shape(image, shape, pad=False):
     aspect_ratio = shape[0] / shape[1]
 
     if aspect_ratio_im != aspect_ratio:
-        if (
-            aspect_ratio_im < aspect_ratio
-            and pad
-            or aspect_ratio_im > aspect_ratio
-            and not pad
-        ):
+        if aspect_ratio_im < aspect_ratio and pad or aspect_ratio_im > aspect_ratio and not pad:
             target_shape = (round(image.shape[1] * aspect_ratio), image.shape[1])
         elif (aspect_ratio_im < aspect_ratio) or aspect_ratio_im > aspect_ratio:
             target_shape = (image.shape[0], round(image.shape[0] / aspect_ratio))
@@ -274,8 +269,7 @@ def crop_image_to_shape(image, shape):
     width_after = image.shape[1] - shape[1] - width_before
 
     return image[
-        height_before : image.shape[0] - height_after,
-        width_before : image.shape[1] - width_after,
+        height_before : image.shape[0] - height_after, width_before : image.shape[1] - width_after,
     ]
 
 

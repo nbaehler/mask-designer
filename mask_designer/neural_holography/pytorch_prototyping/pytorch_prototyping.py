@@ -55,12 +55,7 @@ class LayerNormConv2d(nn.Module):
 
 class FCBlock(nn.Module):
     def __init__(
-        self,
-        hidden_ch,
-        num_hidden_layers,
-        in_features,
-        out_features,
-        outermost_linear=False,
+        self, hidden_ch, num_hidden_layers, in_features, out_features, outermost_linear=False,
     ):
         super().__init__()
 
@@ -156,12 +151,7 @@ class Conv3dSame(torch.nn.Module):
     """
 
     def __init__(
-        self,
-        in_channels,
-        out_channels,
-        kernel_size,
-        bias=True,
-        padding_layer=nn.ReplicationPad3d,
+        self, in_channels, out_channels, kernel_size, bias=True, padding_layer=nn.ReplicationPad3d,
     ):
         """
         :param in_channels: Number of input channels
@@ -188,12 +178,7 @@ class Conv2dSame(torch.nn.Module):
     """
 
     def __init__(
-        self,
-        in_channels,
-        out_channels,
-        kernel_size,
-        bias=True,
-        padding_layer=nn.ReflectionPad2d,
+        self, in_channels, out_channels, kernel_size, bias=True, padding_layer=nn.ReflectionPad2d,
     ):
         """
         :param in_channels: Number of input channels
@@ -264,20 +249,14 @@ class UpBlock(nn.Module):
             net += [nn.UpsamplingBilinear2d(scale_factor=2)]
             net += [
                 Conv2dSame(
-                    in_channels,
-                    out_channels,
-                    kernel_size=3,
-                    bias=True if norm is None else False,
+                    in_channels, out_channels, kernel_size=3, bias=True if norm is None else False,
                 )
             ]
         elif upsampling_mode == "nearest":
             net += [nn.UpsamplingNearest2d(scale_factor=2)]
             net += [
                 Conv2dSame(
-                    in_channels,
-                    out_channels,
-                    kernel_size=3,
-                    bias=True if norm is None else False,
+                    in_channels, out_channels, kernel_size=3, bias=True if norm is None else False,
                 )
             ]
         elif upsampling_mode == "shuffle":
@@ -304,10 +283,7 @@ class UpBlock(nn.Module):
         if post_conv:
             net += [
                 Conv2dSame(
-                    out_channels,
-                    out_channels,
-                    kernel_size=3,
-                    bias=True if norm is None else False,
+                    out_channels, out_channels, kernel_size=3, bias=True if norm is None else False,
                 )
             ]
 
@@ -460,9 +436,7 @@ class Unet3d(nn.Module):
 
         # Define the out layer. Each unet block concatenates its inputs with its outputs - so the output layer
         # automatically receives the output of the in_layer and the output of the last unet layer.
-        self.out_layer = [
-            Conv3dSame(2 * nf0, out_channels, kernel_size=3, bias=outermost_linear)
-        ]
+        self.out_layer = [Conv3dSame(2 * nf0, out_channels, kernel_size=3, bias=outermost_linear)]
 
         if not outermost_linear:
             if norm is not None:
@@ -599,9 +573,7 @@ class Unet(nn.Module):
 
         # Define the in block
         self.in_layer = [
-            Conv2dSame(
-                in_channels, nf0, kernel_size=3, bias=True if norm is None else False
-            )
+            Conv2dSame(in_channels, nf0, kernel_size=3, bias=True if norm is None else False)
         ]
         if norm is not None:
             self.in_layer += [norm(nf0, affine=True)]
@@ -636,10 +608,7 @@ class Unet(nn.Module):
         # automatically receives the output of the in_layer and the output of the last unet layer.
         self.out_layer = [
             Conv2dSame(
-                2 * nf0,
-                out_channels,
-                kernel_size=3,
-                bias=outermost_linear or (norm is None),
+                2 * nf0, out_channels, kernel_size=3, bias=outermost_linear or (norm is None),
             )
         ]
 

@@ -2,6 +2,14 @@
 Physical propagation of slm patterns generated using the SGD algorithm.
 """
 
+from os.path import dirname, abspath, join
+import sys
+
+# Find code directory relative to our directory
+THIS_DIR = dirname(__file__)
+CODE_DIR = abspath(join(THIS_DIR, "../.."))
+sys.path.append(CODE_DIR)
+
 import torch
 import click
 from slm_controller import slm
@@ -23,7 +31,7 @@ from mask_designer.wrapper import ImageLoader, run_sgd
 @click.option(
     "--slm_show_time", type=float, default=5.0, help="Time to show the pattern on the SLM.",
 )
-def physical_prop_sgd(iterations, show_time):
+def main(iterations, show_time):
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -36,7 +44,7 @@ def physical_prop_sgd(iterations, show_time):
 
     # Initialize image loader
     image_loader = ImageLoader(
-        "images/target_amplitude",
+        abspath(join(CODE_DIR, "images/target_amplitude")),
         image_res=slm_shape,
         homography_res=roi,
         shuffle=False,
@@ -79,4 +87,4 @@ def physical_prop_sgd(iterations, show_time):
 
 
 if __name__ == "__main__":
-    physical_prop_sgd()
+    main()

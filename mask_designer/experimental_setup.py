@@ -23,15 +23,13 @@ params = {
     # Params.SLM_SETTLE_TIME: 7,
     # Params.SLM_SHOW_TIME: 0.5,
     Params.SLM_SETTLE_TIME: 0.25,
-    Params.SLM_SHOW_TIME: 1,
+    Params.SLM_SHOW_TIME: 10,
     # Params.ROI: (640, 880),
     Params.ROI: (320, 560),
 }
 
 # Choose a slm device
-slm_device = (
-    SLMDevices.HOLOEYE_LC_2012.value
-)  # TODO does this structure still make sense?
+slm_device = SLMDevices.HOLOEYE_LC_2012.value  # TODO does this structure still make sense?
 
 # and a camera device that you want to use
 # cam_device = CamDevices.IDS.value
