@@ -1,7 +1,30 @@
 from slm_controller.hardware import SLMDevices
 from mask_designer.hardware import CamDevices
+from skimage.draw import disk
+import torch
+from slm_controller.hardware import SLMDevices, slm_devices, SLMParam
 
 from enum import Enum
+
+
+def circular_amp():  # TODO use circ aperture from our repo
+    # TODO check this, from here https://stackoverflow.com/a/70283438
+    # TODO remove, computations
+    # Laser radius = 1cm := r
+    # pixel pitch = 0.36e-4 m = 0.0036 cm,
+    # ==> r = 278 px
+
+    shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
+
+    amp_mask = torch.zeros(shape)
+
+    center = (shape[0] / 2, shape[1] / 2)
+    radius = 278
+    rr, cc = disk(center, radius)
+    amp_mask[rr, cc] = 1
+
+    return amp_mask
+
 
 # Parameters relevant for the experiments
 class Params(Enum):
@@ -19,12 +42,9 @@ class Params(Enum):
 # Actual values of those parameters
 params = {
     Params.WAVELENGTH: 532e-9,
-    Params.PROPAGATION_DISTANCE: 0.34,
-    # Params.SLM_SETTLE_TIME: 7,
-    # Params.SLM_SHOW_TIME: 0.5,
+    Params.PROPAGATION_DISTANCE: 0.305,
     Params.SLM_SETTLE_TIME: 0.25,
     Params.SLM_SHOW_TIME: 10,
-    # Params.ROI: (640, 880),
     Params.ROI: (320, 560),
 }
 
@@ -34,3 +54,7 @@ slm_device = SLMDevices.HOLOEYE_LC_2012.value  # TODO does this structure still 
 # and a camera device that you want to use
 cam_device = CamDevices.IDS.value
 # cam_device = CamDevices.DUMMY.value
+
+# Chose the shape of the laser beam hitting the SLM
+# amp_mask = torch.ones(slm_devices[slm_device][SLMParam.SLM_SHAPE])
+amp_mask = circular_amp()

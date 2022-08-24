@@ -1,5 +1,5 @@
 """
-Script that computes a phase map using the CITL model. #TODO not working entirely
+Script that computes a phase mask using the CITL model.
 
 This code is heavily inspired by mask_designer/neural_holography/eval.py. So
 credit where credit is due.
@@ -46,6 +46,7 @@ from mask_designer.experimental_setup import (
     params,
     slm_device,
     cam_device,
+    amp_mask,
 )
 from mask_designer.utils import pad_tensor_to_shape
 
@@ -89,7 +90,7 @@ from mask_designer.wrapper import (
     default="./citl/calibration",
     help="Directory where calibration phases are being stored.",
 )
-def main(
+def main(  # TODO buggy
     channel, prop_model, pred_phases_path, prop_model_dir, calibration_path,
 ):
     slm_show_time = params[Params.SLM_SHOW_TIME]  # TODO arg or value from experimental setup
@@ -124,7 +125,7 @@ def main(
         propagator = propagation_ASM
 
     elif prop_model.upper() == "CAMERA":
-        s = slm.create(slm)
+        s = slm.create(slm_device)
         s.set_show_time(slm_show_time)
 
         cam = camera.create(cam_device)
@@ -138,7 +139,7 @@ def main(
             # laser_arduino=True,
             # # range_row=(220, 1000),
             # # range_col=(300, 1630),
-            patterns_path=calibration_path,  # path of 12 x 21 calibration patterns, see Supplement.
+            pattern_path=calibration_path,  # path of 12 x 21 calibration pattern, see Supplement.
             show_preview=True,
         )
     elif prop_model.upper() == "MODEL":
@@ -167,6 +168,8 @@ def main(
 
     images = get_image_filenames(pred_phases_path)
 
+    slm_amp = amp_mask.to(device)
+
     # Loop over the dataset
     for pred_idx, phase_path in enumerate(images):
         amp = []
@@ -174,36 +177,30 @@ def main(
         # for each channel, propagate wave from the SLM plane to the image plane and get the reconstructed image.
         for c in chs:
             # load and invert phase (our SLM setup)
-            phase_map = skimage.io.imread(phase_path) / 255.0
+            phase_mask = skimage.io.imread(phase_path) / 255.0
 
-            phase_map = np.mean(phase_map, axis=2)  # TODO added to make it grayscale
+            phase_mask = np.mean(phase_mask, axis=2)  # TODO added to make it grayscale
 
-            # phase_map = (  #TODO inversion not needed in our setting?
-            #     torch.tensor((1 - phase_map) * 2 * np.pi - np.pi, dtype=dtype)
+            # phase_mask = (  #TODO inversion not needed in our setting?
+            #     torch.tensor((1 - phase_mask) * 2 * np.pi - np.pi, dtype=dtype)
             #     .reshape(1, 1, *slm_shape)
             #     .to(device)
             # )
 
-            phase_map = (
-                torch.tensor(phase_map * 2 * np.pi - np.pi, dtype=dtype)
+            phase_mask = (
+                torch.tensor(phase_mask * 2 * np.pi - np.pi, dtype=dtype)
                 .reshape(1, 1, *slm_shape)
                 .to(device)
             )
 
             # propagate field
-            real, imag = polar_to_rect(torch.ones_like(phase_map), phase_map)
-            phase_map = torch.complex(real, imag)
+            real, imag = polar_to_rect(slm_amp, phase_mask)
+            field = torch.complex(real, imag)
 
             if prop_model.upper() == "MODEL":
                 propagator = propagators[c]  # Select CITL-calibrated models for each channel
             amp_map = propagate_field(
-                phase_map,
-                propagator,
-                prop_dists[c],
-                wavelengths[c],
-                feature_size,
-                prop_model,
-                dtype,
+                field, propagator, prop_dists[c], wavelengths[c], feature_size, prop_model, dtype,
             )
 
             # cartesian to polar coordinate

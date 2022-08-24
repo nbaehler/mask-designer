@@ -39,7 +39,6 @@ import numpy as np
 import skimage.util
 import torch.nn as nn
 import torch.optim as optim
-from PIL import Image
 
 from slm_controller import slm
 from slm_controller.hardware import (
@@ -113,7 +112,7 @@ from mask_designer.neural_holography.utils_tensorboard import SummaryModelWriter
 # opt = p.parse_args()
 
 
-def train_model(
+def train_model(  # TODO buggy
     channel,
     pretrained_path,
     model_path,
@@ -175,7 +174,7 @@ def train_model(
     # phase_path = phase_path  # path of precomputed phase pool
     # data_path = "./citl/data"  # path of targets
 
-    s = slm.create(slm)
+    s = slm.create(slm_device)
     s.set_show_time(slm_show_time)
 
     cam = camera.create(cam_device)
@@ -190,7 +189,7 @@ def train_model(
         # laser_arduino=True,
         # range_row=(220, 1000),
         # range_col=(300, 1630),
-        patterns_path=calibration_path,  # path of 12 x 21 calibration patterns, see Supplement.
+        pattern_path=calibration_path,  # path of 12 x 21 calibration pattern, see Supplement.
         show_preview=True,
     )
 
@@ -276,7 +275,7 @@ def train_model(
             )
 
             # load phases
-            phase_maps = []
+            phase_masks = []
             for k, idx in enumerate(idxs):
                 # Load pre-computed phases
                 # Instead, you can optimize phases from the scratch after a few number of iterations.
@@ -289,10 +288,10 @@ def train_model(
 
                 if os.path.exists(
                     phase_filename
-                ):  # TODO if added, create random pattern if file does not exist
-                    phase_map = skimage.io.imread(phase_filename) / np.iinfo(np.uint8).max
+                ):  # TODO if statement added, create random mask if file does not exist
+                    phase_mask = skimage.io.imread(phase_filename) / np.iinfo(np.uint8).max
                 else:
-                    phase_map = (
+                    phase_mask = (
                         np.random.randint(
                             low=0, high=np.iinfo(np.uint8).max + 1, size=(1, 1, *slm_shape),
                         )
@@ -300,23 +299,23 @@ def train_model(
                     )
 
                 # invert phase (our SLM setup) #TODO inversion not needed in our setting?
-                # phase_map = (
-                #     torch.tensor((1 - phase_map) * 2 * np.pi - np.pi, dtype=dtype)
+                # phase_mask = (
+                #     torch.tensor((1 - phase_mask) * 2 * np.pi - np.pi, dtype=dtype)
                 #     .reshape(1, 1, *slm_shape)
                 #     .to(device)
                 # )
 
-                phase_map = (
-                    torch.tensor(phase_map * 2 * np.pi - np.pi, dtype=dtype)
+                phase_mask = (
+                    torch.tensor(phase_mask * 2 * np.pi - np.pi, dtype=dtype)
                     .reshape(1, 1, *slm_shape)
                     .to(device)
                 )
 
-                phase_maps.append(phase_map)
-            phase_maps = torch.cat(phase_maps, 0).detach().requires_grad_(True)
+                phase_masks.append(phase_mask)
+            phase_masks = torch.cat(phase_masks, 0).detach().requires_grad_(True)
 
             # optimizer for phase
-            optimizer_phase = optim.Adam([phase_maps], lr=lr_phase)
+            optimizer_phase = optim.Adam([phase_masks], lr=lr_phase)
 
             # 1) phase update loop
             model = model.eval()
@@ -324,7 +323,7 @@ def train_model(
                 optimizer_phase.zero_grad()
 
                 # propagate forward through the model
-                recon_field = model(phase_maps)
+                recon_field = model(phase_masks)
                 recon_amp = recon_field.abs()
                 model_amp = utils.crop_image(
                     recon_amp, target_shape=roi, pytorch=True, stacked_complex=False,
@@ -348,20 +347,20 @@ def train_model(
             with torch.no_grad():
                 for k, idx in enumerate(idxs):
                     phase_out_8bit = utils.phasemap_8bit(
-                        phase_maps[k, np.newaxis, ...].cpu().detach(), inverted=True
+                        phase_masks[k, np.newaxis, ...].cpu().detach(), inverted=True
                     )
                     cv2.imwrite(os.path.join(phase_path, f"{idx}.png"), phase_out_8bit)
 
             # make slm phases 8bit variable as displayed
-            phase_maps = utils.quantized_phase(phase_maps)
+            phase_masks = utils.quantized_phase(phase_masks)
 
             # 2) display and capture
             camera_amp = []
             with torch.no_grad():
                 # forward physical pass (display), capture and stack them in batch dimension
                 for k, idx in enumerate(idxs):
-                    phase_map = phase_maps[k, np.newaxis, ...]
-                    camera_amp.append(camera_prop(phase_map))
+                    phase_mask = phase_masks[k, np.newaxis, ...]
+                    camera_amp.append(camera_prop(phase_mask))
                 camera_amp = torch.cat(camera_amp, 0)
 
             camera_amp = utils.crop_image(  # TODO needed? Added instead of rescaling
@@ -376,7 +375,7 @@ def train_model(
                 optimizer_model.zero_grad()
 
                 # propagate forward through the model
-                recon_field = model(phase_maps)
+                recon_field = model(phase_masks)
                 recon_amp = recon_field.abs()
                 model_amp = utils.crop_image(
                     recon_amp, target_shape=roi, pytorch=True, stacked_complex=False,
@@ -405,7 +404,7 @@ def train_model(
                     )
                 if i % 50 == 0:
                     recon = model_amp[0, ...]
-                    if not recon.any():  # TODO not the really black
+                    if not recon.any():  # TODO not really black
                         print("RECON is buggy!!!")
                     captured = camera_amp[0, ...]
                     gt = target_amp[0, ...] / scale_phase[0, ...]

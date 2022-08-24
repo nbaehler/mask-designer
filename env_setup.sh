@@ -1,8 +1,8 @@
 #!/bin/bash
 # create Python 3 virtual environment
-python3 -m pip install --user virtualenv
-virtualenv -p python3 .mask_designer_env
-source .mask_designer_env/bin/activate
+python3 -m pip install --user virtualenv # TODO check on linux if Snyk works on the env folder
+virtualenv -p python3 mask_designer_env
+source mask_designer_env/bin/activate
 
 # install package
 pip install -e .

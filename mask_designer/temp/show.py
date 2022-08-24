@@ -1,7 +1,6 @@
 import pickle
-import sys
 
-from os.path import dirname, abspath, join  # TODO everywhere??
+from os.path import dirname, abspath, join
 import sys
 
 # Find code directory relative to our directory
@@ -14,16 +13,16 @@ from slm_controller import slm
 from mask_designer.experimental_setup import slm_device
 
 
-def show(phase_map_path):
+def show(phase_mask_path):
     import datetime
 
     s = slm.create(slm_device)
 
-    with open(phase_map_path, "rb") as f:
-        phase_map = pickle.load(f)
+    with open(phase_mask_path, "rb") as f:
+        phase_mask = pickle.load(f)
 
     print(datetime.datetime.now().time(), "Inside imshow")
-    s.imshow(phase_map)  # TODO comment out
+    s.imshow(phase_mask)
     print(datetime.datetime.now().time(), "End imshow")
 
 

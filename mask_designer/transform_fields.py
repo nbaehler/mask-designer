@@ -3,6 +3,7 @@ import numpy as np
 import math
 
 from mask_designer.wrapper import fftshift, ifftshift, polar_to_rect
+from mask_designer.utils import build_field
 
 
 def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
@@ -88,7 +89,7 @@ def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
 
 
 def transform_to_neural_holography_setting(
-    holoeye_phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
+    holoeye_field, prop_dist, wavelength, slm_shape, pixel_pitch
 ):
     """
     Transform from normal setting (with lens) to the lensless setting used by neural
@@ -96,8 +97,8 @@ def transform_to_neural_holography_setting(
 
     Parameters
     ----------
-    holoeye_phase_map : torch.Tensor
-        The phase map that needs to be transformed
+    holoeye_field : torch.Tensor
+        The field that needs to be transformed
     prop_dist : float
         The propagation distance from the SLM to the target plane
     wavelength : float
@@ -110,17 +111,20 @@ def transform_to_neural_holography_setting(
     Returns
     -------
     torch.Tensor
-        The transformed phase map
+        The transformed field
     """
 
     H = __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch)
 
-    return fftshift(
+    angles = holoeye_field.angle()
+    field = torch.polar(
+        torch.ones_like(angles), angles
+    )  # TODO not sure if needed or circular is okay
+
+    field = fftshift(
         torch.fft.ifftn(
             torch.fft.fftn(
-                torch.fft.fftn(holoeye_phase_map, dim=(-2, -1), norm="ortho"),
-                dim=(-2, -1),
-                norm="ortho",
+                torch.fft.fftn(field, dim=(-2, -1), norm="ortho"), dim=(-2, -1), norm="ortho",
             )
             / H,
             dim=(-2, -1),
@@ -128,9 +132,11 @@ def transform_to_neural_holography_setting(
         )
     )
 
+    return build_field(field.angle())
+
 
 def transform_from_neural_holography_setting(
-    neural_holography_phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
+    neural_holography_field, prop_dist, wavelength, slm_shape, pixel_pitch
 ):
     """
     Transform from the lensless setting used by neural holography to the the
@@ -138,8 +144,8 @@ def transform_from_neural_holography_setting(
 
     Parameters
     ----------
-    neural_holography_phase_map : torch.Tensor
-        The phase map that needs to be transformed
+    neural_holography_field : torch.Tensor
+        The field that needs to be transformed
     prop_dist : float
         The propagation distance from the SLM to the target plane
     wavelength : float
@@ -152,16 +158,23 @@ def transform_from_neural_holography_setting(
     Returns
     -------
     torch.Tensor
-        The transformed phase map
+        The transformed field
     """
     H = __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch)
 
-    return torch.fft.ifftn(
+    angles = neural_holography_field.angle()
+    field = torch.polar(
+        torch.ones_like(angles), angles
+    )  # TODO not sure if needed or circular is okay
+
+    field = torch.fft.ifftn(
         torch.fft.ifftn(
-            H * torch.fft.fftn(ifftshift(neural_holography_phase_map), dim=(-2, -1), norm="ortho"),
+            H * torch.fft.fftn(ifftshift(field), dim=(-2, -1), norm="ortho"),
             dim=(-2, -1),
             norm="ortho",
         ),
         dim=(-2, -1),
         norm="ortho",
     )
+
+    return build_field(field.angle())

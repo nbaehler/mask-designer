@@ -11,28 +11,38 @@ CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
 import click
+import numpy as np
 from mask_designer.simulated_prop import simulated_prop
-from mask_designer.utils import build_field, random_init_phase_mask, show_fields
+from mask_designer.utils import (
+    build_field,
+    pad_tensor_to_shape,
+    show_fields,
+)
 from mask_designer.propagation import holoeye_fraunhofer, neural_holography_asm
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 import torch
 
 from slm_controller.hardware import (
+    SLMDevices,
     SLMParam,
     slm_devices,
 )
 from mask_designer.experimental_setup import (
     Params,
     params,
-    slm_device,
+    # slm_device,
 )
 from mask_designer.wrapper import SGD, ImageLoader
+from mask_designer.utils import random_init_phase_mask
 
 
 @click.command()
 @click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
 def main(iterations):
     # Set parameters
+    slm_device = SLMDevices.DUMMY.value
+    # slm_device = SLMDevices.HOLOEYE_LC_2012.value
+
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
@@ -77,10 +87,21 @@ def main(iterations):
         neural_holography_field, prop_dist, wavelength, slm_shape, pixel_pitch
     )
 
+    slm_device = SLMDevices.HOLOEYE_LC_2012.value
+    slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
+
+    angles = holoeye_field.angle()
+    angles = pad_tensor_to_shape(angles, slm_shape, value=-np.pi + 0.00001)
+    holoeye_field = build_field(angles)
+
     # Simulate the propagation in the lens setting and show the results
     unpacked_field = holoeye_field[0, 0, :, :]
     propped_field = simulated_prop(holoeye_field, holoeye_fraunhofer)
     show_fields(unpacked_field, propped_field, "Neural Holography SGD with lens")
+
+    angles = neural_holography_field.angle()
+    angles = pad_tensor_to_shape(angles, slm_shape, value=-np.pi + 0.00001)
+    neural_holography_field = build_field(angles)
 
     # Simulate the propagation in the lensless setting and show the results
     unpacked_field = neural_holography_field[0, 0, :, :]

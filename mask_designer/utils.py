@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image
 import torch
 from torch.nn import functional as F
+from mask_designer.experimental_setup import amp_mask
 
 
 def _cell_slice(_slice, cell_m):
@@ -127,175 +128,64 @@ def rgb2gray(rgb, weights=None):
     return np.tensordot(rgb, weights, axes=((0,), 0))
 
 
-def extend_to_complex(angles):
+def load_phase_mask(path="images/holoeye_phase_mask/holoeye_logo.png"):
     """
-    Extend a tensor of angles into a complex tensor where the angles are used in
-    the polar form for complex numbers and the respective magnitudes are set to
-    1.
-
-    Parameters
-    ----------
-    angles : torch.Tensor
-        The tensor of angles to be used in the polar form
-
-    Returns
-    -------
-    torch.Tensor
-        The extended complex tensor
-    """
-    mags = torch.ones_like(angles)
-    return torch.polar(mags, angles)
-
-
-def load_phase_map(path="images/holoeye_phase_map/holoeye_logo.png",):
-    """
-    Load a phase map, by default one generated with holoeye software and transform it into a
+    Load a phase mask, by default one generated with holoeye software and transform it into a
     compliant form.
 
     Parameters
     ----------
     path : str, optional
-        The path to the phase map to load, by default
-        "images/holoeye_phase_map/holoeye_logo.png"
+        The path to the phase mask to load, by default
+        "images/holoeye_phase_mask/holoeye_logo.png"
 
     Returns
     -------
     torch.Tensor
-        The phase map transformed into a compliant form
+        The phase mask transformed into a compliant form
     """
     im = Image.open(path)
-    im = torch.from_numpy(np.array(im)).type(torch.FloatTensor)
+    phase_mask = np.array(im)
 
-    if len(im.shape) == 3:
-        if im.shape[2] == 4:
-            im = im[:, :, :3]
+    if len(phase_mask.shape) == 3:
+        if phase_mask.shape[2] == 4:
+            phase_mask = phase_mask[:, :, :3]
 
-        if im.shape[2] == 3:
-            im = torch.mean(im, axis=2)
+        if phase_mask.shape[2] == 3:
+            phase_mask = np.mean(phase_mask, axis=2)
 
-    max_val = torch.max(im)
-    angles = (im / max_val) * (2 * np.pi) - np.pi
-
-    phase_map = extend_to_complex(angles)
-
-    return phase_map[None, None, :, :]
+    return round_phase_mask_to_uint8(phase_mask)
 
 
-def show_plot(phase_map, propped_phase_map, title):
+def load_field(path="images/holoeye_phase_mask/holoeye_logo.png"):
     """
-    Plotting utility function.
+    Load a phase map, by default one generated with holoeye software, extends it
+    to a field and transform it into a compliant form.
 
     Parameters
     ----------
-    phase_map : torch.Tensor
-        The phase map before propagation
-    propped_phase_map : torch.Tensor
-        The amplitude after propagation
-    title : String
-        The title of the plot
-    """
-    fig = plt.figure()
-    fig.suptitle(title)
-    ax1 = fig.add_subplot(221)
-    ax2 = fig.add_subplot(222)
-    ax3 = fig.add_subplot(223)
-    ax4 = fig.add_subplot(224)
-    ax1.title.set_text("Phase on SLM")
-    ax2.title.set_text("Amplitude on SLM")
-    ax3.title.set_text("Phase after propagation to screen")
-    ax4.title.set_text("Amplitude after propagation to screen")
-    ax1.imshow(phase_map.angle(), cmap="gray")
-    ax2.imshow(phase_map.abs(), cmap="gray")
-    ax3.imshow(propped_phase_map.angle(), cmap="gray")
-    ax4.imshow(propped_phase_map.abs(), cmap="gray")
-    plt.show()
-
-
-def quantize_phase_pattern(phase_map):
-    """
-    Transform [-pi, pi] angles into the discrete interval 0-255.
-
-    Parameters
-    ----------
-    phase_map : torch.Tensor or numpy.ndarray
-        The angles to be quantized/discretized
+    path : str, optional
+        The path to the phase mask to load, by default
+        "images/holoeye_phase_mask/holoeye_logo.png"
 
     Returns
     -------
-    numpy.ndarray
-        The discretized map
+    torch.Tensor
+        The field mask transformed into a compliant form
     """
-    if torch.is_tensor(phase_map):
-        phase_map = phase_map.cpu().detach().numpy()
+    phase_mask = torch.from_numpy(load_phase_mask(path))
 
-    if len(phase_map.shape):
-        phase_map = phase_map[0, 0, :, :]
-
-    phase_map += np.pi
-    phase_map /= 2 * np.pi
-    phase_map *= 255.0
-
-    return np.rint(phase_map).astype("B")
+    return build_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
 
-def resize_image_to_shape(image, shape, pad=False):
-    dtype = image.dtype
-
-    # Height / Width
-    aspect_ratio_im = (
-        image.shape[0] / image.shape[1]
-    )  # TODO must also be done to the target amp images! But how much scaling is needed?
-    aspect_ratio = shape[0] / shape[1]
-
-    if aspect_ratio_im != aspect_ratio:
-        if aspect_ratio_im < aspect_ratio and pad or aspect_ratio_im > aspect_ratio and not pad:
-            target_shape = (round(image.shape[1] * aspect_ratio), image.shape[1])
-        elif (aspect_ratio_im < aspect_ratio) or aspect_ratio_im > aspect_ratio:
-            target_shape = (image.shape[0], round(image.shape[0] / aspect_ratio))
-        if pad:
-            image = pad_image_to_shape(image, target_shape)
-        else:
-            image = crop_image_to_shape(image, target_shape)
-
-    im = Image.fromarray(image)
-    im = im.resize((shape[1], shape[0]), Image.BICUBIC,)  # Pillow uses width, height
-    return np.array(im).astype(dtype)
+def build_field(angles):  # TODO find better name
+    """
+    Extend angles into a field.
+    """
+    return torch.polar(amp_mask, angles)
 
 
-def crop_image_to_shape(image, shape):
-    height_before = (image.shape[0] - shape[0]) // 2
-    height_after = image.shape[0] - shape[0] - height_before
-    width_before = (image.shape[1] - shape[1]) // 2
-    width_after = image.shape[1] - shape[1] - width_before
-
-    return image[
-        height_before : image.shape[0] - height_after, width_before : image.shape[1] - width_after,
-    ]
-
-
-def pad_image_to_shape(image, shape):
-    height_before = (shape[0] - image.shape[0]) // 2
-    height_after = shape[0] - image.shape[0] - height_before
-    width_before = (shape[1] - image.shape[1]) // 2
-    width_after = shape[1] - image.shape[1] - width_before
-
-    pad_shape = ((height_before, height_after), (width_before, width_after))
-
-    return np.pad(image, pad_shape)
-
-
-def pad_tensor_to_shape(phase_map, shape):
-    height_before = (shape[0] - phase_map.shape[2]) // 2
-    height_after = shape[0] - phase_map.shape[2] - height_before
-    width_before = (shape[1] - phase_map.shape[3]) // 2
-    width_after = shape[1] - phase_map.shape[3] - width_before
-
-    pad_shape = (width_before, width_after, height_before, height_after)
-
-    return F.pad(phase_map, pad_shape, "constant", 0)
-
-
-def load_image(path):
+def load_image(path):  # TODO need 2 functions, load image and load phase mask?
     """
     Load an image from a path.
 
@@ -322,7 +212,276 @@ def load_image(path):
 
     if issubclass(dtype.type, np.floating):
         img = img / np.finfo(dtype).max
+        raise ValueError(
+            "Image must be of type float or int."
+        )  # TODO check if this is correct, makes no sense when [0, 1]
     elif issubclass(dtype.type, np.integer):
         img = img / np.iinfo(dtype).max
 
-    return np.round(img * 255).astype(np.uint8)
+    return round_phase_mask_to_uint8(img * 255)
+
+
+# def save_image(I, fname): #TODO not used
+#     """
+#     Save image to a file.
+
+#     Parameters
+#     ----------
+#     I : :py:class:`~numpy.ndarray`
+#         (N_channel, N_height, N_width) image.
+#     fname : str, path-like
+#         Valid image file (i.e. JPG, PNG, BMP, TIFF, etc.).
+#     """
+#     I_max = I.max()
+#     I_max = 1 if np.isclose(I_max, 0) else I_max
+
+#     I_f = I / I_max  # float64
+#     I_u = np.uint8(255 * I_f)  # uint8
+
+#     if I.ndim == 3:
+#         I_u = I_u.transpose(1, 2, 0)
+
+#     I_p = Image.fromarray(I_u)
+#     I_p.save(fname)
+
+
+def random_init_phase_mask(slm_shape, device, seed=1):
+    gen = torch.Generator()
+    gen.manual_seed(seed)
+    return (-0.5 + 1.0 * torch.rand(size=(1, 1, *slm_shape), generator=gen)).to(device)
+
+
+def show_fields(field, propped_field, title):
+    """
+    Plotting utility function.
+
+    Parameters
+    ----------
+    field : torch.Tensor
+        The field before propagation
+    propped_field : torch.Tensor
+        The field after propagation
+    title : String
+        The title of the plot
+    """
+    fig = plt.figure()
+    fig.suptitle(title)
+    ax1 = fig.add_subplot(221)
+    ax2 = fig.add_subplot(222)
+    ax3 = fig.add_subplot(223)
+    ax4 = fig.add_subplot(224)
+    ax1.title.set_text("Phase on SLM")
+    ax2.title.set_text("Amplitude on SLM")
+    ax3.title.set_text("Phase after propagation to screen")
+    ax4.title.set_text("Amplitude after propagation to screen")
+    ax1.imshow(normalize_mask(field.angle()), cmap="gray")  # TODO normalize?
+    ax2.imshow(normalize_mask(field.abs()), cmap="gray")
+    ax3.imshow(normalize_mask(propped_field.angle()), cmap="gray")
+    ax4.imshow(normalize_mask(propped_field.abs()), cmap="gray")
+    plt.show()
+
+
+def normalize_mask(mask):
+    """
+    Normalize the phase mask to be between 0 and 1.
+    """
+    if torch.is_tensor(mask):
+        if torch.is_complex(mask):  # TODO don't do conversion
+            mask = mask.angle()
+            raise ValueError("Mask must be real.")
+
+        mask = mask.cpu().detach().numpy()
+
+    if len(mask.shape) == 4:
+        mask = mask[0, 0, :, :]
+
+    minimum = np.min(mask)
+    maximum = np.max(mask)
+
+    return mask if minimum == maximum else (mask - minimum) / (maximum - minimum)
+
+
+# def angularize_phase_mask(phase_mask):  # TODO Normalized version of those?
+#     phase_mask = normalize(phase_mask)
+
+#     angles = phase_mask * 2 * np.pi - np.pi
+#     phase_mask = build_field(torch.from_numpy(angles))
+
+#     return phase_mask[None, None, :, :]
+
+
+# def quantize_phase_mask(phase_mask):
+#     """
+#     Transform [-pi, pi] angles into the discrete interval 0-255.
+
+#     Parameters
+#     ----------
+#     phase_mask : torch.Tensor or numpy.ndarray
+#         The angles to be quantized/discretized
+
+#     Returns
+#     -------
+#     numpy.ndarray
+#         The discretized map
+#     """
+#     new_phase_mask = normalize(phase_mask)
+
+#     return round_to_uint8(new_phase_mask)
+
+epsilon = 1e-6  # TODO how to handle the wrap around at -pi/pi?
+
+
+def angularize_phase_mask(phase_mask):  # TODO better name, doc
+    if isinstance(phase_mask, np.ndarray):
+        dtype = phase_mask.dtype
+
+        if issubclass(dtype.type, np.integer):
+            max_value = float(np.iinfo(dtype).max)
+        else:
+            max_value = 1.0
+
+        phase_mask = torch.from_numpy(phase_mask).type(torch.FloatTensor)
+    else:
+        # max_value = float(torch.finfo(phase_mask.dtype).max) # TODO handle this!
+        max_value = 255.0
+
+    return (phase_mask / max_value) * (2 * np.pi) - np.pi
+
+
+def quantize_phase_mask(phase_mask):
+    """
+    Transform [-pi, pi] angles into the discrete interval 0-255.
+
+    Parameters
+    ----------
+    phase_mask : torch.Tensor or numpy.ndarray
+        The angles to be quantized/discretized
+
+    Returns
+    -------
+    numpy.ndarray
+        The discretized map
+    """
+    if torch.is_tensor(phase_mask):
+        if torch.is_complex(phase_mask):  # TODO don't do this!
+            phase_mask = phase_mask.angle()
+            raise ValueError("phase_mask is complex")
+
+        phase_mask = phase_mask.cpu().detach().numpy()
+
+        if len(phase_mask.shape) == 4:  # TODO check that this is correct
+            phase_mask = phase_mask[0, 0, :, :]
+
+    new_phase_mask = phase_mask + np.pi
+    new_phase_mask /= 2 * np.pi
+    new_phase_mask *= 255.0
+
+    return round_phase_mask_to_uint8(new_phase_mask)
+
+
+def round_phase_mask_to_uint8(phase_mask):
+    """
+    Round the phase_mask to the nearest integer and then convert to uint8.
+    """
+    return np.round(phase_mask).astype(np.uint8)
+
+
+def scale_image_to_shape(image, shape, pad=False):
+    dtype = image.dtype
+
+    # Height / Width
+    aspect_ratio_orig = (
+        image.shape[0] / image.shape[1]
+    )  # TODO must also be done to the target amp images! But how much scaling is needed?
+    aspect_ratio_target = shape[0] / shape[1]
+
+    if aspect_ratio_orig != aspect_ratio_target:
+        if (
+            aspect_ratio_orig < aspect_ratio_target
+            and pad
+            or aspect_ratio_orig > aspect_ratio_target
+            and not pad
+        ):
+            target_shape = (round(image.shape[1] * aspect_ratio_target), image.shape[1])
+        elif (
+            aspect_ratio_orig < aspect_ratio_target
+        ) or aspect_ratio_orig > aspect_ratio_target:  # TODO check those parenthesis
+            target_shape = (image.shape[0], round(image.shape[0] / aspect_ratio_target))
+        if pad:
+            image = pad_image_to_shape(image, target_shape)
+        else:
+            image = crop_image_to_shape(image, target_shape)
+
+    im = Image.fromarray(image)
+    im = im.resize((shape[1], shape[0]), Image.BICUBIC)  # Pillow uses width, height
+    return np.array(im).astype(dtype)
+
+
+def crop_image_to_shape(image, shape):
+    height_before = (image.shape[0] - shape[0]) // 2
+    height_after = image.shape[0] - shape[0] - height_before
+    width_before = (image.shape[1] - shape[1]) // 2
+    width_after = image.shape[1] - shape[1] - width_before
+
+    return image[
+        height_before : image.shape[0] - height_after, width_before : image.shape[1] - width_after,
+    ]
+
+
+def pad_image_to_shape(image, shape):
+    height_before = (shape[0] - image.shape[0]) // 2
+    height_after = shape[0] - image.shape[0] - height_before
+    width_before = (shape[1] - image.shape[1]) // 2
+    width_after = shape[1] - image.shape[1] - width_before
+
+    pad_shape = ((height_before, height_after), (width_before, width_after))
+
+    return np.pad(image, pad_shape)
+
+
+def pad_tensor_to_shape(phase_map, shape):  # TODO use the ones below, but check
+    # that you remove and add dims back again where needed for this function
+    height_before = (shape[0] - phase_map.shape[2]) // 2
+    height_after = shape[0] - phase_map.shape[2] - height_before
+    width_before = (shape[1] - phase_map.shape[3]) // 2
+    width_after = shape[1] - phase_map.shape[3] - width_before
+
+    pad_shape = (width_before, width_after, height_before, height_after)
+
+    return F.pad(phase_map, pad_shape, "constant", 0)
+
+
+# def _get_shape(image, shape):
+#     """
+#     Get the shape of the image after padding.
+#     """
+#     top = (shape[0] - image.shape[0]) // 2
+#     bottom = shape[0] - image.shape[0] - top
+#     left = (shape[1] - image.shape[1]) // 2
+#     right = shape[1] - image.shape[1] - left
+
+#     return top, bottom, left, right
+
+
+# def crop_image_to_shape(image, shape):
+#     top, bottom, left, right = _get_shape(image, shape)
+
+#     return image.copy()[
+#         top : image.shape[0] - bottom, left : image.shape[1] - right,
+#     ]
+
+
+# def pad_image_to_shape(image, shape, value=0):
+#     top, bottom, left, right = _get_shape(image, shape)
+
+#     return np.pad(
+#         image, ((top, bottom), (left, right)), mode="constant", constant_values=value
+#     )
+
+
+# def pad_tensor_to_shape(
+#     tensor, shape, value=0
+# ):  # TODO name, sometimes also a field or just mask
+#     top, bottom, left, right = _get_shape(tensor, shape)
+
+#     return F.pad(tensor, (left, right, top, bottom), "constant", value)

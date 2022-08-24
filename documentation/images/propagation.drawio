@@ -10,7 +10,7 @@
                 <mxCell id="UOKjDGIfQb2OCm12poKL-17" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="UOKjDGIfQb2OCm12poKL-4" target="UOKjDGIfQb2OCm12poKL-6" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="UOKjDGIfQb2OCm12poKL-4" value="&lt;div&gt;Phase pattern&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeColor=default;" parent="1" vertex="1">
+                <mxCell id="UOKjDGIfQb2OCm12poKL-4" value="&lt;div&gt;Phase mask&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeColor=default;" parent="1" vertex="1">
                     <mxGeometry x="180" y="120" width="60" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="UOKjDGIfQb2OCm12poKL-5" value="Amplitude" style="text;html=1;strokeColor=default;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
@@ -34,7 +34,7 @@
                 <mxCell id="UOKjDGIfQb2OCm12poKL-20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="UOKjDGIfQb2OCm12poKL-9" target="UOKjDGIfQb2OCm12poKL-13" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="UOKjDGIfQb2OCm12poKL-9" value="&lt;div&gt;Phase pattern&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeColor=default;" parent="1" vertex="1">
+                <mxCell id="UOKjDGIfQb2OCm12poKL-9" value="&lt;div&gt;Phase mask&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeColor=default;" parent="1" vertex="1">
                     <mxGeometry x="180" y="250" width="60" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="UOKjDGIfQb2OCm12poKL-10" value="Amplitude" style="text;html=1;strokeColor=default;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">

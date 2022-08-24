@@ -1,7 +1,7 @@
 # mask-designer
 
 Collection of techniques to design mask patterns, e.g. fixed apertures for
-amplitude masks and phase retrieval for determining a phase pattern under an
+amplitude masks and phase retrieval for determining a phase mask under an
 incoherent light source.
 
 - [mask-designer](#mask-designer)
@@ -24,7 +24,7 @@ incoherent light source.
 The main goal of the project is tackle the inverse problem called phase retrieval,
 i.e. mask design for SLMs.
 But it also allows to explore the forward problem by setting a phase
-pattern and then simply observing the output amplitude at the target plane.
+mask and then simply observing the output amplitude at the target plane.
 Mainly though, it
 
 consists of mask design techniques that were introduced in the [Neural
@@ -36,7 +36,7 @@ part of the code does add support for cameras. Neural Holography, amongst
 others, follows a **Camera-In-The-Loop** approach which involves a
 camera taking pictures of the resulting interference patterns at the target
 plane and then using this information to improve the designed mask iteratively.
-Finally, utility functions are provided so that patterns designed by Holoeye's
+Finally, utility functions are provided so that masks designed by Holoeye's
 (closed-source) software or Neural Holography's code can be used
 interchangeably for either setup (as Holoeye and Neural Holography assume
 different physical setups).
@@ -64,14 +64,14 @@ To install, simply run the following script:
 
 The script will:
 
-1. Create a Python3 virtual environment called `.mask_designer_env`.
+1. Create a Python3 virtual environment called `mask_designer_env`.
 2. Install Python dependencies in the virtual environment.
 3. Install both [slm-controller](https://github.com/ebezzam/slm-controller) and
    [waveprop](https://github.com/ebezzam/waveprop) in setuptools “develop mode”
    from GitHub directly.
 
-This project is using those two repositories to access physical SLMs after the phase
-pattern has been computed and to simulate the light propagation in the different
+This project is using those two repositories to access physical SLMs after the
+phase mask has been computed and to simulate the light propagation in the different
 phase retrieval algorithms or propagation simulations. Note that those are still
 in development too.
 
@@ -177,7 +177,7 @@ on how we converged to the setup below, please refer to `documentation/DOCUMENTA
 Further, the `mask_designer/experimental_setup.py` allows one to set:
 
 - which camera and SLM are used,
-- how long patterns are shown on the SLM,
+- how long masks are shown on the SLM,
 - what wavelength the laser is operating at and, finally,
 - the propagation distance (distance form the SLM to the camera sensor).
 
@@ -188,15 +188,15 @@ Those parameters are then used in the remainder of the code base.
 Holoeye provides a graphical software called [SLM Pattern
 Generator](https://customers.holoeye.com/slm-pattern-generator-v5-1-1-windows/)
 that has built-in functionality for performing phase retrieval for a given
-target amplitude. One such example can be found in `images/holoeye_phase_map`
+target amplitude. One such example can be found in `images/holoeye_phase_mask`
 and its corresponding amplitude at the target plane under `images/target_amplitude`.
 This software assumes an experimental setup that uses a convex lens in between the SLM and
 the target plane.
 
 Neural Holography on the other hand, uses a different setting
 where no lens is placed between the SLM and the target plane, i.e. a lensless
-setting. Those differences impact the resulting phase maps of the mask design
-algorithm. The methods in `mask_designer/transform_phase_maps.py` allow
+setting. Those differences impact the resulting phase masks of the mask design
+algorithm. The methods in `mask_designer/transform_fields.py` allow
 transforming phase maps, or fields, back and forth between both experimental
 setups. Note that Neural Holography encodes
 phase maps, images etc. as 4D PyTorch Tensors where the dimensions are [image,
@@ -208,13 +208,13 @@ complications for you and you are not required to dig any deeper than that.
 
 <!-- TODO might not be only linked to lenses, ASM vs Fraunhofer -->
 
-This section will briefly discuss the propagation of a phase map to the target
+This section will briefly discuss the propagation of a phase mask to the target
 plane. More precisely, propagation simulation is a crucial element in most of the
 mask designing algorithms. Although we cannot be absolutely certain due to the code being closed-source, we
 have good reason to believe that Holoeye's SLM Pattern Generator uses
 [Fraunhofer](https://en.wikipedia.org/wiki/Fraunhofer_diffraction_equation), as
 we have identified a single Fourier Transform between the SLM and target plane
-when playing around with their patterns. Neural Holography on the other hand,
+when playing around with their masks. Neural Holography on the other hand,
 uses the [Angular spectrum
 method](https://en.wikipedia.org/wiki/Angular_spectrum_method) (ASM). Currently,
 we make use of the ASM implementation by Neural Holography. However we plan to
@@ -232,10 +232,10 @@ on a SLM and then observing the resulting images at the target plane. That's whe
 communicate with the physical SLMs, and the camera in order to measure the
 response at the target plane.
 
-<!-- TODO must change if we decide to always plot the pattern -->
+<!-- TODO must change if we decide to always plot the masks -->
 
 Note that this software package simply plots
-the phase map whenever something goes wrong with showing it on the physical
+the phase mask whenever something goes wrong with showing it on the physical
 device so that you can still get an idea of the resulting phase maps.
 
 Usage examples will be presented in the
@@ -258,7 +258,7 @@ of this repository.
 First, activate the virtual environment:
 
 ```sh
-source .mask_designer_env/bin/activate
+source mask_designer_env/bin/activate
 ```
 
 You can exit the virtual environment by running `deactivate`.
@@ -290,7 +290,7 @@ Options:
 ```
 
 This code is very similar to the `mask_designer/neural_holography/eval.py` code
-and needs further adaptions to simply output the phase map without doing evaluation.
+and needs further adaptions to simply output the phase mask without doing evaluation.
 
 ```sh
 $ python examples/citl_predict.py --help
@@ -343,16 +343,16 @@ python examples/ids_image_capture.py
 
 ### Physical propagation examples
 
-This section contains example scripts, for sending both phase maps created using the
-Holoeye software and phase maps generated using Neural Holography methods to
-real SLM devices. Those patterns are then propagated through our experimental
+This section contains example scripts, for sending both phase masks created using the
+Holoeye software and phase masks generated using Neural Holography methods to
+real SLM devices. Those mask are then propagated through our experimental
 setup. Note that the
 methods in `mask_designer/wrapper.py` are extensively used here to compute the
 phase maps. We are going through them one by one now.
 
 This script simply sets some parameters like wavelength etc., then loads a
 target image (Holoeye logo) and runs the DPAC method. The resulting phase
-pattern is finally submitted to a real SLM.
+mask is finally submitted to a real SLM.
 
 <!-- TODO might just remove DPAC -->
 
@@ -361,12 +361,12 @@ $ python examples/physical_prop_dpac.py --help
 Usage: physical_prop_dpac.py [OPTIONS]
 
 Options:
-  --slm_show_time FLOAT  Time to show the pattern on the SLM.
+  --slm_show_time FLOAT  Time to show the mask on the SLM.
   --help             Show this message and exit.
 ```
 
 The next script does basically the same just using the GS method.
-Additionally, it needs a random input phase map that is going to be optimized
+Additionally, it needs a random input phase mask that is going to be optimized
 and you can set the number of iterations.
 
 ```sh
@@ -375,7 +375,7 @@ Usage: physical_prop_gs.py [OPTIONS]
 
 Options:
   --iterations INTEGER  Number of iterations to run.
-  --slm_show_time FLOAT     Time to show the pattern on the SLM.
+  --slm_show_time FLOAT     Time to show the mask on the SLM.
   --help                Show this message and exit.
 ```
 
@@ -390,12 +390,12 @@ $ python examples/physical_prop_holoeye.py --help
 Usage: physical_prop_holoeye.py [OPTIONS]
 
 Options:
-  --slm_show_time FLOAT  Time to show the pattern on the SLM.
+  --slm_show_time FLOAT  Time to show the mask on the SLM.
   --help             Show this message and exit.
 ```
 
 Similar to GS, for SGD you can also specify the number of iterations you want to
-perform and a random initial state of the phase map is required.
+perform and a random initial state of the phase mask is required.
 
 ```sh
 $ python examples/physical_prop_sgd.py --help
@@ -403,20 +403,20 @@ Usage: physical_prop_sgd.py [OPTIONS]
 
 Options:
   --iterations INTEGER  Number of iterations to run.
-  --slm_show_time FLOAT     Time to show the pattern on the SLM.
+  --slm_show_time FLOAT     Time to show the mask on the SLM.
   --help                Show this message and exit.
 ```
 
 ### Simulated propagation examples
 
 Same as above, different versions of the simulated propagation do exist, one for
-a precomputed Holoeye phase map, another 3 for the phase maps computed with Neural
+a precomputed Holoeye phase map, another 3 for the phase masks computed with Neural
 Holography methods and finally one that test a whole bunch of methods
 implemented in waveprop. For the former four, as a sanity check, each phase map
 is transformed into both lens and lensless setup and then its propagation is
 simulated in the respective setting. The
-resulting amplitude patterns must be the same. The script using waveprop methods
-simply propagates the same precomputed phase map as in the Holoeye script in a
+resulting amplitudes must be the same. The script using waveprop methods
+simply propagates the same precomputed phase mask as in the Holoeye script in a
 variety of different ways.
 
 The only difference to the physical propagation scripts is that here the

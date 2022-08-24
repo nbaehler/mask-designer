@@ -1,7 +1,3 @@
-"""
-Simulated propagation of phase masks generated using the SGD algorithm.
-"""
-
 from os.path import dirname, abspath, join
 import sys
 
@@ -10,9 +6,9 @@ THIS_DIR = dirname(__file__)
 CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
-import click
+
 from mask_designer.simulated_prop import simulated_prop
-from mask_designer.utils import build_field, random_init_phase_mask, show_fields
+from mask_designer.utils import random_init_phase_mask, show_fields, build_field
 from mask_designer.propagation import holoeye_fraunhofer, neural_holography_asm
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 import torch
@@ -29,9 +25,7 @@ from mask_designer.experimental_setup import (
 from mask_designer.wrapper import SGD, ImageLoader
 
 
-@click.command()
-@click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
-def main(iterations):
+def main():
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -66,26 +60,30 @@ def main(iterations):
     init_phase = random_init_phase_mask(slm_shape, device)
 
     # Run Stochastic Gradient Descent based method
-    sgd = SGD(prop_dist, wavelength, pixel_pitch, iterations, roi, device=device)
+    sgd = SGD(prop_dist, wavelength, pixel_pitch, 500, roi, device=device)
     angles = sgd(target_amp, init_phase).cpu().detach()
 
     # Extend the computed angles, aka the phase values, to be a field which is a complex tensor again
-    neural_holography_field = build_field(angles)
+    circular_field = build_field(angles)
 
     # Transform the results to the hardware setting using a lens
     holoeye_field = transform_from_neural_holography_setting(
-        neural_holography_field, prop_dist, wavelength, slm_shape, pixel_pitch
+        circular_field, prop_dist, wavelength, slm_shape, pixel_pitch
     )
+
+    holoeye_field = build_field(holoeye_field.angle())
 
     # Simulate the propagation in the lens setting and show the results
     unpacked_field = holoeye_field[0, 0, :, :]
     propped_field = simulated_prop(holoeye_field, holoeye_fraunhofer)
     show_fields(unpacked_field, propped_field, "Neural Holography SGD with lens")
 
+    circular_field = build_field(circular_field.angle())
+
     # Simulate the propagation in the lensless setting and show the results
-    unpacked_field = neural_holography_field[0, 0, :, :]
+    unpacked_field = circular_field[0, 0, :, :]
     propped_field = simulated_prop(
-        neural_holography_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
+        circular_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
     show_fields(unpacked_field, propped_field, "Neural Holography SGD without lens")
 

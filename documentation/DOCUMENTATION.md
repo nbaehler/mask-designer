@@ -11,7 +11,7 @@
     - [3. Double Phase Amplitude Coding (DPAC)](#3-double-phase-amplitude-coding-dpac)
     - [4. Camera-In-The-Loop (CITL)](#4-camera-in-the-loop-citl)
   - [Typical interactions between software and hardware](#typical-interactions-between-software-and-hardware)
-    - [Set a pattern using `slm-controller`](#set-a-pattern-using-slm-controller)
+    - [Set a mask using `slm-controller`](#set-a-mask-using-slm-controller)
     - [Perform phase retrieval (not CITL)](#perform-phase-retrieval-not-citl)
     - [Perform phase retrieval using CITL](#perform-phase-retrieval-using-citl)
     - [Perform phase retrieval using CITL and `waveprop` for simulation](#perform-phase-retrieval-using-citl-and-waveprop-for-simulation)
@@ -90,7 +90,7 @@ on those devices. This problem is commonly called phase retrieval.
 
 This package is intended to provide different approaches to the inverse problem called phase
 retrieval, i.e. mask design for phase SLMs. So concretely, those algorithms aim to
-compute a phase map that can be set on a SLM such that a given target image is
+compute a phase mask that can be set on a SLM such that a given target image is
 appearing on the screen ofter propagation of the light waves. For example, we
 want to get this target amplitude.
 
@@ -100,9 +100,9 @@ want to get this target amplitude.
 
 Any of those algorithms then computes the corresponding phase map.
 
-![Holoeye logo phase](../images/holoeye_phase_map/holoeye_logo.png)
+![Holoeye logo phase](../images/holoeye_phase_mask/holoeye_logo.png)
 
-And finally, this phase map can be sent to a SLM and propagated to the target
+And finally, this phase mask can be sent to a SLM and propagated to the target
 plane where one can observe the resulting image.
 
 ![Holoeye logo propagated](images/holoeye_logo_propagated.png)
@@ -113,8 +113,8 @@ developed jointly with this package.
 
 For most of these phase retrieval algorithms light propagation simulation plays
 an essential role. That is, simulating light waves with given phase
-values propagating to the target plane and predicting the resulting amplitude
-pattern. For now those simulations are not performed with our in house package
+values propagating to the target plane and predicting the resulting amplitudes.
+For now those simulations are not performed with our in house package
 [waveprop](https://github.com/ebezzam/waveprop) but it is our goal to use it
 throughout the code.
 
@@ -144,7 +144,7 @@ More details are given in the [Typical interactions between software and hardwar
 Holoeye does also provide a piece of software called [SLM Pattern
 Generator](https://customers.holoeye.com/slm-pattern-generator-v5-1-1-windows/)
 which amongst others has a feature that does perform phase retrieval for a given
-target amplitude. One such example can be found in `images/holoeye_phase_map`
+target amplitude. One such example can be found in `images/holoeye_phase_mask`
 and its corresponding amplitude at the target plane under
 `images/target_amplitude`.
 
@@ -184,7 +184,7 @@ close to the target amplitude at the target plane.
 
 ### 2. Stochastic Gradient Descent (SGD)
 
-Similar to before, the phase map is iteratively optimized such that the
+Similar to before, the phase mask is iteratively optimized such that the
 resulting amplitude after propagation is closer and
 closer to the target amplitude. Note that this methods requires the light
 propagation to be differentiable. Additionally, this method uses a region of
@@ -208,8 +208,8 @@ performance mismatch but this is something that needs further investigation.
 ### 4. Camera-In-The-Loop (CITL)
 
 CITL adds physical propagation and the measurement of those results into the
-game. The idea is to compute a phase map (for example with SGD), propagate
-it physically using a SLM, then measuring the resulting pattern on the target
+game. The idea is to compute a phase mask (for example with SGD), propagate
+it physically using a SLM, then measuring the resulting amplitudes on the target
 plane using a camera and finally using those observations to improve the phase
 map further before repeating these steps. So this approach is iterative.
 Additionally, it is technically the most challenging one. But as shown in the Neural
@@ -222,7 +222,7 @@ order to make it truly useable and testable.
 The following gif-files illustrate the interactions between software and hardware
 components that arise normally in typical use cases.
 
-### Set a pattern using `slm-controller`
+### Set a mask using `slm-controller`
 
 ![Schematic representation of the interactions between different
 components](gifs/slm-controller.gif)
@@ -391,8 +391,8 @@ in the first part of their optical configuration).
 |                    <b>Image Credits - Reference [4]</b>                     |
 
 A convex lens is physically performing a Fourier transform, hence those settings
-are not compatible with each other, meaning that a phase map computed using
-Neural Holography code won't result in the desired pattern on the photo sensor
+are not compatible with each other, meaning that a phase mask computed using
+Neural Holography code won't result in the desired amplitudes on the photo sensor
 and vice versa for the same target amplitude.
 
 Hence, our physical setup does perform propagation in the
@@ -408,6 +408,8 @@ summarize, we have those differences in propagation:
 
 ![Different propagation methods used by Holoeye and Neural
 Holography](images/propagation.svg)
+
+<!-- TODO above, we propagate the field not only the phase mask -->
 
 Thus for the `same target amplitude` we obtain `different phase maps` where the
 difference is not explained with numerical variations.
@@ -426,8 +428,8 @@ but $\phi_H \neq \phi_N$ and where
 - $A$ is the amplitude at the target plane of the propagated light,
 - $\approx$ expresses the fact that those methods results in the "same"
   amplitudes up to some numerical errors,
-- $\phi_H$ is the phase map computed using Holoeye software,
-- $\phi_N$ is the phase map computed using Neural Holography code,
+- $\phi_H$ is the phase mask computed using Holoeye software,
+- $\phi_N$ is the phase mask computed using Neural Holography code,
 - $FT$ is a regular Fourier transform,
 - $IFT$ its inverse transform,
 - $S$ simply shifts i.e. rotates part of the Tensors,
@@ -460,7 +462,7 @@ as desired. In diagrammatic form we have the following situation:
 ![Transformation](images/transformation.svg)
 
 Both these transformations are implemented in
-`mask_designer/transform_phase_maps.py`. Note that the wrapper
+`mask_designer/transform_fields.py`. Note that the wrapper
 `mask_designer/wrapper.py` provides interfacing methods for Neural Holography phase retrieval
 algorithms that also handle the transformation to our setup which includes a
 convex lens.

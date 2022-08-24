@@ -27,6 +27,7 @@ import torch.optim as optim
 
 from mask_designer.neural_holography.propagation_ASM import propagation_ASM
 import mask_designer.neural_holography.utils as utils
+from mask_designer.experimental_setup import amp_mask
 
 # 1. GS
 def gerchberg_saxton(
@@ -45,7 +46,7 @@ def gerchberg_saxton(
     precomputed_H_b=None,
 ):
     """
-    Given the initial guess, run the SGD algorithm to calculate the optimal phase pattern of spatial light modulator
+    Given the initial guess, run the SGD algorithm to calculate the optimal phase mask of spatial light modulator
 
     :param init_phase: a tensor, in the shape of (1,1,H,W), initial guess for the phase.
     :param target_amp: a tensor, in the shape of (1,1,H,W), the amplitude of the target image.
@@ -63,11 +64,13 @@ def gerchberg_saxton(
 
     Output
     ------
-    :return: a tensor, the optimized phase pattern at the SLM plane, in the shape of (1,1,H,W)
+    :return: a tensor, the optimized phase mask at the SLM plane, in the shape of (1,1,H,W)
     """
 
+    slm_amp = amp_mask.to(init_phase.device)
+
     # initial guess; random phase
-    real, imag = utils.polar_to_rect(torch.ones_like(init_phase), init_phase)
+    real, imag = utils.polar_to_rect(slm_amp, init_phase)
     slm_field = torch.complex(real, imag)
 
     # run the GS algorithm
@@ -100,7 +103,7 @@ def gerchberg_saxton(
         )
 
         # amplitude constraint at the SLM plane
-        slm_field = utils.replace_amplitude(slm_field, torch.ones_like(target_amp))
+        slm_field = utils.replace_amplitude(slm_field, slm_amp)
 
     # return phases
     return slm_field.angle()
@@ -130,7 +133,7 @@ def stochastic_gradient_descent(
 ):
 
     """
-    Given the initial guess, run the SGD algorithm to calculate the optimal phase pattern of spatial light modulator.
+    Given the initial guess, run the SGD algorithm to calculate the optimal phase mask of spatial light modulator.
 
     Input
     ------
@@ -154,7 +157,7 @@ def stochastic_gradient_descent(
 
     Output
     ------
-    :return: a tensor, the optimized phase pattern at the SLM plane, in the shape of (1,1,H,W)
+    :return: a tensor, the optimized phase mask at the SLM plane, in the shape of (1,1,H,W)
     """
 
     device = init_phase.device
@@ -172,11 +175,13 @@ def stochastic_gradient_descent(
     # crop target roi
     target_amp = utils.crop_image(target_amp, roi_res, stacked_complex=False)
 
+    slm_amp = amp_mask.to(device)
+
     # run the iterative algorithm
     for k in range(num_iters):
         optimizer.zero_grad()
         # forward propagation from the SLM plane to the target plane
-        real, imag = utils.polar_to_rect(torch.ones_like(slm_phase), slm_phase)
+        real, imag = utils.polar_to_rect(slm_amp, slm_phase)
         slm_field = torch.complex(real, imag)
 
         recon_field = utils.propagate_field(
@@ -202,7 +207,8 @@ def stochastic_gradient_descent(
 
             # use the gradient of proxy, replacing the amplitudes
             # captured_amp is assumed that its size already matches that of recon_amp
-            out_amp = recon_amp + (captured_amp - recon_amp).detach()  # TODO aka captured_amp
+            # out_amp = recon_amp + (captured_amp - recon_amp).detach()  # TODO aka captured_amp
+            out_amp = captured_amp.detach()
         else:
             out_amp = recon_amp
 
@@ -225,6 +231,8 @@ def stochastic_gradient_descent(
                     s=s,
                     prefix="test",
                 )
+
+    # print(torch.max(slm_phase), torch.min(slm_phase)) # TODO not in [-pi, pi]??
 
     return slm_phase
 
@@ -258,7 +266,7 @@ def double_phase_amplitude_coding(
 
     Output
     ------
-    :return: a tensor, the optimized phase pattern at the SLM plane, in the shape of (1,1,H,W)
+    :return: a tensor, the optimized phase mask at the SLM plane, in the shape of (1,1,H,W)
     """
     real, imag = utils.polar_to_rect(target_amp, target_phase)
     target_field = torch.complex(real, imag)

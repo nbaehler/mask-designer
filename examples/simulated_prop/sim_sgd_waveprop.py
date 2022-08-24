@@ -1,5 +1,5 @@
 """
-Simulated propagation of slm patterns generated using the SGD algorithm and the
+Simulated propagation of phase masks generated using the SGD algorithm and the
 angular spectrum propagator implemented in waveprop.
 """
 
@@ -13,14 +13,14 @@ sys.path.append(CODE_DIR)
 
 import click
 from mask_designer.simulated_prop import simulated_prop
-from mask_designer.utils import extend_to_complex, show_plot
+from mask_designer.utils import build_field, show_fields, random_init_phase_mask
 from mask_designer.propagation import (
     holoeye_fraunhofer,
     neural_holography_asm,
     propagator_waveprop_angular_spectrum,
     waveprop_angular_spectrum,
 )
-from mask_designer.transform_phase_maps import transform_from_neural_holography_setting
+from mask_designer.transform_fields import transform_from_neural_holography_setting
 import torch
 
 from slm_controller.hardware import (
@@ -66,8 +66,8 @@ def main(iterations):
     target_amp = target_amp[None, None, :, :]
     target_amp = target_amp.to(device)
 
-    # Setup a random initial slm phase map with values in [-0.5, 0.5]
-    init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_shape)).to(device)
+    # Setup a random initial slm phase mask with values in [-0.5, 0.5]
+    init_phase = random_init_phase_mask(slm_shape, device)
 
     # Run Stochastic Gradient Descent based method
     sgd = SGD(
@@ -76,55 +76,48 @@ def main(iterations):
         pixel_pitch,
         iterations,
         roi,
-        propagator=propagator_waveprop_angular_spectrum,  # TODO this propagator is not in the neural holography setting ...
+        propagator=propagator_waveprop_angular_spectrum,  # TODO this propagator is not in the neural holography setting
         device=device,
     )
     angles = sgd(target_amp, init_phase).cpu().detach()
 
-    # Extend the computed angles, aka the phase values, to a complex tensor again
-    phase_map = extend_to_complex(angles)
+    # Extend the computed angles, aka the phase values, to be a field which is a complex tensor again
+    field = build_field(angles)
 
     # Transform the results to the hardware setting using a lens
-    holoeye_phase_map = transform_from_neural_holography_setting(
-        phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
+    holoeye_field = transform_from_neural_holography_setting(
+        field, prop_dist, wavelength, slm_shape, pixel_pitch
     )
 
     # Simulate the propagation in the lens setting and show the results
-    unpacked_phase_map = holoeye_phase_map[0, 0, :, :]
-    propped_phase_map = simulated_prop(holoeye_phase_map, holoeye_fraunhofer)
-    show_plot(
-        unpacked_phase_map,
-        propped_phase_map,
-        "Neural Holography SGD with lens and Holoeye Fraunhofer",
+    unpacked_field = holoeye_field[0, 0, :, :]
+    propped_field = simulated_prop(holoeye_field, holoeye_fraunhofer)
+    show_fields(
+        unpacked_field, propped_field, "Neural Holography SGD with lens and Holoeye Fraunhofer",
     )
 
     # Simulate the propagation in the lensless setting and show the results
-    unpacked_phase_map = phase_map[0, 0, :, :]
-    propped_phase_map = simulated_prop(
-        phase_map, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
+    unpacked_field = field[0, 0, :, :]
+    propped_field = simulated_prop(
+        field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
-    show_plot(
-        unpacked_phase_map,
-        propped_phase_map,
+    show_fields(
+        unpacked_field,
+        propped_field,
         "Neural Holography SGD without lens and Neural Holography ASM",
     )
 
     # Simulate the propagation in the lens setting and show the results
-    unpacked_phase_map = holoeye_phase_map[0, 0, :, :]
-    propped_phase_map = (
+    unpacked_field = holoeye_field[0, 0, :, :]
+    propped_field = (
         simulated_prop(
-            holoeye_phase_map,
-            waveprop_angular_spectrum,
-            prop_dist,
-            wavelength,
-            pixel_pitch,
-            device,
+            holoeye_field, waveprop_angular_spectrum, prop_dist, wavelength, pixel_pitch, device,
         )
         .cpu()
         .detach()
     )
-    show_plot(
-        unpacked_phase_map, propped_phase_map, "Neural Holography SGD with lens and waveprop ASM",
+    show_fields(
+        unpacked_field, propped_field, "Neural Holography SGD with lens and waveprop ASM",
     )
 
 

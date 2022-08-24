@@ -1,5 +1,5 @@
 """
-Physical propagation of slm patterns generated using the SGD algorithm and a
+Physical propagation of phase masks generated using the SGD algorithm and a
 waveprop propagator.
 """
 
@@ -26,8 +26,8 @@ from mask_designer.experimental_setup import (
 )
 
 from mask_designer.propagation import propagator_waveprop_angular_spectrum
-from mask_designer.transform_phase_maps import transform_from_neural_holography_setting
-from mask_designer.utils import extend_to_complex, quantize_phase_pattern
+from mask_designer.transform_fields import transform_from_neural_holography_setting
+from mask_designer.utils import quantize_phase_mask, build_field, random_init_phase_mask
 from mask_designer.wrapper import ImageLoader, SGD
 
 
@@ -54,9 +54,6 @@ def main(iterations):
         horizontal_flips=False,
     )
 
-    # Instantiate SLM object
-    s = slm.create(slm_device)
-
     # Load the the first image in the folder
     target_amp, _, _ = image_loader.load_image(0)
 
@@ -67,8 +64,8 @@ def main(iterations):
     target_amp = target_amp[None, None, :, :]
     target_amp = target_amp.to(device)
 
-    # Setup a random initial slm phase map with values in [-0.5, 0.5]
-    init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_shape)).to(device)
+    # Setup a random initial slm phase mask with values in [-0.5, 0.5]
+    init_phase = random_init_phase_mask(slm_shape, device)
 
     # Run Stochastic Gradient Descent based method
     sgd = SGD(
@@ -82,16 +79,20 @@ def main(iterations):
     )
     angles = sgd(target_amp, init_phase).cpu().detach()
 
-    # Extend the computed angles, aka the phase values, to a complex tensor again
-    extended = extend_to_complex(angles)
+    # Extend the computed angles, aka the phase values, to be a field which is a complex tensor
+    # again
+    extended = build_field(angles)
 
     # Transform the results to the hardware setting using a lens
     final_phase_sgd = transform_from_neural_holography_setting(
         extended, prop_dist, wavelength, slm_shape, pixel_pitch
     ).angle()
 
-    # Quantize the the angles, aka phase values, to a bit values
-    phase_out = quantize_phase_pattern(final_phase_sgd)
+    # Quantize the fields angles, aka phase values, to a bit values
+    phase_out = quantize_phase_mask(final_phase_sgd)
+
+    # Instantiate SLM object
+    s = slm.create(slm_device)
 
     # Display
     s.imshow(phase_out)

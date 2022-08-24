@@ -1,5 +1,5 @@
 """
-Simulated propagation of the slm pattern generated using the holoeye software.
+Simulated propagation of the phase mask generated using the holoeye software.
 """
 
 from os.path import dirname, abspath, join
@@ -17,12 +17,12 @@ from mask_designer.experimental_setup import (
 )
 from mask_designer.simulated_prop import simulated_prop
 
-from mask_designer.utils import load_phase_map, show_plot
+from mask_designer.utils import load_field, show_fields
 from mask_designer.propagation import (
     holoeye_fraunhofer,
     neural_holography_asm,
 )
-from mask_designer.transform_phase_maps import transform_to_neural_holography_setting
+from mask_designer.transform_fields import transform_to_neural_holography_setting
 
 from slm_controller.hardware import (
     SLMParam,
@@ -37,29 +37,29 @@ def main():
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
-    # Load slm phase map computed with holoeye software
-    holoeye_phase_map = load_phase_map()
+    # Load the field computed with holoeye software
+    holoeye_field = load_field()
 
     # Make it compliant with the data structure used in the project
-    unpacked_phase_map = holoeye_phase_map[0, 0, :, :]
+    unpacked_field = holoeye_field[0, 0, :, :]
 
     # Simulate the propagation in the lens setting and show the results
-    propped_phase_map = simulated_prop(holoeye_phase_map, holoeye_fraunhofer)
-    show_plot(
-        unpacked_phase_map, propped_phase_map, "Holoeye with lens"
-    )  # TODO Holoeye pattern is dark, normalize image to be in [0, 255]?
+    propped_field = simulated_prop(holoeye_field, holoeye_fraunhofer)
+    show_fields(
+        unpacked_field, propped_field, "Holoeye with lens"
+    )  # TODO Holoeye logo is dark, normalize image to be in [0, 255]?
 
-    # Transform the initial phase map to the lensless setting
-    neural_holography_phase_map = transform_to_neural_holography_setting(
-        holoeye_phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
+    # Transform the initial field to the lensless setting
+    neural_holography_field = transform_to_neural_holography_setting(
+        holoeye_field, prop_dist, wavelength, slm_shape, pixel_pitch
     )
-    unpacked_phase_map = neural_holography_phase_map[0, 0, :, :]
+    unpacked_field = neural_holography_field[0, 0, :, :]
 
     # Simulate the propagation in the lensless setting and show the results
-    propped_phase_map = simulated_prop(
-        neural_holography_phase_map, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
+    propped_field = simulated_prop(
+        neural_holography_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
-    show_plot(unpacked_phase_map, propped_phase_map, "Holoeye without lens")
+    show_fields(unpacked_field, propped_field, "Holoeye without lens")
 
 
 if __name__ == "__main__":

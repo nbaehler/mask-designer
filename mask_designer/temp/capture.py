@@ -1,8 +1,7 @@
 import pickle
-import sys
 import time
 
-from os.path import dirname, abspath, join  # TODO everywhere??
+from os.path import dirname, abspath, join
 import sys
 
 # Find code directory relative to our directory

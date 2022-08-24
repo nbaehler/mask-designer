@@ -39,7 +39,7 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
     # Binarization
     # org_copy = org.copy() # Otherwise, we write on the original image!
     # img = (captured_img.copy() * 255).astype(np.uint8) # TODO no need to go
-    # through floats
+    # via floats
     img = captured_img.copy()
 
     if len(img.shape) > 2:
@@ -142,7 +142,7 @@ class Calibration:
         self.num_circles = (
             num_circles[1],
             num_circles[0],
-        )  # TODO they flipped it earlier, this is more convenient
+        )
 
         self.spacing_size = spacing_size
         self.pad_pixels = pad_pixels

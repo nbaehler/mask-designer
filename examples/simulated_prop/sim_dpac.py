@@ -1,5 +1,5 @@
 """
-Simulated propagation of slm patterns generated using the DPAC algorithm.
+Simulated propagation of phase masks generated using the DPAC algorithm.
 """
 from os.path import dirname, abspath, join
 import sys
@@ -11,9 +11,9 @@ sys.path.append(CODE_DIR)
 
 
 from mask_designer.simulated_prop import simulated_prop
-from mask_designer.utils import extend_to_complex, show_plot
+from mask_designer.utils import show_fields, build_field
 from mask_designer.propagation import holoeye_fraunhofer, neural_holography_asm
-from mask_designer.transform_phase_maps import transform_from_neural_holography_setting
+from mask_designer.transform_fields import transform_from_neural_holography_setting
 import torch
 
 from slm_controller.hardware import (
@@ -62,25 +62,25 @@ def main():
     angles = dpac(target_amp)
     angles = angles.cpu().detach()
 
-    # Extend the computed angles, aka the phase values, to a complex tensor again
-    neural_holography_phase_map = extend_to_complex(angles)
+    # Extend the computed angles, aka the phase values, to be a field which is a complex tensor again
+    neural_holography_field = build_field(angles)
 
     # Transform the results to the hardware setting using a lens
-    holoeye_phase_map = transform_from_neural_holography_setting(
-        neural_holography_phase_map, prop_dist, wavelength, slm_shape, pixel_pitch
+    holoeye_field = transform_from_neural_holography_setting(
+        neural_holography_field, prop_dist, wavelength, slm_shape, pixel_pitch
     )
 
     # Simulate the propagation in the lens setting and show the results
-    unpacked_phase_map = holoeye_phase_map[0, 0, :, :]
-    propped_phase_map = simulated_prop(holoeye_phase_map, holoeye_fraunhofer)
-    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography DPAC with lens")
+    unpacked_field = holoeye_field[0, 0, :, :]
+    propped_field = simulated_prop(holoeye_field, holoeye_fraunhofer)
+    show_fields(unpacked_field, propped_field, "Neural Holography DPAC with lens")
 
     # Simulate the propagation in the lensless setting and show the results
-    unpacked_phase_map = neural_holography_phase_map[0, 0, :, :]
-    propped_phase_map = simulated_prop(
-        neural_holography_phase_map, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
+    unpacked_field = neural_holography_field[0, 0, :, :]
+    propped_field = simulated_prop(
+        neural_holography_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
-    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography DPAC without lens")
+    show_fields(unpacked_field, propped_field, "Neural Holography DPAC without lens")
 
 
 if __name__ == "__main__":

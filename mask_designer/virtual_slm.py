@@ -91,7 +91,7 @@ class VirtualSLM:
 
     def plot(self, show_tick_labels=False):
         """
-        Plot VirtualSLM pattern.
+        Plot VirtualSLM mask.
 
         Parameters
         ----------

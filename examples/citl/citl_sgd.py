@@ -1,5 +1,5 @@
 """
-Physical propagation of slm patterns generated using the SGD algorithm.
+Physical propagation of phase masks generated using the SGD algorithm.
 """
 
 
@@ -28,20 +28,29 @@ from mask_designer.experimental_setup import (
     slm_device,
     cam_device,
 )
-from mask_designer.propagation import neural_holography_asm
+from mask_designer.propagation import (
+    holoeye_fraunhofer,
+    neural_holography_asm,
+)
 
-from mask_designer.transform_phase_maps import transform_from_neural_holography_setting
-from mask_designer.utils import extend_to_complex, quantize_phase_pattern, show_plot
+from mask_designer.transform_fields import transform_from_neural_holography_setting
+from mask_designer.utils import (
+    build_field,
+    quantize_phase_mask,
+    random_init_phase_mask,
+    show_fields,
+)
 from mask_designer.wrapper import ImageLoader, SGD, PhysicalProp
 
 
 @click.command()
 @click.option("--iterations", type=int, default=10, help="Number of iterations to run.")
 @click.option(
-    "--slm_show_time",  # TODO what makes sense to keep as arguments here and what should be moved to the experimental setup? Maybe we could just store the default values there ...
+    "--slm_show_time",  # TODO what makes sense to keep as arguments here and what should
+    # be moved to the experimental setup? Maybe we could just store the default values there ...
     type=float,
     default=params[Params.SLM_SHOW_TIME],
-    help="Time to show the pattern on the SLM.",
+    help="Time to show the mask on the SLM.",
 )
 @click.option(
     "--slm_settle_time",
@@ -80,31 +89,34 @@ def main(iterations, slm_show_time, slm_settle_time):
     target_amp = target_amp[None, None, :, :]
     target_amp = target_amp.to(device)
 
-    # Setup a random initial slm phase map with values in [-0.5, 0.5]
-    init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_shape)).to(device)
+    # Setup a random initial slm phase mask with values in [-0.5, 0.5]
+    init_phase = random_init_phase_mask(slm_shape, device)
 
     # Run Stochastic Gradient Descent based method
-    sgd = SGD(prop_dist, wavelength, pixel_pitch, 500, roi, device=device)
+    sgd = SGD(prop_dist, wavelength, pixel_pitch, 50, roi, device=device)
     angles = sgd(target_amp, init_phase).cpu().detach()
 
-    # Extend the computed angles, aka the phase values, to a complex tensor again
-    extended = extend_to_complex(angles)
+    # Extend the computed angles, aka the phase values, to be a field which is a complex tensor
+    # again
+    warm_start_field = build_field(angles)
 
-    # Transform the results to the hardware setting using a lens
-    warm_start_phase = transform_from_neural_holography_setting(
-        extended, prop_dist, wavelength, slm_shape, pixel_pitch
+    unpacked_field = warm_start_field[0, 0, :, :]
+    propped_field = simulated_prop(
+        warm_start_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
+    show_fields(unpacked_field, propped_field, "Neural Holography GS without lens")
 
-    unpacked_phase_map = warm_start_phase[0, 0, :, :]
-    propped_phase_map = simulated_prop(
-        warm_start_phase, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
-    )
-    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography GS without lens")
+    warm_start_field = warm_start_field.angle().to(device)
 
-    warm_start_phase = warm_start_phase.angle().to(device)
+    import os
+    import glob
+
+    files = glob.glob("citl/snapshots/*.png")
+    for f in files:
+        os.remove(f)
 
     # --------------------------------------------------------------------------
-    # TODO fix
+    # TODO Fix one approach for the multithreading
 
     from multiprocessing.managers import BaseManager
 
@@ -115,7 +127,7 @@ def main(iterations, slm_show_time, slm_settle_time):
     manager = BaseManager()
     manager.start()
 
-    s = manager.HoloeyeSLM()  # TODO shouldn't to be shared
+    s = manager.HoloeyeSLM()
     # s = slm.create(slm_device)
     # s = None
 
@@ -130,13 +142,6 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     # --------------------------------------------------------------------------
 
-    import os
-    import glob
-
-    files = glob.glob("citl/snapshots/*.png")
-    for f in files:
-        os.remove(f)
-
     camera_prop = PhysicalProp(
         s,
         slm_settle_time,
@@ -146,7 +151,7 @@ def main(iterations, slm_show_time, slm_settle_time):
         # laser_arduino=True,
         # range_row=(220, 1000),
         # range_col=(300, 1630),
-        # patterns_path=calibration_path,  # path of 12 x 21 calibration patterns, see Supplement.
+        # pattern_path=calibration_path,  # path of 12 x 21 calibration pattern, see Supplement.
         show_preview=True,
     )
 
@@ -161,27 +166,27 @@ def main(iterations, slm_show_time, slm_settle_time):
         citl=True,
         camera_prop=camera_prop,
     )
-    angles = sgd(target_amp, warm_start_phase).cpu().detach()
+    angles = sgd(target_amp, warm_start_field).cpu().detach()
 
-    # Extend the computed angles, aka the phase values, to a complex tensor again
-    extended = extend_to_complex(angles)
+    # Extend the computed angles, aka the phase values, to be a field which is a complex tensor
+    # again
+    extended = build_field(angles)
 
     # Transform the results to the hardware setting using a lens
     final_phase_sgd = transform_from_neural_holography_setting(
         extended, prop_dist, wavelength, slm_shape, pixel_pitch
     )
 
-    unpacked_phase_map = final_phase_sgd[0, 0, :, :]
-    propped_phase_map = simulated_prop(
-        final_phase_sgd, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
-    )
-    show_plot(unpacked_phase_map, propped_phase_map, "Neural Holography GS without lens")
+    unpacked_field = final_phase_sgd[0, 0, :, :]
+    propped_field = simulated_prop(final_phase_sgd, holoeye_fraunhofer)
+    show_fields(unpacked_field, propped_field, "Neural Holography GS without lens")
 
-    # Quantize the the angles, aka phase values, to a bit values
-    phase_out = quantize_phase_pattern(final_phase_sgd.angle())
+    # Quantize the fields angles, aka phase values, to a bit values
+    phase_out = quantize_phase_mask(final_phase_sgd.angle())
 
     # Display
     s.imshow(phase_out)
+
     final_res = cam.acquire_single_image()
 
     import matplotlib.pyplot as plt

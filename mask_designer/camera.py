@@ -6,7 +6,7 @@ import numpy as np
 from slm_controller.hardware import SLMParam, slm_devices
 from mask_designer.experimental_setup import slm_device
 from mask_designer.hardware import CamDevices, CamParam, cam_devices
-from mask_designer.utils import load_image, resize_image_to_shape
+from mask_designer.utils import load_image, scale_image_to_shape
 
 
 class Camera:
@@ -54,7 +54,7 @@ class Camera:
         images = self.acquire_multiple_images(number)
 
         return [
-            resize_image_to_shape(image, slm_devices[slm_device][SLMParam.SLM_SHAPE])
+            scale_image_to_shape(image, slm_devices[slm_device][SLMParam.SLM_SHAPE])
             for image in images
         ]
 
@@ -70,7 +70,7 @@ class Camera:
         """
         image = self.acquire_single_image()
 
-        return resize_image_to_shape(image, slm_devices[slm_device][SLMParam.SLM_SHAPE])
+        return scale_image_to_shape(image, slm_devices[slm_device][SLMParam.SLM_SHAPE])
 
     @abc.abstractmethod
     def acquire_single_image(self):
@@ -159,7 +159,7 @@ class DummyCamera(Camera):
         image = (
             load_image(path) - self._correction
         )  # TODO scale up and scale down of calibration image...
-        self._image = resize_image_to_shape(image, (self._height, self._width))
+        self._image = scale_image_to_shape(image, (self._height, self._width))
 
     def acquire_single_image(self):
         """
@@ -265,8 +265,6 @@ class IDSCamera(Camera):
         # Get nodemap of the remote device for all accesses to the genicam nodemap tree
         self.__node_map = self.__device.RemoteDevice().NodeMaps()[0]
 
-        self.__print_supported_nodes()
-
         # Load default settings
         self.__node_map.FindNode("UserSetSelector").SetCurrentEntry("Default")
         self.__node_map.FindNode("UserSetLoad").Execute()
@@ -332,7 +330,7 @@ class IDSCamera(Camera):
         buffer = self.__data_stream.WaitForFinishedBuffer(5000)
 
         # Stop acquisition on camera
-        self.__data_stream.StopAcquisition()  # TODO move up?
+        self.__data_stream.StopAcquisition()
 
         # Flush data stream
         self.__data_stream.Flush(peak.DataStreamFlushMode_DiscardAll)
@@ -342,7 +340,7 @@ class IDSCamera(Camera):
 
         return buffer
 
-    def __print_supported_nodes(self):  # TODO for development
+    def __print_supported_nodes(self):  # for development
         all_nodes = self.__node_map.Nodes()
 
         available_nodes = [
@@ -357,7 +355,7 @@ class IDSCamera(Camera):
         for node in available_nodes:
             print(node)
 
-    def __print_supported_entries(self, node):  # TODO for development
+    def __print_supported_entries(self, node):  # for development
         all_entries = self.__node_map.FindNode(node).Entries()
         available_entries = [
             entry.SymbolicValue()
@@ -421,7 +419,9 @@ class IDSCamera(Camera):
         # )
 
         # Return image as numpy array
-        return ipl_image.get_numpy_2D().copy() - self._correction
+        return (
+            np.flipud(np.fliplr(ipl_image.get_numpy_2D().copy())) - self._correction
+        )  # TODO really need to flip?
 
     def acquire_multiple_images(self, number=2):
         """
@@ -449,7 +449,9 @@ class IDSCamera(Camera):
             )
 
             # Append images as numpy array to list of acquired images
-            images.append(ipl_image.get_numpy_2D().copy() - self._correction)
+            images.append(
+                np.flipud(np.fliplr(ipl_image.get_numpy_2D().copy())) - self._correction
+            )  # TODO really need to flip?
 
         return images
 

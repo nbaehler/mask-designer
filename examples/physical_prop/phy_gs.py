@@ -1,5 +1,5 @@
 """
-Physical propagation of slm patterns generated using the GS algorithm.
+Physical propagation of phase masks generated using the GS algorithm.
 """
 
 from os.path import dirname, abspath, join
@@ -18,12 +18,15 @@ from slm_controller.hardware import (
     slm_devices,
 )
 
+from mask_designer.utils import random_init_phase_mask
+
 from mask_designer.experimental_setup import (
     Params,
     params,
     slm_device,
 )
-from mask_designer.wrapper import ImageLoader, run_gs
+from mask_designer.wrapper import ImageLoader
+from mask_designer.methods import run_gs
 
 
 @click.command()
@@ -49,9 +52,6 @@ def main(iterations):
         horizontal_flips=False,
     )
 
-    # Instantiate SLM object
-    s = slm.create(slm_device)
-
     # Load the the first image in the folder
     target_amp, _, _ = image_loader.load_image(0)
 
@@ -62,13 +62,16 @@ def main(iterations):
     target_amp = target_amp[None, None, :, :]
     target_amp = target_amp.to(device)
 
-    # Setup a random initial slm phase map with values in [-0.5, 0.5]
-    init_phase = (-0.5 + 1.0 * torch.rand(1, 1, *slm_shape)).to(device)
+    # Setup a random initial slm phase mask with values in [-0.5, 0.5]
+    init_phase = random_init_phase_mask(slm_shape, device)
 
     # Run Gerchberg-Saxton
     phase_out = run_gs(
         init_phase, target_amp, iterations, slm_shape, prop_dist, wavelength, pixel_pitch, device,
     )
+
+    # Instantiate SLM object
+    s = slm.create(slm_device)
 
     # Display
     s.imshow(phase_out)

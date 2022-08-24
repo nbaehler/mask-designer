@@ -1,6 +1,5 @@
 """
-Script that runs the CITL training of Neural Holography. #TODO functional but
-needs more work
+Script that runs the CITL training of Neural Holography.
 """
 from os.path import dirname, abspath, join
 import sys
@@ -55,7 +54,7 @@ import datetime
 #     "--step_lr", type=str2bool, default=True, help="Use of lr scheduler"
 # )
 # @click.option("--experiment", type=str, default="", help="Name of the experiment")
-def main(
+def main(  # TODO buggy
     channel,
     pretrained_path,
     model_path,

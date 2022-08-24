@@ -1,5 +1,5 @@
 """
-Physical propagation of the slm pattern generated using the holoeye software.
+Physical propagation of the phase mask generated using the holoeye software.
 """
 
 from os.path import dirname, abspath, join
@@ -12,19 +12,18 @@ sys.path.append(CODE_DIR)
 
 from slm_controller.hardware import SLMDevices
 from slm_controller import slm
-from mask_designer.utils import load_phase_map, quantize_phase_pattern
+from mask_designer.utils import load_phase_mask
 
 
-def main():
-    # Load the slm pattern generated using the holoeye software
-    holoeye_phase_map = load_phase_map("images/holoeye_logo_big.png").angle()
-    holoeye_phase_map = quantize_phase_pattern(holoeye_phase_map)
+def main():  # TODO buggy
+    # Load the phase mask generated using the holoeye software
+    holoeye_phase_mask = load_phase_mask("images/test/holoeye_logo_big.png")
 
     # Initialize slm
     s = slm.create(SLMDevices.HOLOEYE_LC_2012.value)
 
     # display
-    s.imshow(holoeye_phase_map)
+    s.imshow(holoeye_phase_mask)
 
 
 if __name__ == "__main__":

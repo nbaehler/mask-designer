@@ -1,5 +1,5 @@
 """
-Script that runs the CITL evaluations of Neural Holography. #TODO not working entirely
+Script that runs the CITL evaluations of Neural Holography.
 """
 from os.path import dirname, abspath, join
 import sys
@@ -45,7 +45,7 @@ from mask_designer.wrapper import eval
     default="./citl/calibration",
     help="Directory where calibration phases are being stored.",
 )
-def main(
+def main(  # TODO buggy
     channel, prop_model, test_phases_path, test_target_amps_path, prop_model_dir, calibration_path,
 ):
     eval(

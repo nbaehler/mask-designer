@@ -1,9 +1,10 @@
 """
-Physical propagation of phase masks generated using the DPAC algorithm.
+Physical propagation of phase masks generated using the SGD algorithm.
 """
 
 from os.path import dirname, abspath, join
 import sys
+
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
@@ -11,8 +12,10 @@ CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
 import torch
+import click
 from slm_controller import slm
 from slm_controller.hardware import (
+    SLMDevices,
     SLMParam,
     slm_devices,
 )
@@ -20,15 +23,19 @@ from slm_controller.hardware import (
 from mask_designer.experimental_setup import (
     Params,
     params,
-    slm_device,
+    # slm_device,
 )
-
 from mask_designer.wrapper import ImageLoader
-from mask_designer.methods import run_dpac
+from mask_designer.methods import run_sgd
+from mask_designer.utils import pad_image_to_shape, random_init_phase_mask
 
 
-def main():
+@click.command()
+@click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
+def main(iterations):
     # Set parameters
+    slm_device = SLMDevices.DUMMY.value
+
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
@@ -58,8 +65,31 @@ def main():
     target_amp = target_amp[None, None, :, :]
     target_amp = target_amp.to(device)
 
-    # Run Double Phase Amplitude Coding #TODO DPAC does not work
-    phase_out = run_dpac(target_amp, slm_shape, prop_dist, wavelength, pixel_pitch, device)
+    # Setup a random initial slm phase mask with values in [-0.5, 0.5]
+    init_phase = random_init_phase_mask(slm_shape, device)
+
+    # Run Stochastic Gradient Descent based method
+    phase_out = run_sgd(
+        init_phase,
+        target_amp,
+        iterations,
+        slm_shape,
+        roi,
+        prop_dist,
+        wavelength,
+        pixel_pitch,
+        device,
+    )
+
+    slm_device = SLMDevices.HOLOEYE_LC_2012.value
+    slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
+    phase_out = pad_image_to_shape(phase_out, slm_shape)
+
+    import matplotlib.pyplot as plt
+
+    _, ax = plt.subplots()
+    ax.imshow(phase_out, cmap="gray")
+    plt.show()
 
     # Instantiate SLM object
     s = slm.create(slm_device)

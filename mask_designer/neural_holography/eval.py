@@ -45,6 +45,7 @@ from mask_designer.experimental_setup import (
     params,
     slm_device,
     cam_device,
+    amp_mask,
 )
 
 from slm_controller.hardware import (
@@ -136,7 +137,7 @@ def eval(
         #     ).to(device)
 
     elif prop_model.upper() == "CAMERA":
-        s = slm.create(slm)
+        s = slm.create(slm_device)
         s.set_show_time(slm_show_time)
 
         cam = camera.create(cam_device)
@@ -150,7 +151,7 @@ def eval(
             # laser_arduino=True,
             # range_row=(220, 1000),
             # range_col=(300, 1630),
-            patterns_path=calibration_path,  # path of 12 x 21 calibration patterns, see Supplement.
+            pattern_path=calibration_path,  # path of 12 x 21 calibration pattern, see Supplement.
             show_preview=True,
         )
     elif prop_model.upper() == "MODEL":
@@ -194,6 +195,8 @@ def eval(
     ssims = {"amp": [], "lin": [], "srgb": []}
     idxs = []
 
+    slm_amp = amp_mask.to(device)
+
     # Loop over the dataset
     for target_idx, target in enumerate(image_loader):
         # get target image
@@ -215,24 +218,24 @@ def eval(
         for c in chs:
             # load and invert phase (our SLM setup)
             phase_filename = os.path.join(test_phases_path, chan_strs[c], f"{target_filename}.png")
-            phase_map = skimage.io.imread(phase_filename) / 255.0
+            phase_mask = skimage.io.imread(phase_filename) / 255.0
 
-            phase_map = np.mean(phase_map, axis=2)  # TODO added to make it grayscale
+            phase_mask = np.mean(phase_mask, axis=2)  # TODO added to make it grayscale
 
-            # phase_map = (  #TODO inversion not needed in our setting?
-            #     torch.tensor((1 - phase_map) * 2 * np.pi - np.pi, dtype=dtype)
+            # phase_mask = (  #TODO inversion not needed in our setting?
+            #     torch.tensor((1 - phase_mask) * 2 * np.pi - np.pi, dtype=dtype)
             #     .reshape(1, 1, *slm_shape)
             #     .to(device)
             # )
 
-            phase_map = (
-                torch.tensor(phase_map * 2 * np.pi - np.pi, dtype=dtype)
+            phase_mask = (
+                torch.tensor(phase_mask * 2 * np.pi - np.pi, dtype=dtype)
                 .reshape(1, 1, *slm_shape)
                 .to(device)
             )
 
             # propagate field
-            real, imag = utils.polar_to_rect(torch.ones_like(phase_map), phase_map)
+            real, imag = utils.polar_to_rect(slm_amp, phase_mask)
             slm_field = torch.complex(real, imag)
 
             if prop_model.upper() == "MODEL":
@@ -296,6 +299,6 @@ def eval(
         data_dict[f"ssims_{domain}"] = ssims[domain]
         data_dict[f"psnrs_{domain}"] = psnrs[domain]
 
-    sio.savemat(  # TODO why in mat format?
+    sio.savemat(
         os.path.join(recon_path, f"metrics_{run_id}_{chan_strs[channel]}.mat"), data_dict,
     )

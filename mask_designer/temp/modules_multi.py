@@ -59,9 +59,9 @@ from mask_designer.utils import (
     build_field,
     quantize_phase_mask,
     round_phase_mask_to_uint8,
+    scale_image_to_shape,
+    show_fields,
 )
-
-from mask_designer.transform_fields import transform_from_neural_holography_setting
 
 # my_os = platform.system()
 # if my_os == "Windows":
@@ -521,22 +521,46 @@ class PhysicalProp(nn.Module):
 
         blank_phase_mask = np.zeros(slm_devices[slm_device][SLMParam.SLM_SHAPE], dtype=np.uint8,)
 
+        # import matplotlib.pyplot as plt
+
+        # _, ax = plt.subplots()
+        # ax.imshow(blank_phase_mask, cmap="gray")
+        # plt.show()
+
         captured_blank = self._capture_and_average_intensities(
             num_grab_images, False, blank_phase_mask, True,
         )
 
+        # import matplotlib.pyplot as plt
+
+        # _, ax = plt.subplots()
+        # ax.imshow(captured_blank, cmap="gray")
+        # plt.show()
+
+        # captured_blank = np.zeros(slm_devices[slm_device][SLMParam.SLM_SHAPE], dtype=np.uint8)
+
         self.camera.set_correction(captured_blank)
 
         # supposed to be a grid pattern image for calibration
-        calib_phase_img = skimage.io.imread(
-            calibration_pattern_path
-        )  # TODO use function in utils to load
-        calib_phase_mask = np.mean(calib_phase_img[:, :, 0:3], axis=2)
+        calib_phase_img = skimage.io.imread(calibration_pattern_path)  # TODO use function in utils
+        calib_phase_mask = np.mean(calib_phase_img[:, :, 0:3], axis=2)  # TODO Calibration fails
         calib_phase_mask = round_phase_mask_to_uint8(calib_phase_mask)
+
+        # import matplotlib.pyplot as plt
+
+        # _, ax = plt.subplots()
+        # ax.imshow(calib_phase_mask, cmap="gray")
+        # plt.show()
 
         captured_img = self._capture_and_average_intensities(
             num_grab_images, True, calib_phase_mask, True,
         )
+
+        # import matplotlib.pyplot as plt
+
+        # _, ax = plt.subplots()
+        # ax.imshow(captured_img, cmap="gray")
+        # plt.show()
 
         self.slm.set_show_time(params[Params.SLM_SHOW_TIME])  # TODO must come from caller
 
@@ -619,9 +643,9 @@ class PhysicalProp(nn.Module):
         pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
         slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
-        # from mask_designer.transform_fields import (  # TODO move up!!
-        #     transform_from_neural_holography_setting,
-        # )
+        from mask_designer.transform_fields import (  # TODO move up!!
+            transform_from_neural_holography_setting,
+        )
 
         # Transform the results to the hardware setting using a lens
         field = transform_from_neural_holography_setting(
@@ -644,6 +668,9 @@ class PhysicalProp(nn.Module):
         self, cam, slm_settle_time, num_grab_images, resize, captures_path,
     ):
         import datetime
+
+        # event = multiprocessing.Event() #TODO does this help?
+        # event.wait()  # wait for the go
 
         print(datetime.datetime.now().time(), "Start settle")
         time.sleep(slm_settle_time)
@@ -679,10 +706,11 @@ class PhysicalProp(nn.Module):
 
         print(datetime.datetime.now().time(), "Start imshow")
 
+        # ----------------------------------------------------------------------------------------------
+
         if not calibration:
             phase_mask = self._transform_phase_mask(phase_mask)
 
-            # ----------------------------------------------------------------------------------------------
             # Plot only
             field = build_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
@@ -726,6 +754,138 @@ class PhysicalProp(nn.Module):
         img_file.save(f"citl/snapshots/img_{name}.png")
 
         return img
+
+        # ----------------------------------------------------------------------
+
+        # import datetime
+
+        # slm_process = Process(target=self._imshow, args=[self.slm, phase_mask])
+
+        # print(datetime.datetime.now().time(), "Start imshow")
+
+        # slm_process.start()
+
+        # if resize:
+        #     captured_intensities = self.camera.acquire_multiple_images_and_resize_to_slm_shape(
+        #         num_grab_images
+        #     )
+        # else:
+        #     captured_intensities = self.camera.acquire_multiple_images(num_grab_images)
+
+        # print(datetime.datetime.now().time(), "End capture")
+
+        # slm_process.terminate()
+        # # slm_process.kill()
+
+        # return utils.burst_img_processor(captured_intensities)
+
+        # ----------------------------------------------------------------------
+
+        # import datetime
+
+        # captures_path = Path("citl/captures.pkl")
+
+        # if captures_path.exists():
+        #     captures_path.unlink()
+
+        # slm_process = Process(target=self._imshow, args=[self.slm, phase_mask])
+
+        # cam_process = Process(
+        #     target=self._capture,
+        #     args=[
+        #         self.camera,
+        #         self.slm_settle_time,
+        #         num_grab_images,
+        #         resize,
+        #         captures_path,
+        #     ],
+        # )
+
+        # print(datetime.datetime.now().time(), "Start imshow process")
+        # slm_process.start()
+        # print(datetime.datetime.now().time(), "Start capture process")
+        # cam_process.start()
+
+        # while not captures_path.exists() and slm_process.is_alive():
+        #     time.sleep(0.1)
+
+        # if not captures_path.exists():
+        #     slm_process.terminate()
+
+        #     if cam_process.is_alive():
+        #         cam_process.terminate()
+
+        #     raise ValueError("Image capturing Process timed out!")
+
+        # with open(captures_path, "rb") as f:
+        #     captures = pickle.load(f)
+
+        # if slm_process.is_alive():
+        #     slm_process.terminate()
+
+        # if cam_process.is_alive():
+        #     cam_process.terminate()
+
+        # captures_path.unlink()
+
+        # return utils.burst_img_processor(captures)
+
+        # ----------------------------------------------------------------------
+
+        # import datetime
+        # import subprocess
+
+        # exposure_time = 1200
+        # captures_path = Path("citl/captures.pkl")
+        # phase_mask_path = Path("citl/phase_mask.pkl")
+
+        # if phase_mask_path.exists():
+        #     phase_mask_path.unlink()
+
+        # if captures_path.exists():
+        #     captures_path.unlink()
+
+        # pickle.dump(phase_mask, open(phase_mask_path, "wb"))
+
+        # show_process = subprocess.Popen(
+        #     ["python", "mask_designer/temp/show.py", phase_mask_path,]
+        # )
+
+        # capture_process = subprocess.Popen(
+        #     [
+        #         "python",
+        #         "mask_designer/temp/capture.py",
+        #         f"{exposure_time}",
+        #         f"{num_grab_images}",
+        #         f"{resize}",
+        #         f"{self.slm_settle_time}",
+        #         captures_path,
+        #     ]
+        # )
+
+        # print(show_process.poll() is None)
+
+        # while not captures_path.exists() and show_process.poll() is None:
+        #     time.sleep(0.1)
+
+        # if not captures_path.exists():
+        #     print("Not captured")
+
+        #     subprocess.Popen.kill(show_process)
+        #     subprocess.Popen.kill(capture_process)
+
+        #     raise ValueError("Your show time is too short")
+
+        # with open(captures_path, "rb") as f:
+        #     captures = pickle.load(f)
+
+        # subprocess.Popen.kill(show_process)
+        # subprocess.Popen.kill(capture_process)
+
+        # phase_mask_path.unlink()
+        # captures_path.unlink()
+
+        # return utils.burst_img_processor(captures) - self.captured_blank
 
     # def disconnect(self):
     #     self.camera.disconnect()
