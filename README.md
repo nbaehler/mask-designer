@@ -79,7 +79,7 @@ If you plan to use this code base more in depth you can install additional
 dependencies intended for developing while the virtual environment is activated.
 
 ```sh
-source .mask_designer/bin/activate
+source mask_designer_env/bin/activate
 # pip install -e .[dev] #TODO does not work, dev not found
 pip install click black pytest tensorboard torch_tb_profiler
 ```
@@ -103,7 +103,7 @@ important feature. Once in this selection prompt,
 check the box additionally installing `Support of uEye cameras` and continue.
 After the installation is completed go to the installation directory. Note
 that you should have activated the virtual environment created earlier from now
-on (`source .mask_designer/bin/activate`). Next, go to `ids_peak/generic_sdk/api/binding/python/wheel` and
+on (`source mask_designer_env/bin/activate`). Next, go to `ids_peak/generic_sdk/api/binding/python/wheel` and
 install the appropriate wheel like so, for example:
 
 ```sh
