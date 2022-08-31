@@ -267,6 +267,7 @@ Consider the following diagram.
 Hence, one can derive a formula for $b$.
 
 <!-- TODO does not work in html generated using sphinx -->
+<!-- TODO Actually we use -30 !!! -->
 
 $$
 \begin{align}

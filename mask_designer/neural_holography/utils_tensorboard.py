@@ -16,7 +16,6 @@ All rights reserved.
 Refer to the LICENSE file for more information.
 """
 
-# import time
 import copy
 import torch
 import numpy as np

@@ -25,11 +25,8 @@ import os
 import skimage.io
 import scipy.io as sio
 
-# import sys
 import torch
 import numpy as np
-
-# import configargparse
 
 from mask_designer.neural_holography.propagation_ASM import propagation_ASM
 from mask_designer.neural_holography.augmented_image_loader import ImageLoader

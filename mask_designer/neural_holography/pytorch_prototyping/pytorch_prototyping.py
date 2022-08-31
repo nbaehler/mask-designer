@@ -7,13 +7,6 @@ model prototyping.
 
 import torch
 import torch.nn as nn
-from torch.nn import functional as F
-import torchvision.utils
-
-import numpy as np
-
-import math
-import numbers
 
 
 class FCLayer(nn.Module):
@@ -58,18 +51,16 @@ class FCBlock(nn.Module):
         self, hidden_ch, num_hidden_layers, in_features, out_features, outermost_linear=False,
     ):
         super().__init__()
-
         self.net = []
         self.net.append(FCLayer(in_features=in_features, out_features=hidden_ch))
-
-        for i in range(num_hidden_layers):
-            self.net.append(FCLayer(in_features=hidden_ch, out_features=hidden_ch))
+        self.net.extend(
+            FCLayer(in_features=hidden_ch, out_features=hidden_ch) for _ in range(num_hidden_layers)
+        )
 
         if outermost_linear:
             self.net.append(nn.Linear(in_features=hidden_ch, out_features=out_features))
         else:
             self.net.append(FCLayer(in_features=hidden_ch, out_features=out_features))
-
         self.net = nn.Sequential(*self.net)
         self.net.apply(self.init_weights)
 
@@ -90,22 +81,15 @@ class DownBlock3D(nn.Module):
 
     def __init__(self, in_channels, out_channels, norm=nn.BatchNorm3d):
         super().__init__()
-
         self.net = [
             nn.ReplicationPad3d(1),
             nn.Conv3d(
-                in_channels,
-                out_channels,
-                kernel_size=4,
-                padding=0,
-                stride=2,
-                bias=False if norm is not None else True,
+                in_channels, out_channels, kernel_size=4, padding=0, stride=2, bias=norm is None,
             ),
         ]
 
         if norm is not None:
             self.net += [norm(out_channels, affine=True)]
-
         self.net += [nn.LeakyReLU(0.2, True)]
         self.net = nn.Sequential(*self.net)
 
@@ -119,30 +103,20 @@ class UpBlock3D(nn.Module):
 
     def __init__(self, in_channels, out_channels, norm=nn.BatchNorm3d):
         super().__init__()
-
         self.net = [
             nn.ConvTranspose3d(
-                in_channels,
-                out_channels,
-                kernel_size=4,
-                stride=2,
-                padding=1,
-                bias=False if norm is not None else True,
-            ),
+                in_channels, out_channels, kernel_size=4, stride=2, padding=1, bias=norm is None,
+            )
         ]
 
         if norm is not None:
             self.net += [norm(out_channels, affine=True)]
-
         self.net += [nn.ReLU(True)]
         self.net = nn.Sequential(*self.net)
 
     def forward(self, x, skipped=None):
-        if skipped is not None:
-            input = torch.cat([skipped, x], dim=1)
-        else:
-            input = x
-        return self.net(input)
+        input_var = torch.cat([skipped, x], dim=1) if skipped is not None else x
+        return self.net(input_var)
 
 
 class Conv3dSame(torch.nn.Module):
@@ -232,7 +206,7 @@ class UpBlock(nn.Module):
         """
         super().__init__()
 
-        net = list()
+        net = []
 
         if upsampling_mode == "transpose":
             net += [
@@ -242,33 +216,18 @@ class UpBlock(nn.Module):
                     kernel_size=4,
                     stride=2,
                     padding=1,
-                    bias=True if norm is None else False,
+                    bias=norm is None,
                 )
             ]
         elif upsampling_mode == "bilinear":
             net += [nn.UpsamplingBilinear2d(scale_factor=2)]
-            net += [
-                Conv2dSame(
-                    in_channels, out_channels, kernel_size=3, bias=True if norm is None else False,
-                )
-            ]
+            net += [Conv2dSame(in_channels, out_channels, kernel_size=3, bias=norm is None,)]
         elif upsampling_mode == "nearest":
             net += [nn.UpsamplingNearest2d(scale_factor=2)]
-            net += [
-                Conv2dSame(
-                    in_channels, out_channels, kernel_size=3, bias=True if norm is None else False,
-                )
-            ]
+            net += [Conv2dSame(in_channels, out_channels, kernel_size=3, bias=norm is None,)]
         elif upsampling_mode == "shuffle":
             net += [nn.PixelShuffle(upscale_factor=2)]
-            net += [
-                Conv2dSame(
-                    in_channels // 4,
-                    out_channels,
-                    kernel_size=3,
-                    bias=True if norm is None else False,
-                )
-            ]
+            net += [Conv2dSame(in_channels // 4, out_channels, kernel_size=3, bias=norm is None,)]
         else:
             raise ValueError("Unknown upsampling mode!")
 
@@ -281,11 +240,7 @@ class UpBlock(nn.Module):
             net += [nn.Dropout2d(dropout_prob, False)]
 
         if post_conv:
-            net += [
-                Conv2dSame(
-                    out_channels, out_channels, kernel_size=3, bias=True if norm is None else False,
-                )
-            ]
+            net += [Conv2dSame(out_channels, out_channels, kernel_size=3, bias=norm is None,)]
 
             if norm is not None:
                 net += [norm(out_channels, affine=True)]
@@ -298,11 +253,8 @@ class UpBlock(nn.Module):
         self.net = nn.Sequential(*net)
 
     def forward(self, x, skipped=None):
-        if skipped is not None:
-            input = torch.cat([skipped, x], dim=1)
-        else:
-            input = x
-        return self.net(input)
+        input_var = torch.cat([skipped, x], dim=1) if skipped is not None else x
+        return self.net(input_var)
 
 
 class DownBlock(nn.Module):
@@ -331,12 +283,9 @@ class DownBlock(nn.Module):
         :param norm: Which norm to use. If None, no norm is used. Default is Batchnorm with affinity.
         """
         super().__init__()
-
         if middle_channels is None:
             middle_channels = in_channels
-
-        net = list()
-
+        net = []
         if prep_conv:
             net += [
                 nn.ReflectionPad2d(1),
@@ -346,18 +295,15 @@ class DownBlock(nn.Module):
                     kernel_size=3,
                     padding=0,
                     stride=1,
-                    bias=True if norm is None else False,
+                    bias=norm is None,
                 ),
             ]
 
             if norm is not None:
                 net += [norm(middle_channels, affine=True)]
-
             net += [nn.LeakyReLU(0.2, True)]
-
             if use_dropout:
                 net += [nn.Dropout2d(dropout_prob, False)]
-
         net += [
             nn.ReflectionPad2d(1),
             nn.Conv2d(
@@ -366,18 +312,15 @@ class DownBlock(nn.Module):
                 kernel_size=4,
                 padding=0,
                 stride=2,
-                bias=True if norm is None else False,
+                bias=norm is None,
             ),
         ]
 
         if norm is not None:
             net += [norm(out_channels, affine=True)]
-
         net += [nn.LeakyReLU(0.2, True)]
-
         if use_dropout:
             net += [nn.Dropout2d(dropout_prob, False)]
-
         self.net = nn.Sequential(*net)
 
     def forward(self, x):
@@ -408,25 +351,19 @@ class Unet3d(nn.Module):
         :param outermost_linear: Whether the output layer should be a linear layer or a nonlinear one.
         """
         super().__init__()
-
         assert num_down > 0, "Need at least one downsampling layer in UNet3d."
-
-        # Define the in block
         self.in_layer = [Conv3dSame(in_channels, nf0, kernel_size=3, bias=False)]
-
         if norm is not None:
             self.in_layer += [norm(nf0, affine=True)]
-
         self.in_layer += [nn.LeakyReLU(0.2, True)]
         self.in_layer = nn.Sequential(*self.in_layer)
-
-        # Define the center UNet block. The feature map has height and width 1 --> no batchnorm.
         self.unet_block = UnetSkipConnectionBlock3d(
             int(min(2 ** (num_down - 1) * nf0, max_channels)),
             int(min(2 ** (num_down - 1) * nf0, max_channels)),
             norm=None,
         )
-        for i in list(range(0, num_down - 1))[::-1]:
+
+        for i in list(range(num_down - 1))[::-1]:
             self.unet_block = UnetSkipConnectionBlock3d(
                 int(min(2 ** i * nf0, max_channels)),
                 int(min(2 ** (i + 1) * nf0, max_channels)),
@@ -434,8 +371,6 @@ class Unet3d(nn.Module):
                 norm=norm,
             )
 
-        # Define the out layer. Each unet block concatenates its inputs with its outputs - so the output layer
-        # automatically receives the output of the in_layer and the output of the last unet layer.
         self.out_layer = [Conv3dSame(2 * nf0, out_channels, kernel_size=3, bias=outermost_linear)]
 
         if not outermost_linear:
@@ -572,9 +507,8 @@ class Unet(nn.Module):
         assert num_down > 0, "Need at least one downsampling layer in UNet."
 
         # Define the in block
-        self.in_layer = [
-            Conv2dSame(in_channels, nf0, kernel_size=3, bias=True if norm is None else False)
-        ]
+        self.in_layer = [Conv2dSame(in_channels, nf0, kernel_size=3, bias=norm is None)]
+
         if norm is not None:
             self.in_layer += [norm(nf0, affine=True)]
         self.in_layer += [nn.LeakyReLU(0.2, True)]
@@ -593,7 +527,7 @@ class Unet(nn.Module):
             upsampling_mode=upsampling_mode,
         )
 
-        for i in list(range(0, num_down - 1))[::-1]:
+        for i in list(range(num_down - 1))[::-1]:
             self.unet_block = UnetSkipConnectionBlock(
                 min(2 ** i * nf0, max_channels),
                 min(2 ** (i + 1) * nf0, max_channels),
@@ -668,7 +602,7 @@ class DownsamplingNet(nn.Module):
         if not len(per_layer_out_ch):
             self.downs = Identity()
         else:
-            self.downs = list()
+            self.downs = []
             self.downs.append(
                 DownBlock(
                     in_channels,
@@ -679,7 +613,7 @@ class DownsamplingNet(nn.Module):
                     norm=norm,
                 )
             )
-            for i in range(0, len(per_layer_out_ch) - 1):
+            for i in range(len(per_layer_out_ch) - 1):
                 if last_layer_one and (i == len(per_layer_out_ch) - 2):
                     norm = None
                 self.downs.append(
@@ -723,11 +657,10 @@ class UpsamplingNet(nn.Module):
         :param norm: Which norm to use. Defaults to BatchNorm.
         """
         super().__init__()
-
         if not len(per_layer_out_ch):
             self.ups = Identity()
         else:
-            self.ups = list()
+            self.ups = []
             self.ups.append(
                 UpBlock(
                     in_channels,
@@ -738,17 +671,19 @@ class UpsamplingNet(nn.Module):
                     upsampling_mode=upsampling_mode,
                 )
             )
-            for i in range(0, len(per_layer_out_ch) - 1):
-                self.ups.append(
-                    UpBlock(
-                        per_layer_out_ch[i],
-                        per_layer_out_ch[i + 1],
-                        use_dropout=use_dropout,
-                        dropout_prob=dropout_prob,
-                        norm=norm,
-                        upsampling_mode=upsampling_mode,
-                    )
+
+            self.ups.extend(
+                UpBlock(
+                    per_layer_out_ch[i],
+                    per_layer_out_ch[i + 1],
+                    use_dropout=use_dropout,
+                    dropout_prob=dropout_prob,
+                    norm=norm,
+                    upsampling_mode=upsampling_mode,
                 )
+                for i in range(len(per_layer_out_ch) - 1)
+            )
+
             self.ups = nn.Sequential(*self.ups)
 
     def forward(self, input):

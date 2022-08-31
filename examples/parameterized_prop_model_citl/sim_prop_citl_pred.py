@@ -17,7 +17,7 @@ from mask_designer.simulated_prop import simulated_prop
 
 from mask_designer.utils import (
     angularize_phase_mask,
-    build_field,
+    extend_to_field,
     load_phase_mask,
     pad_image_to_shape,
     show_fields,
@@ -48,7 +48,7 @@ def main():  # TODO buggy
         None, None, :, :
     ]  # TODO padding really needed? Done in citl_pred as well, we'll see
 
-    holoeye_field = build_field(angularize_phase_mask(holoeye_phase_mask))
+    holoeye_field = extend_to_field(angularize_phase_mask(holoeye_phase_mask))
     unpacked_field = holoeye_field[0, 0, :, :]
 
     # Simulate the propagation in the lens setting and show the results

@@ -25,10 +25,6 @@ import numpy as np
 from slm_controller.hardware import SLMParam
 import torch
 import torch.nn as nn
-from slm_controller import slm
-from mask_designer import camera
-from mask_designer.temp.capture import capture
-from mask_designer.hardware import CamParam, cam_devices
 from slm_controller.hardware import SLMParam, slm_devices
 
 
@@ -48,20 +44,23 @@ from mask_designer.neural_holography.calibration_module import Calibration
 from mask_designer.experimental_setup import (
     Params,
     params,
-    cam_device,
     slm_device,
 )
 
-import platform
+import matplotlib.pyplot as plt
+import datetime
+from PIL import Image
+
 
 from mask_designer.utils import (
     angularize_phase_mask,
-    build_field,
+    extend_to_field,
     quantize_phase_mask,
     round_phase_mask_to_uint8,
 )
 
-from mask_designer.transform_fields import transform_from_neural_holography_setting
+# from mask_designer.transform_fields import
+# transform_from_neural_holography_setting # TODO Circular import!
 
 # my_os = platform.system()
 # if my_os == "Windows":
@@ -479,13 +478,13 @@ class PhysicalProp(nn.Module):
         #     self.alc = None
 
         # 4. Calibrate hardwares using homography
-        calib_ptrn_path = os.path.join(pattern_path, f'{("red", "green", "blue")[channel]}.png')
+        calib_pattern_path = os.path.join(pattern_path, f'{("red", "green", "blue")[channel]}.png')
         space_btw_circs = [
             int(roi / (num_circs - 1)) for roi, num_circs in zip(roi_res, num_circles)
         ]
 
         self.calibrate(
-            calib_ptrn_path,
+            calib_pattern_path,
             num_circles,
             space_btw_circs,
             range_row=range_row,
@@ -612,16 +611,16 @@ class PhysicalProp(nn.Module):
 
     def _transform_phase_mask(self, phase_mask):
         # TODO where should I switch the hardware setting?
-        field = build_field(angularize_phase_mask(phase_mask))[None, None, :, :]
+        field = extend_to_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
         prop_dist = params[Params.PROPAGATION_DISTANCE]
         wavelength = params[Params.WAVELENGTH]
         pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
         slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
-        # from mask_designer.transform_fields import (  # TODO move up!!
-        #     transform_from_neural_holography_setting,
-        # )
+        from mask_designer.transform_fields import (  # TODO move up!!
+            transform_from_neural_holography_setting,
+        )
 
         # Transform the results to the hardware setting using a lens
         field = transform_from_neural_holography_setting(
@@ -630,21 +629,9 @@ class PhysicalProp(nn.Module):
 
         return quantize_phase_mask(field.angle())
 
-    def _imshow(self, slm, phase_mask):
-        import datetime
-
-        print(datetime.datetime.now().time(), "Start imshow")
-
-        phase_mask = self._transform_phase_mask(phase_mask)
-        slm.imshow(phase_mask)
-
-        print(datetime.datetime.now().time(), "End imshow")
-
-    def _capture(
+    def _capture_subprocess(
         self, cam, slm_settle_time, num_grab_images, resize, captures_path,
     ):
-        import datetime
-
         print(datetime.datetime.now().time(), "Start settle")
         time.sleep(slm_settle_time)
         print(datetime.datetime.now().time(), "End settle, start capture")
@@ -663,7 +650,9 @@ class PhysicalProp(nn.Module):
     def _capture_and_average_intensities(
         self, num_grab_images, resize, phase_mask, calibration=False
     ):
-        import datetime
+        # _, ax = plt.subplots() # TODO remove
+        # ax.imshow(phase_mask, cmap="gray")
+        # plt.show()
 
         captures_path = Path("citl/captures.pkl")
 
@@ -671,7 +660,7 @@ class PhysicalProp(nn.Module):
             captures_path.unlink()
 
         cam_process = Process(
-            target=self._capture,
+            target=self._capture_subprocess,
             args=[self.camera, self.slm_settle_time, num_grab_images, resize, captures_path,],
         )
 
@@ -682,22 +671,19 @@ class PhysicalProp(nn.Module):
         if not calibration:
             phase_mask = self._transform_phase_mask(phase_mask)
 
-            # ----------------------------------------------------------------------------------------------
             # Plot only
-            field = build_field(angularize_phase_mask(phase_mask))[None, None, :, :]
+            field = extend_to_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
-            from mask_designer.simulated_prop import simulated_prop
+            from mask_designer.simulated_prop import simulated_prop  # TODO move up!!
             from mask_designer.propagation import holoeye_fraunhofer
-            import matplotlib.pyplot as plt
 
             propped_field = simulated_prop(field, holoeye_fraunhofer)
 
             fig, ax = plt.subplots()
             ax.imshow(propped_field.abs(), cmap="gray")
             name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-            plt.savefig(f"citl/snapshots/img_{name}.png")
+            plt.savefig(f"citl/snapshots/sim_{name}.png")
             plt.close(fig)
-            # ----------------------------------------------------------------------------------------------
 
         self.slm.imshow(phase_mask)
 
@@ -719,16 +705,8 @@ class PhysicalProp(nn.Module):
 
         img = utils.burst_img_processor(captures)
 
-        from PIL import Image
-
         img_file = Image.fromarray(img)
         name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-        img_file.save(f"citl/snapshots/img_{name}.png")
+        img_file.save(f"citl/snapshots/phy_{name}.png")
 
         return img
-
-    # def disconnect(self):
-    #     self.camera.disconnect()
-    #     self.slm.disconnect()
-    #     if self.alc is not None:
-    #         self.alc.turnOffAll()

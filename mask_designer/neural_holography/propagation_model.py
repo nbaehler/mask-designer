@@ -197,11 +197,11 @@ class SourceAmplitude(nn.Module):
         return source_amp
 
     def create_gaussian(self, shape, idx):
-        # create sampling grid if needed
         if self.x_dim is None or self.y_dim is None:
             self.x_dim = torch.linspace(
                 -(shape[-1] - 1) / 2, (shape[-1] - 1) / 2, shape[-1], device=self.dc_term.device,
             )
+
             self.y_dim = torch.linspace(
                 -(shape[-2] - 1) / 2, (shape[-2] - 1) / 2, shape[-2], device=self.dc_term.device,
             )
@@ -212,19 +212,15 @@ class SourceAmplitude(nn.Module):
         if self.y_dim.device != self.sigmas.device:
             self.y_dim.to(self.sigmas.device).detach()
             self.y_dim.requires_grad = False
-
-        # offset grid by coordinate and compute x and y gaussian components
         x_gaussian = torch.exp(
             -0.5 * torch.pow(torch.div(self.x_dim - self.x_s[idx], self.sigmas[idx]), 2)
         )
+
         y_gaussian = torch.exp(
             -0.5 * torch.pow(torch.div(self.y_dim - self.y_s[idx], self.sigmas[idx]), 2)
         )
 
-        # outer product with amplitude scaling
-        gaussian = torch.ger(self.amplitudes[idx] * y_gaussian, x_gaussian)
-
-        return gaussian
+        return torch.ger(self.amplitudes[idx] * y_gaussian, x_gaussian)
 
 
 class ModelPropagate(nn.Module):
@@ -407,7 +403,6 @@ class ModelPropagate(nn.Module):
             self.dev = torch.device("cpu")
 
     def forward(self, phases, skip_lut=False, skip_tm=False):
-
         # Section 5.1.3. Modeling Phase Nonlinearity
         if self.process_phase is not None and not skip_lut:
             if self.latent_code is not None:

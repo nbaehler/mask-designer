@@ -180,26 +180,6 @@ def stochastic_gradient_descent(
     # run the iterative algorithm
     for k in range(num_iters):
         optimizer.zero_grad()
-        # forward propagation from the SLM plane to the target plane
-        real, imag = utils.polar_to_rect(slm_amp, slm_phase)
-        slm_field = torch.complex(real, imag)
-
-        recon_field = utils.propagate_field(
-            slm_field,
-            propagator,
-            prop_dist,
-            wavelength,
-            feature_size,
-            prop_model,
-            dtype,
-            precomputed_H,
-        )
-
-        # get amplitude
-        recon_amp = recon_field.abs()
-
-        # crop roi
-        recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
 
         # camera-in-the-loop technique
         if citl:
@@ -207,9 +187,32 @@ def stochastic_gradient_descent(
 
             # use the gradient of proxy, replacing the amplitudes
             # captured_amp is assumed that its size already matches that of recon_amp
-            # out_amp = recon_amp + (captured_amp - recon_amp).detach()  # TODO aka captured_amp
+            # out_amp = (
+            #     recon_amp + (captured_amp - recon_amp).detach()
+            # )  # TODO aka captured_amp
             out_amp = captured_amp.detach()
         else:
+            # forward propagation from the SLM plane to the target plane
+            real, imag = utils.polar_to_rect(slm_amp, slm_phase)
+            slm_field = torch.complex(real, imag)
+
+            recon_field = utils.propagate_field(
+                slm_field,
+                propagator,
+                prop_dist,
+                wavelength,
+                feature_size,
+                prop_model,
+                dtype,
+                precomputed_H,
+            )
+
+            # get amplitude
+            recon_amp = recon_field.abs()
+
+            # crop roi
+            recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
+
             out_amp = recon_amp
 
         # calculate loss and backprop
@@ -222,14 +225,7 @@ def stochastic_gradient_descent(
         with torch.no_grad():
             if k % 50 == 0:
                 utils.write_sgd_summary(
-                    slm_phase,
-                    out_amp,
-                    target_amp,
-                    k,
-                    writer=writer,
-                    path=phase_path,
-                    s=s,
-                    prefix="test",
+                    out_amp, target_amp, k, writer=writer, s=s, prefix="test",
                 )
 
     # print(torch.max(slm_phase), torch.min(slm_phase)) # TODO not in [-pi, pi]??

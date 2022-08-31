@@ -7,6 +7,35 @@ from slm_controller.hardware import SLMDevices, slm_devices, SLMParam
 from enum import Enum
 
 
+# Parameters relevant for the experiments
+class Params(Enum):
+    WAVELENGTH = "wavelength"
+    PROPAGATION_DISTANCE = "prop_distance"
+    SLM_SETTLE_TIME = "slm_settle_time"
+    SLM_SHOW_TIME = "slm_show_time"
+    ROI = "roi"
+
+    @staticmethod
+    def values():
+        return [param.value for param in Params]
+
+
+# Actual values of those parameters
+params = {
+    Params.WAVELENGTH: 532e-9,
+    Params.PROPAGATION_DISTANCE: 0.315,
+    Params.SLM_SETTLE_TIME: 0.25,
+    Params.SLM_SHOW_TIME: 9,
+    Params.ROI: (320, 560),
+}
+
+# Choose a slm device
+slm_device = SLMDevices.HOLOEYE_LC_2012.value
+
+# and a camera device that you want to use
+cam_device = CamDevices.IDS.value
+
+
 def circular_amp():  # TODO use circ aperture from our repo
     # TODO check this, from here https://stackoverflow.com/a/70283438
     # TODO remove, computations
@@ -26,35 +55,9 @@ def circular_amp():  # TODO use circ aperture from our repo
     return amp_mask
 
 
-# Parameters relevant for the experiments
-class Params(Enum):
-    WAVELENGTH = "wavelength"
-    PROPAGATION_DISTANCE = "prop_distance"
-    SLM_SETTLE_TIME = "slm_settle_time"
-    SLM_SHOW_TIME = "slm_show_time"
-    ROI = "roi"
+def rectangular_amp():
+    return torch.ones(slm_devices[slm_device][SLMParam.SLM_SHAPE])
 
-    @staticmethod
-    def values():
-        return [param.value for param in Params]
-
-
-# Actual values of those parameters
-params = {
-    Params.WAVELENGTH: 532e-9,
-    Params.PROPAGATION_DISTANCE: 0.305,
-    Params.SLM_SETTLE_TIME: 0.25,
-    Params.SLM_SHOW_TIME: 10,
-    Params.ROI: (320, 560),
-}
-
-# Choose a slm device
-slm_device = SLMDevices.HOLOEYE_LC_2012.value  # TODO does this structure still make sense?
-
-# and a camera device that you want to use
-cam_device = CamDevices.IDS.value
-# cam_device = CamDevices.DUMMY.value
 
 # Chose the shape of the laser beam hitting the SLM
-# amp_mask = torch.ones(slm_devices[slm_device][SLMParam.SLM_SHAPE])
 amp_mask = circular_amp()

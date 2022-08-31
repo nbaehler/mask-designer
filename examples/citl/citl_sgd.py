@@ -26,25 +26,26 @@ from mask_designer.experimental_setup import (
     Params,
     params,
     slm_device,
-    cam_device,
 )
-from mask_designer.propagation import (
-    holoeye_fraunhofer,
-    neural_holography_asm,
-)
+from mask_designer.propagation import holoeye_fraunhofer
 
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 from mask_designer.utils import (
-    build_field,
+    extend_to_field,
     quantize_phase_mask,
     random_init_phase_mask,
-    show_fields,
 )
 from mask_designer.wrapper import ImageLoader, SGD, PhysicalProp
 
+import matplotlib.pyplot as plt
+import datetime
+from multiprocessing.managers import BaseManager
+import os
+import glob
+
 
 @click.command()
-@click.option("--iterations", type=int, default=10, help="Number of iterations to run.")
+@click.option("--iterations", type=int, default=50, help="Number of iterations to run.")
 @click.option(
     "--slm_show_time",  # TODO what makes sense to keep as arguments here and what should
     # be moved to the experimental setup? Maybe we could just store the default values there ...
@@ -66,8 +67,18 @@ def main(iterations, slm_show_time, slm_settle_time):
     roi = params[Params.ROI]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
+    # warm_start_iterations = 500 # TODO use those
+    # citl_iterations = iterations
+
+    warm_start_iterations = 50
+    citl_iterations = 5
+
     # Use GPU if detected in system
     device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    files = glob.glob("citl/snapshots/*.png")
+    for f in files:
+        os.remove(f)
 
     # Initialize image loader
     image_loader = ImageLoader(
@@ -93,54 +104,53 @@ def main(iterations, slm_show_time, slm_settle_time):
     init_phase = random_init_phase_mask(slm_shape, device)
 
     # Run Stochastic Gradient Descent based method
-    sgd = SGD(prop_dist, wavelength, pixel_pitch, 50, roi, device=device)
+    sgd = SGD(prop_dist, wavelength, pixel_pitch, warm_start_iterations, roi, device=device)
     angles = sgd(target_amp, init_phase).cpu().detach()
 
     # Extend the computed angles, aka the phase values, to be a field which is a complex tensor
     # again
-    warm_start_field = build_field(angles)
+    warm_start_field = extend_to_field(angles)
 
-    unpacked_field = warm_start_field[0, 0, :, :]
-    propped_field = simulated_prop(
-        warm_start_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
+    # Transform the results to the hardware setting using a lens
+    final_phase_sgd = transform_from_neural_holography_setting(
+        warm_start_field, prop_dist, wavelength, slm_shape, pixel_pitch
     )
-    show_fields(unpacked_field, propped_field, "Neural Holography GS without lens")
 
-    warm_start_field = warm_start_field.angle().to(device)
+    propped_field = simulated_prop(final_phase_sgd, holoeye_fraunhofer)
 
-    import os
-    import glob
+    fig, ax = plt.subplots()
+    ax.imshow(propped_field.abs(), cmap="gray")
+    name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+    plt.savefig(f"citl/snapshots/sim_{name}_warm_start.png")
+    plt.close(fig)
 
-    files = glob.glob("citl/snapshots/*.png")
-    for f in files:
-        os.remove(f)
-
-    # --------------------------------------------------------------------------
-    # TODO Fix one approach for the multithreading
-
-    from multiprocessing.managers import BaseManager
+    # Quantize the fields angles, aka phase values, to a bit values
+    phase_out = quantize_phase_mask(final_phase_sgd.angle())
 
     BaseManager.register("HoloeyeSLM", slm.HoloeyeSLM)  # TODO shouldn't to be shared
     BaseManager.register("IDSCamera", camera.IDSCamera)
-    # BaseManager.register("DummyCamera", camera.DummyCamera)
 
     manager = BaseManager()
     manager.start()
 
     s = manager.HoloeyeSLM()
-    # s = slm.create(slm_device)
-    # s = None
-
     s.set_show_time(slm_show_time)
 
     cam = manager.IDSCamera()
-    # cam = manager.DummyCamera()
-    # cam = camera.create(cam_device)
-    # cam = None
+    cam.set_exposure_time(900)
 
-    cam.set_exposure_time(1200)
+    # Display
+    s.imshow(phase_out)
 
-    # --------------------------------------------------------------------------
+    final_res = cam.acquire_single_image()
+
+    _, ax = plt.subplots()
+    ax.imshow(final_res, cmap="gray")
+    name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+    plt.savefig(f"citl/snapshots/phy_{name}_warm_start.png")
+    plt.close()
+
+    warm_start_field = warm_start_field.angle().to(device)
 
     camera_prop = PhysicalProp(
         s,
@@ -160,7 +170,7 @@ def main(iterations, slm_show_time, slm_settle_time):
         prop_dist,
         wavelength,
         pixel_pitch,
-        iterations,
+        citl_iterations,
         roi,
         device=device,
         citl=True,
@@ -170,16 +180,20 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     # Extend the computed angles, aka the phase values, to be a field which is a complex tensor
     # again
-    extended = build_field(angles)
+    extended = extend_to_field(angles)
 
     # Transform the results to the hardware setting using a lens
     final_phase_sgd = transform_from_neural_holography_setting(
         extended, prop_dist, wavelength, slm_shape, pixel_pitch
     )
 
-    unpacked_field = final_phase_sgd[0, 0, :, :]
     propped_field = simulated_prop(final_phase_sgd, holoeye_fraunhofer)
-    show_fields(unpacked_field, propped_field, "Neural Holography GS without lens")
+
+    fig, ax = plt.subplots()
+    ax.imshow(propped_field.abs(), cmap="gray")
+    name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+    plt.savefig(f"citl/snapshots/sim_{name}_final.png")
+    plt.close(fig)
 
     # Quantize the fields angles, aka phase values, to a bit values
     phase_out = quantize_phase_mask(final_phase_sgd.angle())
@@ -189,11 +203,11 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     final_res = cam.acquire_single_image()
 
-    import matplotlib.pyplot as plt
-
     _, ax = plt.subplots()
     ax.imshow(final_res, cmap="gray")
-    plt.show()
+    name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+    plt.savefig(f"citl/snapshots/phy_{name}_final.png")
+    plt.close()
 
 
 if __name__ == "__main__":

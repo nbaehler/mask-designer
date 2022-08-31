@@ -84,10 +84,10 @@ def main():
     )
     show_fields(unpacked_field, propped_field, "Holoeye with Angular Spectrum NP")
 
-    # propped_field = simulated_prop(
-    #     holoeye_field, waveprop_fft_di, prop_dist, wavelength, pixel_pitch,  # TODO not working
-    # )
-    # show_plot(unpacked_field, propped_field, "Holoeye with FFT Direct")
+    propped_field = simulated_prop(
+        holoeye_field, waveprop_fft_di, prop_dist, wavelength, pixel_pitch,  # TODO not working
+    )
+    show_fields(unpacked_field, propped_field, "Holoeye with FFT Direct")
 
     propped_field = simulated_prop(
         holoeye_field, waveprop_direct_integration, prop_dist, wavelength, pixel_pitch,
@@ -103,23 +103,23 @@ def main():
     )
     show_fields(unpacked_field, propped_field, "Holoeye with Fresnel One Step")
 
-    # propped_field = simulated_prop(
-    #     holoeye_field,
-    #     waveprop_fresnel_two_step,
-    #     prop_dist,
-    #     wavelength,
-    #     pixel_pitch,  # TODO not working
-    # )
-    # show_plot(unpacked_field, propped_field, "Holoeye with Fresnel Two Step")
+    propped_field = simulated_prop(
+        holoeye_field,
+        waveprop_fresnel_two_step,
+        prop_dist,
+        wavelength,
+        pixel_pitch,  # TODO not working
+    )
+    show_fields(unpacked_field, propped_field, "Holoeye with Fresnel Two Step")
 
-    # propped_field = simulated_prop(
-    #     holoeye_field,
-    #     waveprop_fresnel_multi_step,
-    #     prop_dist,
-    #     wavelength,
-    #     pixel_pitch,  # TODO not working
-    # )
-    # show_plot(unpacked_field, propped_field, "Holoeye with Fresnel Multi Step")
+    propped_field = simulated_prop(
+        holoeye_field,
+        waveprop_fresnel_multi_step,
+        prop_dist,
+        wavelength,
+        pixel_pitch,  # TODO not working
+    )
+    show_fields(unpacked_field, propped_field, "Holoeye with Fresnel Multi Step")
 
     propped_field = (
         simulated_prop(
@@ -137,19 +137,19 @@ def main():
     )
     show_fields(unpacked_field, propped_field, "Holoeye with Shifted Fresnel")
 
-    # propped_field = (
-    #     simulated_prop(
-    #         holoeye_field,
-    #         waveprop_spherical,
-    #         prop_dist,
-    #         wavelength,
-    #         pixel_pitch,  # TODO not working
-    #         device,
-    #     )
-    #     .cpu()
-    #     .detach()
-    # )
-    # show_plot(unpacked_field, propped_field, "Holoeye with Spherical")
+    propped_field = (
+        simulated_prop(
+            holoeye_field,
+            waveprop_spherical,
+            prop_dist,
+            wavelength,
+            pixel_pitch,  # TODO not working
+            device,
+        )
+        .cpu()
+        .detach()
+    )
+    show_fields(unpacked_field, propped_field, "Holoeye with Spherical")
 
     # ==========================================================================
 

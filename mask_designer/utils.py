@@ -175,10 +175,10 @@ def load_field(path="images/holoeye_phase_mask/holoeye_logo.png"):
     """
     phase_mask = torch.from_numpy(load_phase_mask(path))
 
-    return build_field(angularize_phase_mask(phase_mask))[None, None, :, :]
+    return extend_to_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
 
-def build_field(angles):  # TODO find better name
+def extend_to_field(angles):
     """
     Extend angles into a field.
     """
@@ -328,7 +328,7 @@ def normalize_mask(mask):
 
 #     return round_to_uint8(new_phase_mask)
 
-epsilon = 1e-6  # TODO how to handle the wrap around at -pi/pi?
+# epsilon = 1e-6  # TODO how to handle the wrap around at -pi/pi?
 
 
 def angularize_phase_mask(phase_mask):  # TODO better name, doc

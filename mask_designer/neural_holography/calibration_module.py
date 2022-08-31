@@ -18,6 +18,7 @@ Refer to the LICENSE file for more information.
 
 import numpy as np
 import matplotlib.pyplot as plt
+import datetime
 import cv2
 
 
@@ -132,7 +133,9 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
             ax4.set_title("Warped image with marked centers")
             ax4.imshow(captured_img_warp, cmap="gray")
 
-        plt.show()
+        name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+        plt.savefig(f"citl/snapshots/sim_{name}_calib.png")
+        plt.close()
 
     return found_dots, H
 

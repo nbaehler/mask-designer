@@ -187,19 +187,13 @@ class ImageLoader:
 
     def augment_vert(self, image=None, flip=False):
         if image is None:
-            return (True, False)  # return possible augmentation values
-
-        if flip:
-            return image[..., ::-1, :]
-        return image
+            return True, False
+        return image[..., ::-1, :] if flip else image
 
     def augment_horz(self, image=None, flip=False):
         if image is None:
-            return (True, False)  # return possible augmentation values
-
-        if flip:
-            return image[..., ::-1]
-        return image
+            return True, False
+        return image[..., ::-1] if flip else image
 
 
 def get_image_filenames(dir):

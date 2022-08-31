@@ -227,8 +227,8 @@ def pad_image(field, target_shape, pytorch=True, stacked_complex=True, padval=0,
     if pytorch:
         pad_axes = [
             int(p)  # convert from np.int64
-            for tple in zip(pad_front[::-1], pad_end[::-1])
-            for p in tple
+            for tuple in zip(pad_front[::-1], pad_end[::-1])
+            for p in tuple
         ]
         return (
             pad_stacked_complex(field, pad_axes, mode=mode, padval=padval)
@@ -383,9 +383,7 @@ def propagate_field(
     return output_field
 
 
-def write_sgd_summary(
-    slm_phase, out_amp, target_amp, k, writer=None, path=None, s=0.0, prefix="test"
-):
+def write_sgd_summary(out_amp, target_amp, k, writer=None, s=0.0, prefix="test"):
     """tensorboard summary for SGD
 
     :param slm_phase: Use it if you want to save intermediate phases during optimization.
@@ -429,10 +427,9 @@ def write_sgd_summary(
         writer.add_scalar(f"{prefix}_scalar", s, k)
 
 
-def write_gs_summary(slm_field, recon_field, target_amp, k, writer, roi=(880, 1600), prefix="test"):
+def write_gs_summary(recon_field, target_amp, k, writer, roi=(880, 1600), prefix="test"):
     """tensorboard summary for GS"""
-    slm_phase = slm_field.angle()
-    recon_amp, recon_phase = recon_field.abs(), recon_field.angle()
+    recon_amp = recon_field.abs()
     loss = nn.MSELoss().to(recon_amp.device)
 
     recon_amp = crop_image(recon_amp, target_shape=roi, stacked_complex=False)

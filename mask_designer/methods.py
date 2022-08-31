@@ -3,7 +3,7 @@
 
 from mask_designer.wrapper import DPAC, GS, SGD
 from mask_designer.transform_fields import transform_from_neural_holography_setting
-from mask_designer.utils import quantize_phase_mask, build_field
+from mask_designer.utils import quantize_phase_mask, extend_to_field
 
 
 def run_dpac(target_amp, slm_shape, prop_distance, wavelength, pixel_pitch, device):
@@ -36,7 +36,7 @@ def run_dpac(target_amp, slm_shape, prop_distance, wavelength, pixel_pitch, devi
     angles = angles.cpu().detach()
 
     # Extend the computed angles, aka the phase values, to be a field which is a complex tensor again
-    extended = build_field(angles)
+    extended = extend_to_field(angles)
 
     # Transform the results to the hardware setting using a lens
     final_phase_dpac = transform_from_neural_holography_setting(
@@ -82,7 +82,7 @@ def run_gs(
     angles = gs(target_amp, init_phase).cpu().detach()
 
     # Extend the computed angles, aka the phase values, to be a field which is a complex tensor again
-    extended = build_field(angles)
+    extended = extend_to_field(angles)
 
     # Transform the results to the hardware setting using a lens
     final_phase_gs = transform_from_neural_holography_setting(
@@ -138,7 +138,7 @@ def run_sgd(
     angles = sgd(target_amp, init_phase).cpu().detach()
 
     # Extend the computed angles, aka the phase values, to be a field which is a complex tensor again
-    extended = build_field(angles)
+    extended = extend_to_field(angles)
 
     # Transform the results to the hardware setting using a lens
     final_phase_sgd = transform_from_neural_holography_setting(

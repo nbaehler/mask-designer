@@ -13,7 +13,7 @@ sys.path.append(CODE_DIR)
 
 import click
 from mask_designer.simulated_prop import simulated_prop
-from mask_designer.utils import build_field, show_fields, random_init_phase_mask
+from mask_designer.utils import extend_to_field, show_fields, random_init_phase_mask
 from mask_designer.propagation import (
     holoeye_fraunhofer,
     neural_holography_asm,
@@ -82,7 +82,7 @@ def main(iterations):
     angles = sgd(target_amp, init_phase).cpu().detach()
 
     # Extend the computed angles, aka the phase values, to be a field which is a complex tensor again
-    field = build_field(angles)
+    field = extend_to_field(angles)
 
     # Transform the results to the hardware setting using a lens
     holoeye_field = transform_from_neural_holography_setting(

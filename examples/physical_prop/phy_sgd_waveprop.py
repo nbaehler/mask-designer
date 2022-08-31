@@ -27,7 +27,11 @@ from mask_designer.experimental_setup import (
 
 from mask_designer.propagation import propagator_waveprop_angular_spectrum
 from mask_designer.transform_fields import transform_from_neural_holography_setting
-from mask_designer.utils import quantize_phase_mask, build_field, random_init_phase_mask
+from mask_designer.utils import (
+    quantize_phase_mask,
+    extend_to_field,
+    random_init_phase_mask,
+)
 from mask_designer.wrapper import ImageLoader, SGD
 
 
@@ -81,7 +85,7 @@ def main(iterations):
 
     # Extend the computed angles, aka the phase values, to be a field which is a complex tensor
     # again
-    extended = build_field(angles)
+    extended = extend_to_field(angles)
 
     # Transform the results to the hardware setting using a lens
     final_phase_sgd = transform_from_neural_holography_setting(

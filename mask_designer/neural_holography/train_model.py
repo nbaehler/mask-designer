@@ -29,13 +29,9 @@ $ python train_model.py --channel=1 --experiment=test
 import os
 import cv2
 
-# import sys
-
-# import time
 import torch
 import numpy as np
 
-# import configargparse
 import skimage.util
 import torch.nn as nn
 import torch.optim as optim

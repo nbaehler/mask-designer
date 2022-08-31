@@ -18,7 +18,7 @@ from slm_controller.hardware import (
 from mask_designer.experimental_setup import Params, params, slm_device
 from mask_designer.utils import (
     angularize_phase_mask,
-    build_field,
+    extend_to_field,
     quantize_phase_mask,
 )
 
@@ -28,7 +28,7 @@ def main():
     calib_phase = np.array(calib_phase_img)
     calib_phase = np.mean(calib_phase, axis=2)
 
-    field = build_field(
+    field = extend_to_field(
         angularize_phase_mask(calib_phase)
     )  # TODO angularize and quantize should be inverses of one another, test that!
     # Check the conversions and division you do!
@@ -38,7 +38,9 @@ def main():
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
-    from mask_designer.transform_fields import transform_to_neural_holography_setting
+    from mask_designer.transform_fields import (
+        transform_to_neural_holography_setting,
+    )  # TODO move up!!
 
     # Transform the results to the hardware setting using a lens
     field = transform_to_neural_holography_setting(

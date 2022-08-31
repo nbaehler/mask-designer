@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 from mask_designer.wrapper import fftshift, ifftshift, polar_to_rect
-from mask_designer.utils import build_field
+from mask_designer.utils import extend_to_field
 
 
 def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
@@ -132,7 +132,7 @@ def transform_to_neural_holography_setting(
         )
     )
 
-    return build_field(field.angle())
+    return extend_to_field(field.angle())
 
 
 def transform_from_neural_holography_setting(
@@ -177,4 +177,4 @@ def transform_from_neural_holography_setting(
         norm="ortho",
     )
 
-    return build_field(field.angle())
+    return extend_to_field(field.angle())

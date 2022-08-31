@@ -1,5 +1,6 @@
 from mask_designer.propagation import holoeye_fraunhofer
 
+
 default_prop_method = holoeye_fraunhofer
 
 
@@ -8,8 +9,6 @@ def simulated_prop(field, propagation_method=default_prop_method, *args):
 
 
 # def plot_sim_result(propped_field):  # TODO unused
-#     from matplotlib import pyplot as plt
-
 #     # Plot
 #     _, ax = plt.subplots()
 #     ax.imshow(propped_field.abs(), cmap="gray")
