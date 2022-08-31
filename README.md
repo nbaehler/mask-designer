@@ -44,11 +44,13 @@ different physical setups).
 If you wish to learn more about the evolution of our experimental setup, please
 refer to the `documentation/DOCUMENTATION.md`.
 
+<!-- TODO ReadTheDocs -->
+
 Below is a schematic of how `mask-designer` would typically interact with other
 components.
 
 ![Schematic representation of the interactions between different
-components](documentation/images/structure.svg)
+components](docs/source/images/structure.svg)
 
 The interactions marked with _CITL_ are only necessary for the CITL approach.
 You can find animated gif-files showing those interactions in more details in
@@ -172,7 +174,7 @@ by Holoeye in the manual that came with their their [LC 2012
 SLM](https://holoeye.com/lc-2012-spatial-light-modulator/). For more information
 on how we converged to the setup below, please refer to `documentation/DOCUMENTATION.md`.
 
-![Experimental setup](documentation/images/setup.svg)
+![Experimental setup](docs/source/images/setup.svg)
 
 Further, the `mask_designer/experimental_setup.py` allows one to set:
 

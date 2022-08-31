@@ -94,13 +94,13 @@ compute a phase mask that can be set on a SLM such that a given target image is
 appearing on the screen ofter propagation of the light waves. For example, we
 want to get this target amplitude.
 
-| ![Holoeye logo](../images/target_amplitude/holoeye_logo.png) |
-| :----------------------------------------------------------: |
-|             <b>Image Credits - Reference [2]</b>             |
+| ![Holoeye logo](../../images/target_amplitude/holoeye_logo.png) |
+| :-------------------------------------------------------------: |
+|              <b>Image Credits - Reference [2]</b>               |
 
 Any of those algorithms then computes the corresponding phase map.
 
-![Holoeye logo phase](../images/holoeye_phase_mask/holoeye_logo.png)
+![Holoeye logo phase](../../images/holoeye_phase_mask/holoeye_logo.png)
 
 And finally, this phase mask can be sent to a SLM and propagated to the target
 plane where one can observe the resulting image.
@@ -265,6 +265,8 @@ Consider the following diagram.
 ![Lenses diagram](images/lenses_diagram.svg)
 
 Hence, one can derive a formula for $b$.
+
+<!-- TODO does not work in html generated using sphinx -->
 
 $$
 \begin{align}
