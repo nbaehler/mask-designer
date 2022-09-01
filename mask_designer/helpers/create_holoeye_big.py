@@ -1,5 +1,5 @@
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
@@ -8,15 +8,10 @@ sys.path.append(CODE_DIR)
 
 
 import numpy as np
-from PIL import Image
-
-from slm_controller.hardware import (
-    SLMParam,
-    slm_devices,
-)
-
 from mask_designer.experimental_setup import slm_device
 from mask_designer.utils import scale_image_to_shape
+from PIL import Image
+from slm_controller.hardware import SLMParam, slm_devices
 
 
 def main():

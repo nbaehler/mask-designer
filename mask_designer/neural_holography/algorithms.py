@@ -19,13 +19,13 @@ Refer to the LICENSE file for more information.
 
 """
 
+import mask_designer.neural_holography.utils as utils
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
-from mask_designer.neural_holography.propagation_ASM import propagation_ASM
-import mask_designer.neural_holography.utils as utils
 from mask_designer.experimental_setup import amp_mask
+from mask_designer.neural_holography.propagation_ASM import propagation_ASM
+
 
 # 1. GS
 def gerchberg_saxton(

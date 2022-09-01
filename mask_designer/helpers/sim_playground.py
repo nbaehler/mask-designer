@@ -2,8 +2,8 @@
 Simulated propagation using waveprop of the phase mask generated using the holoeye software.
 """
 
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
@@ -11,31 +11,26 @@ CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
 import torch
-from mask_designer.experimental_setup import (
-    Params,
-    params,
-    slm_device,
-)
-from mask_designer.simulated_prop import simulated_prop, show_fields
-
-from mask_designer.utils import load_field
-from mask_designer.propagation import (
+from mask_designer.experimental_setup import Params, params, slm_device
+from mask_designer.simulated_prop import (
     holoeye_fraunhofer,
     neural_holography_asm,
+    plot_fields,
+    simulated_prop,
     waveprop_angular_spectrum,
     waveprop_angular_spectrum_np,
-    waveprop_fft_di,
     waveprop_direct_integration,
+    waveprop_fft_di,
     waveprop_fraunhofer,
+    waveprop_fresnel_conv,
+    waveprop_fresnel_multi_step,
     waveprop_fresnel_one_step,
     waveprop_fresnel_two_step,
-    waveprop_fresnel_multi_step,
-    waveprop_fresnel_conv,
     waveprop_shifted_fresnel,
     waveprop_spherical,
 )
 from mask_designer.transform_fields import transform_to_neural_holography_setting
-
+from mask_designer.utils import load_field
 from slm_controller.hardware import SLMParam, slm_devices
 
 
@@ -59,14 +54,14 @@ def main():
 
     # Simulate the propagation in the lens setting and show the results
     propped_field = simulated_prop(holoeye_field, holoeye_fraunhofer)
-    show_fields(unpacked_field, propped_field, "Holoeye with lens")
+    plot_fields(unpacked_field, propped_field, "Holoeye with lens")
 
     # TODO test those, add all?
     # ==========================================================================
     propped_field = simulated_prop(
         holoeye_field, waveprop_fraunhofer, prop_dist, wavelength, pixel_pitch,
     )
-    show_fields(unpacked_field, propped_field, "Holoeye with Fraunhofer")
+    plot_fields(unpacked_field, propped_field, "Holoeye with Fraunhofer")
 
     propped_field = (
         simulated_prop(
@@ -75,24 +70,24 @@ def main():
         .cpu()
         .detach()
     )
-    show_fields(
+    plot_fields(
         unpacked_field, propped_field, "Holoeye with Angular Spectrum",
     )
 
     propped_field = simulated_prop(
         holoeye_field, waveprop_angular_spectrum_np, prop_dist, wavelength, pixel_pitch,
     )
-    show_fields(unpacked_field, propped_field, "Holoeye with Angular Spectrum NP")
+    plot_fields(unpacked_field, propped_field, "Holoeye with Angular Spectrum NP")
 
     propped_field = simulated_prop(
         holoeye_field, waveprop_fft_di, prop_dist, wavelength, pixel_pitch,  # TODO not working
     )
-    show_fields(unpacked_field, propped_field, "Holoeye with FFT Direct")
+    plot_fields(unpacked_field, propped_field, "Holoeye with FFT Direct")
 
     propped_field = simulated_prop(
         holoeye_field, waveprop_direct_integration, prop_dist, wavelength, pixel_pitch,
     )
-    show_fields(unpacked_field, propped_field, "Holoeye with Direct Integration")
+    plot_fields(unpacked_field, propped_field, "Holoeye with Direct Integration")
 
     propped_field = simulated_prop(
         holoeye_field,
@@ -101,7 +96,7 @@ def main():
         wavelength,
         pixel_pitch,
     )
-    show_fields(unpacked_field, propped_field, "Holoeye with Fresnel One Step")
+    plot_fields(unpacked_field, propped_field, "Holoeye with Fresnel One Step")
 
     propped_field = simulated_prop(
         holoeye_field,
@@ -110,7 +105,7 @@ def main():
         wavelength,
         pixel_pitch,  # TODO not working
     )
-    show_fields(unpacked_field, propped_field, "Holoeye with Fresnel Two Step")
+    plot_fields(unpacked_field, propped_field, "Holoeye with Fresnel Two Step")
 
     propped_field = simulated_prop(
         holoeye_field,
@@ -119,7 +114,7 @@ def main():
         wavelength,
         pixel_pitch,  # TODO not working
     )
-    show_fields(unpacked_field, propped_field, "Holoeye with Fresnel Multi Step")
+    plot_fields(unpacked_field, propped_field, "Holoeye with Fresnel Multi Step")
 
     propped_field = (
         simulated_prop(
@@ -128,14 +123,14 @@ def main():
         .cpu()
         .detach()
     )
-    show_fields(
+    plot_fields(
         unpacked_field, propped_field, "Holoeye with Fresnel Convolution",
     )
 
     propped_field = simulated_prop(
         holoeye_field, waveprop_shifted_fresnel, prop_dist, wavelength, pixel_pitch,
     )
-    show_fields(unpacked_field, propped_field, "Holoeye with Shifted Fresnel")
+    plot_fields(unpacked_field, propped_field, "Holoeye with Shifted Fresnel")
 
     propped_field = (
         simulated_prop(
@@ -149,7 +144,7 @@ def main():
         .cpu()
         .detach()
     )
-    show_fields(unpacked_field, propped_field, "Holoeye with Spherical")
+    plot_fields(unpacked_field, propped_field, "Holoeye with Spherical")
 
     # ==========================================================================
 
@@ -163,7 +158,7 @@ def main():
     propped_field = simulated_prop(
         neural_holography_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
-    show_fields(unpacked_field, propped_field, "Holoeye without lens")
+    plot_fields(unpacked_field, propped_field, "Holoeye without lens")
 
 
 if __name__ == "__main__":

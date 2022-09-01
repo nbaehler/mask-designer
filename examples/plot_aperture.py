@@ -2,24 +2,24 @@
 Plot aperture example.
 """
 
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
 CODE_DIR = abspath(join(THIS_DIR, ".."))
 sys.path.append(CODE_DIR)
 
-import matplotlib.pyplot as plt
 import click
+import matplotlib.pyplot as plt
 from mask_designer.aperture import (
     ApertureOptions,
-    rect_aperture,
-    line_aperture,
-    square_aperture,
     circ_aperture,
+    line_aperture,
+    rect_aperture,
+    square_aperture,
 )
-from slm_controller.hardware import SLMDevices, slm_devices, SLMParam
+from slm_controller.hardware import SLMDevices, SLMParam, slm_devices
 
 
 @click.command()

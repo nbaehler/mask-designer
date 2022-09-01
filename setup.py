@@ -10,7 +10,7 @@ setuptools.setup(
     author_email="nicolas.bahler@epfl.ch",
     description="Package to perform phase retrieval for SLMs",
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     url="https://github.com/nbaehler/mask-designer",
     packages=setuptools.find_packages(),
     classifiers=["Programming Language :: Python :: 3", "Operating System :: OS Independent",],

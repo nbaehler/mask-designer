@@ -2,8 +2,8 @@
 Set aperture example.
 """
 
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
@@ -12,15 +12,14 @@ sys.path.append(CODE_DIR)
 
 import click
 from mask_designer.aperture import (
-    rect_aperture,
-    line_aperture,
-    square_aperture,
-    circ_aperture,
     ApertureOptions,
+    circ_aperture,
+    line_aperture,
+    rect_aperture,
+    square_aperture,
 )
-
+from slm_controller.hardware import SLMDevices, SLMParam, slm_devices
 from slm_controller.slm import create
-from slm_controller.hardware import slm_devices, SLMDevices, SLMParam
 
 
 @click.command()

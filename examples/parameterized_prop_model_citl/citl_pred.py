@@ -18,50 +18,45 @@ All rights reserved.
 
 Refer to the LICENSE file for more information.
 """
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
 CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
-import click
-import imageio
 import os
-import skimage.io
-import torch
-import numpy as np
 from pathlib import Path
 
-
-from slm_controller import slm
-from slm_controller.hardware import (
-    SLMParam,
-    slm_devices,
-)
+import click
+import imageio
+import numpy as np
+import skimage.io
+import torch
 from mask_designer import camera
 from mask_designer.experimental_setup import (
     Params,
+    amp_mask,
+    cam_device,
     params,
     slm_device,
-    cam_device,
-    amp_mask,
 )
 from mask_designer.utils import pad_tensor_to_shape
-
 from mask_designer.wrapper import (
     ModelPropagate,
-    propagation_ASM,
+    PhysicalProp,
+    cond_mkdir,
+    crop_image,
     get_image_filenames,
     make_kernel_gaussian,
-    crop_image,
     polar_to_rect,
     propagate_field,
+    propagation_ASM,
     srgb_lin2gamma,
-    cond_mkdir,
-    PhysicalProp,
 )
+from slm_controller import slm
+from slm_controller.hardware import SLMParam, slm_devices
 
 
 @click.command()

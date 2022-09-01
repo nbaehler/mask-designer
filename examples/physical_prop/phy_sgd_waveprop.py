@@ -3,36 +3,27 @@ Physical propagation of phase masks generated using the SGD algorithm and a
 waveprop propagator.
 """
 
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
 CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
-import torch
 import click
-from slm_controller import slm
-from slm_controller.hardware import (
-    SLMParam,
-    slm_devices,
-)
-
-from mask_designer.experimental_setup import (
-    Params,
-    params,
-    slm_device,
-)
-
-from mask_designer.propagation import propagator_waveprop_angular_spectrum
+import torch
+from mask_designer.experimental_setup import Params, params, slm_device
+from mask_designer.prop_models import propagator_waveprop_angular_spectrum
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 from mask_designer.utils import (
-    quantize_phase_mask,
     extend_to_field,
+    quantize_phase_mask,
     random_init_phase_mask,
 )
-from mask_designer.wrapper import ImageLoader, SGD
+from mask_designer.wrapper import SGD, ImageLoader
+from slm_controller import slm
+from slm_controller.hardware import SLMParam, slm_devices
 
 
 @click.command()

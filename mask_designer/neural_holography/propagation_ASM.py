@@ -20,9 +20,10 @@ Refer to the LICENSE file for more information.
 """
 
 import math
-import torch
-import numpy as np
+
 import mask_designer.neural_holography.utils as utils
+import numpy as np
+import torch
 import torch.fft
 from aotools.functions import zernikeArray
 

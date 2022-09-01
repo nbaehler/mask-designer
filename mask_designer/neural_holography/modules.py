@@ -18,45 +18,34 @@ All rights reserved.
 Refer to the LICENSE file for more information.
 """
 
+import datetime
+import os
+import pickle
+import time
 from multiprocessing import Process
 from pathlib import Path
-import pickle
+
+import mask_designer.neural_holography.utils as utils
+import matplotlib.pyplot as plt
 import numpy as np
-from slm_controller.hardware import SLMParam
+import skimage.io
 import torch
 import torch.nn as nn
-from slm_controller.hardware import SLMParam, slm_devices
-
-
+from mask_designer.experimental_setup import Params, params, slm_device
 from mask_designer.neural_holography.algorithms import (
     gerchberg_saxton,
     stochastic_gradient_descent,
 )
-
-import os
-import time
-import skimage.io
-import mask_designer.neural_holography.utils as utils
-from mask_designer.neural_holography.propagation_ASM import propagation_ASM
 from mask_designer.neural_holography.calibration_module import Calibration
-
-from mask_designer.experimental_setup import (
-    Params,
-    params,
-    slm_device,
-)
-
-import matplotlib.pyplot as plt
-import datetime
-from PIL import Image
-
-
+from mask_designer.neural_holography.propagation_ASM import propagation_ASM
 from mask_designer.utils import (
     angularize_phase_mask,
     extend_to_field,
     quantize_phase_mask,
     round_phase_mask_to_uint8,
 )
+from PIL import Image
+from slm_controller.hardware import SLMParam, slm_devices
 
 # from mask_designer.transform_fields import
 # transform_from_neural_holography_setting # TODO Circular import!
@@ -461,9 +450,9 @@ class PhysicalProp(nn.Module):
         pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
         slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
-        from mask_designer.transform_fields import (  # TODO move up!!
+        from mask_designer.transform_fields import (
             transform_from_neural_holography_setting,
-        )
+        )  # TODO move up!!
 
         # Transform the results to the hardware setting using a lens
         field = transform_from_neural_holography_setting(
@@ -493,6 +482,7 @@ class PhysicalProp(nn.Module):
     def _capture_and_average_intensities(
         self, num_grab_images, resize, phase_mask, calibration=False
     ):
+
         captures_path = Path("citl/captures.pkl")
 
         if captures_path.exists():
@@ -512,8 +502,10 @@ class PhysicalProp(nn.Module):
 
             field = extend_to_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
-            from mask_designer.simulated_prop import simulated_prop  # TODO move up!!
-            from mask_designer.propagation import holoeye_fraunhofer
+            from mask_designer.simulated_prop import (  # TODO move up!!
+                holoeye_fraunhofer,
+                simulated_prop,
+            )
 
             propped_field = simulated_prop(field, holoeye_fraunhofer)
 

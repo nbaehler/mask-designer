@@ -2,17 +2,17 @@
 Physical propagation of the phase mask generated using the holoeye software.
 """
 
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
 CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
-from slm_controller.hardware import SLMDevices
-from slm_controller import slm
 from mask_designer.utils import load_phase_mask
+from slm_controller import slm
+from slm_controller.hardware import SLMDevices
 
 
 def main():

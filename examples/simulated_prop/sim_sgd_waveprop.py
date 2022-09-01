@@ -3,8 +3,8 @@ Simulated propagation of phase masks generated using the SGD algorithm and the
 angular spectrum propagator implemented in waveprop.
 """
 
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
@@ -12,27 +12,20 @@ CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
 import click
-from mask_designer.simulated_prop import simulated_prop, show_fields
-from mask_designer.utils import extend_to_field, random_init_phase_mask
-from mask_designer.propagation import (
+import torch
+from mask_designer.experimental_setup import Params, params, slm_device
+from mask_designer.prop_models import propagator_waveprop_angular_spectrum
+from mask_designer.simulated_prop import (
     holoeye_fraunhofer,
     neural_holography_asm,
-    propagator_waveprop_angular_spectrum,
+    plot_fields,
+    simulated_prop,
     waveprop_angular_spectrum,
 )
 from mask_designer.transform_fields import transform_from_neural_holography_setting
-import torch
-
-from slm_controller.hardware import (
-    SLMParam,
-    slm_devices,
-)
-from mask_designer.experimental_setup import (
-    Params,
-    params,
-    slm_device,
-)
+from mask_designer.utils import extend_to_field, random_init_phase_mask
 from mask_designer.wrapper import SGD, ImageLoader
+from slm_controller.hardware import SLMParam, slm_devices
 
 
 @click.command()
@@ -92,7 +85,7 @@ def main(iterations):
     # Simulate the propagation in the lens setting and show the results
     unpacked_field = holoeye_field[0, 0, :, :]
     propped_field = simulated_prop(holoeye_field, holoeye_fraunhofer)
-    show_fields(
+    plot_fields(
         unpacked_field, propped_field, "Neural Holography SGD with lens and Holoeye Fraunhofer",
     )
 
@@ -101,7 +94,7 @@ def main(iterations):
     propped_field = simulated_prop(
         field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
-    show_fields(
+    plot_fields(
         unpacked_field,
         propped_field,
         "Neural Holography SGD without lens and Neural Holography ASM",
@@ -116,7 +109,7 @@ def main(iterations):
         .cpu()
         .detach()
     )
-    show_fields(
+    plot_fields(
         unpacked_field, propped_field, "Neural Holography SGD with lens and waveprop ASM",
     )
 

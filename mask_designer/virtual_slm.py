@@ -5,9 +5,10 @@ GitHub: https://github.com/ebezzam
 """
 
 
-import numpy as np
-from mask_designer.utils import prepare_index_vals, rgb2gray
 import matplotlib.pyplot as plt
+import numpy as np
+
+from mask_designer.utils import prepare_index_vals, rgb2gray
 
 
 class VirtualSLM:

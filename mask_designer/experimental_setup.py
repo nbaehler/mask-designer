@@ -1,10 +1,10 @@
-from slm_controller.hardware import SLMDevices
-from mask_designer.hardware import CamDevices
-from skimage.draw import disk
-import torch
-from slm_controller.hardware import SLMDevices, slm_devices, SLMParam
-
 from enum import Enum
+
+import torch
+from skimage.draw import disk
+from slm_controller.hardware import SLMDevices, SLMParam, slm_devices
+
+from mask_designer.hardware import CamDevices
 
 
 # Parameters relevant for the experiments
@@ -25,7 +25,7 @@ params = {
     Params.WAVELENGTH: 532e-9,
     Params.PROPAGATION_DISTANCE: 0.315,
     Params.SLM_SETTLE_TIME: 0.25,
-    Params.SLM_SHOW_TIME: 9,
+    Params.SLM_SHOW_TIME: 10,
     Params.ROI: (320, 560),
 }
 

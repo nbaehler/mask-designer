@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
 import torch
+from PIL import Image
 from torch.nn import functional as F
+
 from mask_designer.experimental_setup import amp_mask
 
 

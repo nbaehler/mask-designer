@@ -3,45 +3,34 @@ Physical propagation of phase masks generated using the SGD algorithm.
 """
 
 
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
 CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
-import torch
+import datetime
+import glob
+import os
+from multiprocessing.managers import BaseManager
+
 import click
-from slm_controller import slm
-from slm_controller.hardware import (
-    SLMParam,
-    slm_devices,
-)
+import matplotlib.pyplot as plt
+import torch
 from mask_designer import camera
-from mask_designer.simulated_prop import simulated_prop
-
-
-from mask_designer.experimental_setup import (
-    Params,
-    params,
-    slm_device,
-)
-from mask_designer.propagation import holoeye_fraunhofer
-
+from mask_designer.experimental_setup import Params, params, slm_device
+from mask_designer.simulated_prop import holoeye_fraunhofer, simulated_prop
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 from mask_designer.utils import (
     extend_to_field,
     quantize_phase_mask,
     random_init_phase_mask,
 )
-from mask_designer.wrapper import ImageLoader, SGD, PhysicalProp
-
-import matplotlib.pyplot as plt
-import datetime
-from multiprocessing.managers import BaseManager
-import os
-import glob
+from mask_designer.wrapper import SGD, ImageLoader, PhysicalProp
+from slm_controller import slm
+from slm_controller.hardware import SLMParam, slm_devices
 
 
 @click.command()

@@ -1,17 +1,18 @@
 """
 Script that runs the CITL training of Neural Holography.
 """
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
 CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
+import datetime
+
 import click
 from mask_designer.wrapper import train_model
-import datetime
 
 
 @click.command()

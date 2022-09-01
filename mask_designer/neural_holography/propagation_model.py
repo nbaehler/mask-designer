@@ -16,19 +16,17 @@ All rights reserved.
 Refer to the LICENSE file for more information.
 """
 
+import mask_designer.neural_holography.utils as utils
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
-
-import mask_designer.neural_holography.utils as utils
 from mask_designer.neural_holography.propagation_ASM import (
-    compute_zernike_basis,
     combine_zernike_basis,
+    compute_zernike_basis,
     propagation_ASM,
     propagation_ASM_zernike,
     propagation_ASM_zernike_fourier,
 )
-
 from mask_designer.neural_holography.pytorch_prototyping.pytorch_prototyping import Conv2dSame
 
 

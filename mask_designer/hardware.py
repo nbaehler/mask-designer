@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 # Camera devices that are implemented in this project
 class CamDevices(Enum):
     DUMMY = "dummy"
@@ -12,11 +13,11 @@ class CamDevices(Enum):
 
 # Parameters of those cameras
 class CamParam:
-    IMG_SHAPE = "img_shape"
+    SHAPE = "shape"
 
 
 # Actual values of those parameters for all the cameras
 cam_devices = {
-    CamDevices.DUMMY.value: {CamParam.IMG_SHAPE: (1216, 1936)},
-    CamDevices.IDS.value: {CamParam.IMG_SHAPE: (1216, 1936)},
+    CamDevices.DUMMY.value: {CamParam.SHAPE: (1216, 1936)},
+    CamDevices.IDS.value: {CamParam.SHAPE: (1216, 1936)},
 }

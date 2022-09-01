@@ -20,35 +20,28 @@ $ python eval.py --channel=[0 or 1 or 2 or 3] --root_path=[some path]
 
 """
 
-import imageio
 import os
-import skimage.io
-import scipy.io as sio
 
-import torch
-import numpy as np
-
-from mask_designer.neural_holography.propagation_ASM import propagation_ASM
-from mask_designer.neural_holography.augmented_image_loader import ImageLoader
+import imageio
 import mask_designer.neural_holography.utils as utils
-from mask_designer.neural_holography.modules import PhysicalProp
-from mask_designer.neural_holography.propagation_model import ModelPropagate
-
-from slm_controller import slm
+import numpy as np
+import scipy.io as sio
+import skimage.io
+import torch
 from mask_designer import camera
-
 from mask_designer.experimental_setup import (
     Params,
+    amp_mask,
+    cam_device,
     params,
     slm_device,
-    cam_device,
-    amp_mask,
 )
-
-from slm_controller.hardware import (
-    SLMParam,
-    slm_devices,
-)
+from mask_designer.neural_holography.augmented_image_loader import ImageLoader
+from mask_designer.neural_holography.modules import PhysicalProp
+from mask_designer.neural_holography.propagation_ASM import propagation_ASM
+from mask_designer.neural_holography.propagation_model import ModelPropagate
+from slm_controller import slm
+from slm_controller.hardware import SLMParam, slm_devices
 
 
 def eval(

@@ -2,38 +2,33 @@
 Physical propagation of phase masks generated using the GS algorithm.
 """
 
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
 CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
-import torch
 import click
+import torch
+from mask_designer.experimental_setup import Params, params, slm_device
+from mask_designer.transform_fields import transform_from_neural_holography_setting
+from mask_designer.utils import (
+    extend_to_field,
+    quantize_phase_mask,
+    random_init_phase_mask,
+)
+from mask_designer.wrapper import GS, ImageLoader
 from slm_controller import slm
-from slm_controller.hardware import (
-    SLMParam,
-    slm_devices,
-)
-
-from mask_designer.utils import random_init_phase_mask
-
-from mask_designer.experimental_setup import (
-    Params,
-    params,
-    slm_device,
-)
-from mask_designer.wrapper import ImageLoader
-from mask_designer.methods import run_gs
+from slm_controller.hardware import SLMParam, slm_devices
 
 
 @click.command()
 @click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
 def main(iterations):
     # Set parameters
-    prop_dist = params[Params.PROPAGATION_DISTANCE]
+    prop_distance = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     roi = params[Params.ROI]
@@ -66,9 +61,19 @@ def main(iterations):
     init_phase = random_init_phase_mask(slm_shape, device)
 
     # Run Gerchberg-Saxton
-    phase_out = run_gs(
-        init_phase, target_amp, iterations, slm_shape, prop_dist, wavelength, pixel_pitch, device,
-    )
+    gs = GS(prop_distance, wavelength, pixel_pitch, iterations, device=device)
+    angles = gs(target_amp, init_phase).cpu().detach()
+
+    # Extend the computed angles, aka the phase values, to be a field which is a complex tensor again
+    extended = extend_to_field(angles)
+
+    # Transform the results to the hardware setting using a lens
+    final_phase_gs = transform_from_neural_holography_setting(
+        extended, prop_distance, wavelength, slm_shape, pixel_pitch
+    ).angle()
+
+    # Quantize the fields angles, aka phase values, to a bit values
+    phase_out = quantize_phase_mask(final_phase_gs)
 
     # Instantiate SLM object
     s = slm.create(slm_device)

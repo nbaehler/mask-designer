@@ -4,8 +4,9 @@ email: ebezzam@gmail.com,
 GitHub: https://github.com/ebezzam
 """
 
-import numpy as np
 from enum import Enum
+
+import numpy as np
 
 from mask_designer.virtual_slm import VirtualSLM
 

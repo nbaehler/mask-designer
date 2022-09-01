@@ -2,8 +2,8 @@
 Simulated propagation of the phase mask generated using the holoeye software.
 """
 
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
@@ -11,22 +11,20 @@ CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
 import torch
-
 from mask_designer.experimental_setup import Params, params, slm_device
-from mask_designer.simulated_prop import simulated_prop, show_fields
-
+from mask_designer.simulated_prop import (
+    holoeye_fraunhofer,
+    neural_holography_asm,
+    plot_fields,
+    simulated_prop,
+)
+from mask_designer.transform_fields import transform_to_neural_holography_setting
 from mask_designer.utils import (
     angularize_phase_mask,
     extend_to_field,
     load_phase_mask,
     pad_image_to_shape,
 )
-from mask_designer.propagation import (
-    holoeye_fraunhofer,
-    neural_holography_asm,
-)
-from mask_designer.transform_fields import transform_to_neural_holography_setting
-
 from slm_controller.hardware import SLMParam, slm_devices
 
 
@@ -52,7 +50,7 @@ def main():  # TODO buggy
 
     # Simulate the propagation in the lens setting and show the results
     propped_field = simulated_prop(holoeye_field, holoeye_fraunhofer)
-    show_fields(unpacked_field, propped_field, "CITL with lens")
+    plot_fields(unpacked_field, propped_field, "CITL with lens")
 
     # Transform the initial field to the lensless setting
     neural_holography_field = transform_to_neural_holography_setting(
@@ -64,7 +62,7 @@ def main():  # TODO buggy
     propped_field = simulated_prop(
         neural_holography_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
-    show_fields(unpacked_field, propped_field, "CITL without lens")
+    plot_fields(unpacked_field, propped_field, "CITL without lens")
 
 
 if __name__ == "__main__":

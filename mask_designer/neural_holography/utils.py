@@ -18,12 +18,11 @@ All rights reserved.
 Refer to the LICENSE file for more information.
 """
 import math
-import numpy as np
-
 import os
+
+import numpy as np
 import torch
 import torch.nn as nn
-
 from skimage.metrics import peak_signal_noise_ratio as psnr
 from skimage.metrics import structural_similarity as ssim
 
@@ -335,8 +334,8 @@ def propagate_field(
     input_field,
     propagator,
     prop_dist=0.2,
-    wavelength=520e-9,
-    feature_size=(6.4e-6, 6.4e-6),
+    wavelength=5.2e-07,
+    feature_size=(6.4e-06, 6.4e-06),
     prop_model="ASM",
     dtype=torch.float32,
     precomputed_H=None,

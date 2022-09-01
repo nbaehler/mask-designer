@@ -2,18 +2,18 @@
 Camera image capture example.
 """
 
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)
 CODE_DIR = abspath(join(THIS_DIR, ".."))
 sys.path.append(CODE_DIR)
 
+import matplotlib.pyplot as plt
 from mask_designer import camera
 from mask_designer.experimental_setup import cam_device
-
-import matplotlib.pyplot as plt
+from mask_designer.simulated_prop import plot_mask
 
 
 def main():
@@ -24,18 +24,14 @@ def main():
     image = cam.acquire_single_image()
 
     # and plot it using matplotlib
-    _, ax = plt.subplots()
-    ax.imshow(image, cmap="gray")
-    plt.show()
+    plot_mask(image)
 
     # Change the exposure time, take another image
     cam.set_exposure_time(35000)
     image = cam.acquire_single_image()
 
     # and plot it using matplotlib
-    _, ax = plt.subplots()
-    ax.imshow(image, cmap="gray")
-    plt.show()
+    plot_mask(image)
 
     # Reset the exposure time to the default value, take 4 images
     cam.set_exposure_time()
@@ -53,18 +49,14 @@ def main():
     image = cam.acquire_single_image_and_resize_to_slm_shape()
 
     # and plot it using matplotlib
-    _, ax = plt.subplots()
-    ax.imshow(image, cmap="gray")
-    plt.show()
+    plot_mask(image)
 
     # Change the exposure time, take another image
     cam.set_exposure_time(35000)
     image = cam.acquire_single_image_and_resize_to_slm_shape()
 
     # and plot it using matplotlib
-    _, ax = plt.subplots()
-    ax.imshow(image, cmap="gray")
-    plt.show()
+    plot_mask(image)
 
     # Reset the exposure time to the default value, take 4 images
     cam.set_exposure_time()

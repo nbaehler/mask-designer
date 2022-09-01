@@ -1,9 +1,10 @@
-import torch
-import numpy as np
 import math
 
-from mask_designer.wrapper import fftshift, ifftshift, polar_to_rect
+import numpy as np
+import torch
+
 from mask_designer.utils import extend_to_field
+from mask_designer.wrapper import fftshift, ifftshift, polar_to_rect
 
 
 def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):

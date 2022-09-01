@@ -16,10 +16,11 @@ All rights reserved.
 Refer to the LICENSE file for more information.
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
 import datetime
+
 import cv2
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), show_preview=True):

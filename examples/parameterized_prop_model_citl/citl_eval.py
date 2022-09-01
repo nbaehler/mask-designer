@@ -1,8 +1,8 @@
 """
 Script that runs the CITL evaluations of Neural Holography.
 """
-from os.path import dirname, abspath, join
 import sys
+from os.path import abspath, dirname, join
 
 # Find code directory relative to our directory
 THIS_DIR = dirname(__file__)

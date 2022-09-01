@@ -1,9 +1,10 @@
 import abc
+
+import numpy as np
 from ids_peak import ids_peak as peak
 from ids_peak_ipl import ids_peak_ipl as peak_ipl
-import numpy as np
-
 from slm_controller.hardware import SLMParam, slm_devices
+
 from mask_designer.experimental_setup import slm_device
 from mask_designer.hardware import CamDevices, CamParam, cam_devices
 from mask_designer.utils import load_image, scale_image_to_shape
@@ -105,9 +106,7 @@ class Camera:
 
     def set_correction(
         self,
-        correction=np.zeros(
-            cam_devices[CamDevices.DUMMY.value][CamParam.IMG_SHAPE], dtype=np.uint8
-        ),
+        correction=np.zeros(cam_devices[CamDevices.DUMMY.value][CamParam.SHAPE], dtype=np.uint8),
     ):  # TODO remove maybe
         """
         Set the correction of the camera to a specific value.
@@ -118,7 +117,7 @@ class Camera:
             New correction
         """
 
-        if correction.shape != cam_devices[CamDevices.DUMMY.value][CamParam.IMG_SHAPE]:
+        if correction.shape != cam_devices[CamDevices.DUMMY.value][CamParam.SHAPE]:
             raise ValueError("The correction must have the same shape as the camera image")
 
         self._correction = correction
@@ -132,7 +131,7 @@ class DummyCamera(Camera):
         super().__init__()
 
         # Set height and width
-        self._height, self._width = cam_devices[CamDevices.DUMMY.value][CamParam.IMG_SHAPE]
+        self._height, self._width = cam_devices[CamDevices.DUMMY.value][CamParam.SHAPE]
 
         # Set frame count and exposure time
         self.set_exposure_time()
@@ -227,7 +226,7 @@ class IDSCamera(Camera):
         super().__init__()
 
         # Set height and width
-        self._height, self._width = cam_devices[CamDevices.IDS.value][CamParam.IMG_SHAPE]
+        self._height, self._width = cam_devices[CamDevices.IDS.value][CamParam.SHAPE]
 
         # Initialize library
         peak.Library.Initialize()

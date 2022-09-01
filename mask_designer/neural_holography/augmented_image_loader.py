@@ -17,13 +17,13 @@ Refer to the LICENSE file for more information.
 """
 
 import os
-import torch
 import random
-import numpy as np
-from imageio import imread
-from skimage.transform import resize
 
 import mask_designer.neural_holography.utils as utils
+import numpy as np
+import torch
+from imageio import imread
+from skimage.transform import resize
 
 
 class ImageLoader:
