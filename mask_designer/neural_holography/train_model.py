@@ -57,56 +57,6 @@ from mask_designer.neural_holography.propagation_model import ModelPropagate
 from mask_designer.neural_holography.augmented_image_loader import ImageLoader
 from mask_designer.neural_holography.utils_tensorboard import SummaryModelWriter
 
-# # Command line argument processing
-# p = configargparse.ArgumentParser()
-# p.add(
-#     "-c",
-#     "--config_filepath",
-#     required=False,
-#     is_config_file=True,
-#     help="Path to config file.",
-# )
-
-# p.add_argument("--channel", type=int, default=1, help="red:0, green:1, blue:2, rgb:3")
-# p.add_argument(
-#     "--pretrained_path",
-#     type=str,
-#     default="",
-#     help="Path of pretrained checkpoints as a starting point.",
-# )
-# p.add_argument(
-#     "--model_path",
-#     type=str,
-#     default="./citl/models",
-#     help="Directory for saving out checkpoints",
-# )
-# p.add_argument(
-#     "--phase_path",
-#     type=str,
-#     default="./citl/precomputed_phases",
-#     help="Directory for precalculated phases",
-# )
-# p.add_argument(
-#     "--calibration_path",
-#     type=str,
-#     default=f"./citl/calibration",
-#     help="Directory where calibration phases are being stored.",
-# )
-# p.add_argument(
-#     "--lr_model", type=float, default=3e-3, help="Learning rate for model parameters"
-# )
-# p.add_argument("--lr_phase", type=float, default=5e-3, help="Learning rate for phase")
-# p.add_argument("--num_epochs", type=int, default=15, help="Number of epochs")
-# p.add_argument("--batch_size", type=int, default=2, help="Size of minibatch")
-# p.add_argument(
-#     "--step_lr", type=utils.str2bool, default=True, help="Use of lr scheduler"
-# )
-# p.add_argument("--experiment", type=str, default="", help="Name of the experiment")
-
-
-# # parse arguments
-# opt = p.parse_args()
-
 
 def train_model(  # TODO buggy
     channel,
@@ -134,7 +84,7 @@ def train_model(  # TODO buggy
 
     print(f"   - training parameterized wave propagation model....")
 
-    prop_dist = (prop_dist, prop_dist, prop_dist)[  # TODO Not really useful
+    prop_dist = (prop_dist, prop_dist, prop_dist)[
         channel
     ]  # propagation distance from SLM plane to target plane
     wavelength = (wavelength, wavelength, wavelength)[channel]
@@ -142,8 +92,7 @@ def train_model(  # TODO buggy
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]  # resolution of SLM
 
     dtype = torch.float32  # default datatype (results may differ if using, e.g., float64)
-    # device = "cuda" if torch.cuda.is_available() else "cpu"  # TODO gpu is too small
-    device = "cpu"
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Options for the algorithm
     lr_s_phase = lr_phase / 200
@@ -167,9 +116,6 @@ def train_model(  # TODO buggy
     model_path = os.path.join(model_path, f"{run_id}")
     utils.cond_mkdir(model_path)
 
-    # phase_path = phase_path  # path of precomputed phase pool
-    # data_path = "./citl/data"  # path of targets
-
     s = slm.create(slm_device)
     s.set_show_time(slm_show_time)
 
@@ -182,7 +128,6 @@ def train_model(  # TODO buggy
         cam,
         roi,
         channel,
-        # laser_arduino=True,
         # range_row=(220, 1000),
         # range_col=(300, 1630),
         pattern_path=calibration_path,  # path of 12 x 21 calibration pattern, see Supplement.
@@ -417,8 +362,3 @@ def train_model(  # TODO buggy
         torch.save(model.state_dict(), os.path.join(model_path, f"epoch{e}.pth"))
         if step_lr:
             lr_scheduler.step()
-
-    # # disconnect everything #TODO needed? Add to cameras?
-    # if camera_prop is not None:
-    #     camera_prop.disconnect()
-    #     camera_prop.alc.disconnect()

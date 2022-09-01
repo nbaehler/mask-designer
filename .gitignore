@@ -138,5 +138,8 @@ citl/*
 !citl/calibration
 !citl/data
 
+# Documentation
+docs/source/_*
+
 .vscode
 .dccache

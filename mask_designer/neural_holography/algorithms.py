@@ -19,8 +19,6 @@ Refer to the LICENSE file for more information.
 
 """
 
-import math
-import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -37,10 +35,8 @@ def gerchberg_saxton(
     prop_dist,
     wavelength,
     feature_size=6.4e-6,
-    # phase_path=None,
     prop_model="ASM",
     propagator=propagation_ASM,  # TODO before None, why?
-    # writer=None,
     dtype=torch.float32,
     precomputed_H_f=None,
     precomputed_H_b=None,
@@ -54,7 +50,6 @@ def gerchberg_saxton(
     :param prop_dist: propagation distance in m.
     :param wavelength: wavelength in m.
     :param feature_size: the SLM pixel pitch, in meters, default 6.4e-6
-    :param phase_path: path to save the results.
     :param prop_model: string indicating the light transport model, default 'ASM'. ex) 'ASM', 'fresnel', 'model'
     :param propagator: predefined function or model instance for the propagation.
     :param writer: tensorboard writer
@@ -118,7 +113,6 @@ def stochastic_gradient_descent(
     wavelength,
     feature_size,
     roi_res=None,
-    phase_path=None,
     prop_model="ASM",
     propagator=propagation_ASM,
     loss=nn.MSELoss(),
@@ -144,7 +138,6 @@ def stochastic_gradient_descent(
     :param wavelength: wavelength in m.
     :param feature_size: the SLM pixel pitch, in meters, default 6.4e-6
     :param roi_res: a tuple of integer, region of interest, like (880, 1600)
-    :param phase_path: a string, for saving intermediate phases
     :param prop_model: a string, that indicates the propagation model. ('ASM' or 'MODEL')
     :param propagator: predefined function or model instance for the propagation.
     :param loss: loss function, default L2
@@ -231,85 +224,3 @@ def stochastic_gradient_descent(
     # print(torch.max(slm_phase), torch.min(slm_phase)) # TODO not in [-pi, pi]??
 
     return slm_phase
-
-
-# 3. DPAC
-def double_phase_amplitude_coding(
-    target_phase,
-    target_amp,
-    prop_dist,
-    wavelength,
-    feature_size,
-    prop_model="ASM",
-    propagator=propagation_ASM,
-    dtype=torch.float32,
-    precomputed_H=None,
-):
-    """
-    Use a single propagation and converts amplitude and phase to double phase coding
-
-    Input
-    -----
-    :param target_phase: The phase at the target image plane
-    :param target_amp: A tensor, (B,C,H,W), the amplitude at the target image plane.
-    :param prop_dist: propagation distance, in m.
-    :param wavelength: wavelength, in m.
-    :param feature_size: The SLM pixel pitch, in meters.
-    :param prop_model: The light propagation model to use for prop from target plane to slm plane
-    :param propagator: propagation_ASM
-    :param dtype: torch datatype for computation at different precision.
-    :param precomputed_H: pre-computed kernel - to make it faster over multiple iteration/images - calculate it once
-
-    Output
-    ------
-    :return: a tensor, the optimized phase mask at the SLM plane, in the shape of (1,1,H,W)
-    """
-    real, imag = utils.polar_to_rect(target_amp, target_phase)
-    target_field = torch.complex(real, imag)
-
-    slm_field = utils.propagate_field(
-        target_field,
-        propagator,
-        prop_dist,
-        wavelength,
-        feature_size,
-        prop_model,
-        dtype,
-        precomputed_H,
-    )
-
-    return double_phase(slm_field, three_pi=False, mean_adjust=True)
-
-
-def double_phase(field, three_pi=True, mean_adjust=True):
-    """Converts a complex field to double phase coding
-
-    field: A complex64 tensor with dims [..., height, width]
-    three_pi, mean_adjust: see double_phase_amp_phase
-    """
-    return double_phase_amp_phase(field.abs(), field.angle(), three_pi, mean_adjust)
-
-
-def double_phase_amp_phase(amplitudes, phases, three_pi=True, mean_adjust=True):
-    """converts amplitude and phase to double phase coding
-
-    amplitudes:  per-pixel amplitudes of the complex field
-    phases:  per-pixel phases of the complex field
-    three_pi:  if True, outputs values in a 3pi range, instead of 2pi
-    mean_adjust:  if True, centers the phases in the range of interest
-    """
-    # normalize
-    amplitudes = amplitudes / amplitudes.max()
-
-    phases_a = phases - torch.acos(amplitudes)
-    phases_b = phases + torch.acos(amplitudes)
-
-    phases_out = phases_a
-    phases_out[..., ::2, 1::2] = phases_b[..., ::2, 1::2]
-    phases_out[..., 1::2, ::2] = phases_b[..., 1::2, ::2]
-
-    max_phase = 3 * math.pi if three_pi else 2 * math.pi
-    if mean_adjust:
-        phases_out -= phases_out.mean()
-
-    return (phases_out + max_phase / 2) % max_phase - max_phase / 2

@@ -251,36 +251,6 @@ def random_init_phase_mask(slm_shape, device, seed=1):
     return (-0.5 + 1.0 * torch.rand(size=(1, 1, *slm_shape), generator=gen)).to(device)
 
 
-def show_fields(field, propped_field, title):
-    """
-    Plotting utility function.
-
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field before propagation
-    propped_field : torch.Tensor
-        The field after propagation
-    title : String
-        The title of the plot
-    """
-    fig = plt.figure()
-    fig.suptitle(title)
-    ax1 = fig.add_subplot(221)
-    ax2 = fig.add_subplot(222)
-    ax3 = fig.add_subplot(223)
-    ax4 = fig.add_subplot(224)
-    ax1.title.set_text("Phase on SLM")
-    ax2.title.set_text("Amplitude on SLM")
-    ax3.title.set_text("Phase after propagation to screen")
-    ax4.title.set_text("Amplitude after propagation to screen")
-    ax1.imshow(normalize_mask(field.angle()), cmap="gray")  # TODO normalize?
-    ax2.imshow(normalize_mask(field.abs()), cmap="gray")
-    ax3.imshow(normalize_mask(propped_field.angle()), cmap="gray")
-    ax4.imshow(normalize_mask(propped_field.abs()), cmap="gray")
-    plt.show()
-
-
 def normalize_mask(mask):
     """
     Normalize the phase mask to be between 0 and 1.

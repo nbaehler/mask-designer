@@ -31,7 +31,6 @@ from slm_controller.hardware import SLMParam, slm_devices
 from mask_designer.neural_holography.algorithms import (
     gerchberg_saxton,
     stochastic_gradient_descent,
-    double_phase_amplitude_coding,
 )
 
 import os
@@ -62,15 +61,6 @@ from mask_designer.utils import (
 # from mask_designer.transform_fields import
 # transform_from_neural_holography_setting # TODO Circular import!
 
-# my_os = platform.system()
-# if my_os == "Windows":
-#     from mask_designer.neural_holography.arduino_laser_control_module import (
-#         ArduinoLaserControl,
-#     )
-#     from mask_designer.neural_holography.camera_capture_module import CameraCapture
-#     from mask_designer.neural_holography.calibration_module import Calibration
-#     from mask_designer.neural_holography.slm_display_module import SLMDisplay
-
 
 class GS(nn.Module):
     """Classical Gerchberg-Saxton algorithm
@@ -81,7 +71,6 @@ class GS(nn.Module):
     :param wavelength: the wavelength of interest, in meters
     :param feature_size: the SLM pixel pitch, in meters
     :param num_iters: the number of iteration, default 500
-    :param phase_path: path to write intermediate results
     :param loss: loss function, default L2
     :param prop_model: chooses the propagation operator ('ASM': propagation_ASM,
         'model': calibrated model). Default 'ASM'.
@@ -106,7 +95,6 @@ class GS(nn.Module):
         wavelength,
         feature_size,
         num_iters,
-        phase_path=None,
         prop_model="ASM",
         propagator=propagation_ASM,
         writer=None,
@@ -118,7 +106,6 @@ class GS(nn.Module):
         self.prop_dist = prop_dist
         self.wavelength = wavelength
         self.feature_size = feature_size
-        self.phase_path = phase_path
         self.precomputed_H_f = None
         self.precomputed_H_b = None
         self.prop_model = prop_model
@@ -159,21 +146,11 @@ class GS(nn.Module):
             self.prop_dist,
             self.wavelength,
             self.feature_size,
-            # phase_path=self.phase_path,
             prop_model=self.prop_model,
             propagator=self.propagator,
             precomputed_H_f=self.precomputed_H_f,
             precomputed_H_b=self.precomputed_H_b,
-            # writer=self.writer,
         )
-
-    # @property
-    # def phase_path(self):
-    #     return self._phase_path
-
-    # @phase_path.setter
-    # def phase_path(self, phase_path):
-    #     self._phase_path = phase_path
 
 
 class SGD(nn.Module):
@@ -186,7 +163,6 @@ class SGD(nn.Module):
     :param feature_size: the SLM pixel pitch, in meters
     :param num_iters: the number of iteration, default 500
     :param roi_res: region of interest to penalize the loss
-    :param phase_path: path to write intermediate results
     :param loss: loss function, default L2
     :param prop_model: chooses the propagation operator ('ASM': propagation_ASM,
         'model': calibrated model). Default 'ASM'.
@@ -216,7 +192,6 @@ class SGD(nn.Module):
         feature_size,
         num_iters,
         roi_res,
-        phase_path=None,
         prop_model="ASM",
         propagator=propagation_ASM,
         loss=nn.MSELoss(),
@@ -235,7 +210,6 @@ class SGD(nn.Module):
         self.wavelength = wavelength
         self.feature_size = feature_size
         self.roi_res = roi_res
-        self.phase_path = phase_path
         self.precomputed_H = None
         self.prop_model = prop_model
         self.propagator = propagator
@@ -274,7 +248,6 @@ class SGD(nn.Module):
             self.wavelength,
             self.feature_size,
             roi_res=self.roi_res,
-            phase_path=self.phase_path,
             prop_model=self.prop_model,
             propagator=self.propagator,
             loss=self.loss,
@@ -286,119 +259,6 @@ class SGD(nn.Module):
             writer=self.writer,
             precomputed_H=self.precomputed_H,
         )
-
-    # @property
-    # def init_scale(self):
-    #     return self._init_scale
-
-    # @init_scale.setter
-    # def init_scale(self, s):
-    #     self._init_scale = s
-
-    # @property
-    # def citl_hardwares(self):
-    #     return self._citl_hardwares
-
-    # @citl_hardwares.setter
-    # def citl_hardwares(self, citl_hardwares):
-    #     self._citl_hardwares = citl_hardwares
-
-    # @property
-    # def phase_path(self):
-    #     return self._phase_path
-
-    # @phase_path.setter
-    # def phase_path(self, phase_path):
-    #     self._phase_path = phase_path
-
-    # @property
-    # def prop(self):
-    #     return self._prop
-
-    # @prop.setter
-    # def prop(self, prop):
-    #     self._prop = prop
-
-
-class DPAC(nn.Module):
-    """Double-phase Amplitude Coding
-
-    Class initialization parameters
-    -------------------------------
-    :param prop_dist: propagation dist between SLM and target, in meters
-    :param wavelength: the wavelength of interest, in meters
-    :param feature_size: the SLM pixel pitch, in meters
-    :param prop_model: chooses the propagation operator ('ASM': propagation_ASM,
-        'model': calibrated model). Default 'ASM'.
-    :param propagator: propagator instance (function / pytorch module)
-    :param device: torch.device
-
-    Usage
-    -----
-    Functions as a pytorch module:
-
-    >>> dpac = DPAC(...)
-    >>> final_phase = dpac(target_amp, target_phase)
-
-    target_amp: amplitude at the target plane, with dimensions [batch, 1, height, width]
-    target_amp (optional): phase at the target plane, with dimensions [batch, 1, height, width]
-    final_phase: optimized phase-only representation at SLM plane, same dimensions
-
-    """
-
-    def __init__(
-        self,
-        prop_dist,
-        wavelength,
-        feature_size,
-        prop_model="ASM",
-        propagator=propagation_ASM,
-        device="cuda" if torch.cuda.is_available() else "cpu",
-    ):
-        super(DPAC, self).__init__()
-
-        # propagation is from target to SLM plane (one step)
-        self.prop_dist = -prop_dist
-        self.wavelength = wavelength
-        self.feature_size = feature_size
-        self.precomputed_H = None
-        self.prop_model = prop_model
-        self.propagator = propagator
-        self.dev = device
-
-    def forward(self, target_amp, target_phase=None):
-        if target_phase is None:
-            target_phase = torch.zeros_like(target_amp)
-
-        if self.precomputed_H is None and self.prop_model == "ASM":
-            self.precomputed_H = self.propagator(
-                torch.empty(*target_amp.shape, dtype=torch.complex64),
-                self.feature_size,
-                self.wavelength,
-                self.prop_dist,
-                return_H=True,
-            )
-            self.precomputed_H = self.precomputed_H.to(self.dev).detach()
-            self.precomputed_H.requires_grad = False
-
-        return double_phase_amplitude_coding(
-            target_phase,
-            target_amp,
-            self.prop_dist,
-            self.wavelength,
-            self.feature_size,
-            prop_model=self.prop_model,
-            propagator=self.propagator,
-            precomputed_H=self.precomputed_H,
-        )
-
-    # @property
-    # def phase_path(self):
-    #     return self._phase_path
-
-    # @phase_path.setter
-    # def phase_path(self, phase_path):
-    #     self._phase_path = phase_path
 
 
 class PhysicalProp(nn.Module):
@@ -413,9 +273,6 @@ class PhysicalProp(nn.Module):
     :param slm_settle_time:
     :param roi_res:
     :param num_circles:
-    :param laser_arduino:
-    :param com_port:
-    :param arduino_port_num:
     :param range_row:
     :param range_col:
     :param pattern_path:
@@ -447,9 +304,6 @@ class PhysicalProp(nn.Module):
         #     12,
         # ),  # TODO (3, 3) makes dimension flip: width/height, and does not help the blob detector
         num_circles=(5, 8),
-        # laser_arduino=False,
-        # com_port="COM3",
-        # arduino_port_num=(6, 10, 11),
         # range_row=(200, 1000),
         # range_col=(300, 1700),
         range_row=(0, 768),  # TODO adapt to capture roi in real image
@@ -460,24 +314,13 @@ class PhysicalProp(nn.Module):
         super(PhysicalProp, self).__init__()
 
         # 1. Connect Camera
-        # self.camera = CameraCapture()
         self.camera = cam
-        # self.camera.connect(0)  # specify the camera to use, 0 for main cam, 1 for the second cam
 
         # 2. Connect SLM
-        # self.slm = SLMDisplay()
-        # self.slm.connect()
         self.slm = slm
         self.slm_settle_time = slm_settle_time
 
-        # # 3. Connect to the Arduino that switches rgb color through the laser control box.
-        # if laser_arduino:
-        #     self.alc = ArduinoLaserControl(com_port, arduino_port_num)
-        #     self.alc.switch_control_box(channel)
-        # else:
-        #     self.alc = None
-
-        # 4. Calibrate hardwares using homography
+        # 3. Calibrate hardwares using homography
         calib_pattern_path = os.path.join(pattern_path, f'{("red", "green", "blue")[channel]}.png')
         space_btw_circs = [
             int(roi / (num_circs - 1)) for roi, num_circs in zip(roi_res, num_circles)
@@ -650,10 +493,6 @@ class PhysicalProp(nn.Module):
     def _capture_and_average_intensities(
         self, num_grab_images, resize, phase_mask, calibration=False
     ):
-        # _, ax = plt.subplots() # TODO remove
-        # ax.imshow(phase_mask, cmap="gray")
-        # plt.show()
-
         captures_path = Path("citl/captures.pkl")
 
         if captures_path.exists():
@@ -671,7 +510,6 @@ class PhysicalProp(nn.Module):
         if not calibration:
             phase_mask = self._transform_phase_mask(phase_mask)
 
-            # Plot only
             field = extend_to_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
             from mask_designer.simulated_prop import simulated_prop  # TODO move up!!

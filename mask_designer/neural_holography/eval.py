@@ -50,41 +50,7 @@ from slm_controller.hardware import (
     slm_devices,
 )
 
-# # Command line argument processing
-# p = configargparse.ArgumentParser()
-# p.add(
-#     "-c",
-#     "--config_filepath",
-#     required=False,
-#     is_config_file=True,
-#     help="Path to config file.",
-# )
 
-# p.add_argument("--channel", type=int, default=1, help="red:0, green:1, blue:2, rgb:3")
-# p.add_argument(
-#     "--prop_model",
-#     type=str,
-#     default="ASM",
-#     help="Type of propagation model for reconstruction: ASM / MODEL / CAMERA",
-# )
-# p.add_argument(
-#     "--root_path",
-#     type=str,
-#     default="./citl/phases",
-#     help="Directory where test phases are being stored.",
-# )
-# p.add_argument(
-#     "--prop_model_dir",
-#     type=str,
-#     default="./citl/calibrated_models/",
-#     help="Directory for the CITL-calibrated wave propagation models",
-# )
-# p.add_argument(
-#     "--calibration_path",
-#     type=str,
-#     default=f"./citl/calibration",
-#     help="Directory where calibration phases are being stored.",
-# )
 def eval(
     channel, prop_model, test_phases_path, test_target_amps_path, prop_model_dir, calibration_path,
 ):
@@ -145,7 +111,6 @@ def eval(
             cam,
             roi,
             channel,
-            # laser_arduino=True,
             # range_row=(220, 1000),
             # range_col=(300, 1630),
             pattern_path=calibration_path,  # path of 12 x 21 calibration pattern, see Supplement.

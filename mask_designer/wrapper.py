@@ -3,7 +3,7 @@ from mask_designer.neural_holography.augmented_image_loader import (
     get_image_filenames,
 )
 from mask_designer.neural_holography.eval import eval
-from mask_designer.neural_holography.modules import DPAC, GS, SGD, PhysicalProp
+from mask_designer.neural_holography.modules import GS, SGD, PhysicalProp
 from mask_designer.neural_holography.propagation_ASM import propagation_ASM
 from mask_designer.neural_holography.propagation_model import ModelPropagate
 from mask_designer.neural_holography.train_model import train_model

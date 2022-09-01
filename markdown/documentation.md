@@ -197,6 +197,8 @@ about. Generally speaking, you require fewer iterations and hence get some speed
 
 ### 3. Double Phase Amplitude Coding (DPAC)
 
+<!-- TODO remove dpac -->
+
 As the only one of those 4 algorithms, DPAC is a single shot algorithm, it's
 non-iterative. When looking at the results presented in the Neural Holography
 paper, one can clearly see that it yields worse results than the other methods,

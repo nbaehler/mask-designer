@@ -76,7 +76,7 @@
                 <mxCell id="NaqtpgOzilmIxhuoCxP4-50" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="NaqtpgOzilmIxhuoCxP4-48" target="NaqtpgOzilmIxhuoCxP4-25" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="NaqtpgOzilmIxhuoCxP4-48" value="&lt;div&gt;Lens 2,&lt;/div&gt;&lt;div&gt;f=-75,&lt;br&gt;&lt;/div&gt;&lt;div&gt;(concave)&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                <mxCell id="NaqtpgOzilmIxhuoCxP4-48" value="&lt;div&gt;Lens 2,&lt;/div&gt;&lt;div&gt;f=-30,&lt;br&gt;&lt;/div&gt;&lt;div&gt;(concave)&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="410" y="150" width="60" height="55" as="geometry"/>
                 </mxCell>
                 <mxCell id="NaqtpgOzilmIxhuoCxP4-4" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#000000;" parent="1" vertex="1">

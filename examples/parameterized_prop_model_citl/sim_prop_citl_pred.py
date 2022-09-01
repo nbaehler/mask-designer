@@ -13,14 +13,13 @@ sys.path.append(CODE_DIR)
 import torch
 
 from mask_designer.experimental_setup import Params, params, slm_device
-from mask_designer.simulated_prop import simulated_prop
+from mask_designer.simulated_prop import simulated_prop, show_fields
 
 from mask_designer.utils import (
     angularize_phase_mask,
     extend_to_field,
     load_phase_mask,
     pad_image_to_shape,
-    show_fields,
 )
 from mask_designer.propagation import (
     holoeye_fraunhofer,

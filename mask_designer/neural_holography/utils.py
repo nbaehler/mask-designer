@@ -23,8 +23,6 @@ import numpy as np
 import os
 import torch
 import torch.nn as nn
-import torch.nn.functional as func
-import torch.nn.modules.loss as ll
 
 from skimage.metrics import peak_signal_noise_ratio as psnr
 from skimage.metrics import structural_similarity as ssim
@@ -493,7 +491,6 @@ def str2bool(v):
 
 
 def make_kernel_gaussian(sigma, kernel_size):
-
     # Create a x, y coordinate grid of shape (kernel_size, kernel_size, 2)
     x_cord = torch.arange(kernel_size)
     x_grid = x_cord.repeat(kernel_size).view(kernel_size, kernel_size)

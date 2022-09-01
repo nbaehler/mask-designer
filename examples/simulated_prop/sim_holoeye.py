@@ -15,9 +15,9 @@ from mask_designer.experimental_setup import (
     params,
     slm_device,
 )
-from mask_designer.simulated_prop import simulated_prop
+from mask_designer.simulated_prop import simulated_prop, show_fields
 
-from mask_designer.utils import load_field, show_fields
+from mask_designer.utils import load_field
 from mask_designer.propagation import (
     holoeye_fraunhofer,
     neural_holography_asm,

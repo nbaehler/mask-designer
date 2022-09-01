@@ -148,7 +148,7 @@ class SummaryModelWriter(tensorboardX.SummaryWriter):
 
         :param domain: 'fourier' or 'primal'
         :param idx: Global step value to record
-        :param cm: colomap for the zernike, default plasma
+        :param cm: colormap for the zernike, default plasma
         """
 
         if domain == "fourier":

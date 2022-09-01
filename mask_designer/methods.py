@@ -1,50 +1,11 @@
 # TODO change documentation, wrapper and methods in one file introduced too many
 # circular imports!!!
 
-from mask_designer.wrapper import DPAC, GS, SGD
+from mask_designer.wrapper import GS, SGD
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 from mask_designer.utils import quantize_phase_mask, extend_to_field
 
-
-def run_dpac(target_amp, slm_shape, prop_distance, wavelength, pixel_pitch, device):
-    """
-    Run the DPAC algorithm and quantize the result.
-
-    Parameters
-    ----------
-    target_amp : torch.Tensor
-        The target amplitude
-    slm_shape : tuple(int)
-        The shape or the resolution of the SLM
-    prop_dist : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-    device : String
-        The device that is used, either cpu or cuda
-
-    Returns
-    -------
-    numpy.ndarray
-        The quantized resulting phase mask in 0-255
-    """
-    # Run Double Phase Amplitude Coding #TODO DPAC does not work
-    dpac = DPAC(prop_distance, wavelength, pixel_pitch, device=device)
-    angles = dpac(target_amp)
-    angles = angles.cpu().detach()
-
-    # Extend the computed angles, aka the phase values, to be a field which is a complex tensor again
-    extended = extend_to_field(angles)
-
-    # Transform the results to the hardware setting using a lens
-    final_phase_dpac = transform_from_neural_holography_setting(
-        extended, prop_distance, wavelength, slm_shape, pixel_pitch
-    ).angle()
-
-    # Quantize the fields angles, aka phase values, to a bit values
-    return quantize_phase_mask(final_phase_dpac)
+# TODO remove this file
 
 
 def run_gs(

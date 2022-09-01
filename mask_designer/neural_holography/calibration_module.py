@@ -105,7 +105,7 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
                 ref_pts[pos, 0, :] = spacing * np.array([j, i]) + np.array(pad_pixels)
                 pos += 1
 
-        H, mask = cv2.findHomography(centers, ref_pts, cv2.RANSAC, 1)
+        H, _ = cv2.findHomography(centers, ref_pts, cv2.RANSAC, 1)
         if show_preview:
             dsize = [
                 int((num_circs - 1) * space + 2 * pad_pixs)

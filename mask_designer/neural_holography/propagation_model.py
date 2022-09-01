@@ -18,7 +18,6 @@ Refer to the LICENSE file for more information.
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 
 import mask_designer.neural_holography.utils as utils

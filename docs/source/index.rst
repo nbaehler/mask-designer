@@ -3,23 +3,28 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. include:: ../../readme.rst
+
 Welcome to mask-designer's documentation!
 =========================================
 
+
+Table of contents
+-----------------
 .. toctree::
    :maxdepth: 8
    :caption: Contents:
 
-   documentation
+   documentation.rst
 
 
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
+* :ref:`modindex` ..TODO: what's that?
 * :ref:`search`
 
-.. * :ref:`modindex` ..TODO what is this?
 

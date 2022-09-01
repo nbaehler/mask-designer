@@ -11,8 +11,8 @@ CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
 import click
-from mask_designer.simulated_prop import simulated_prop
-from mask_designer.utils import extend_to_field, random_init_phase_mask, show_fields
+from mask_designer.simulated_prop import simulated_prop, show_fields
+from mask_designer.utils import extend_to_field, random_init_phase_mask
 from mask_designer.propagation import holoeye_fraunhofer, neural_holography_asm
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 import torch
