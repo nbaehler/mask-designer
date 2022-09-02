@@ -7,7 +7,7 @@ Documentation
 Overview
 --------
 
-More as a reminder and complementary to the ``readme.rst``, we are quickly going over
+More as a reminder and complementary to the ``README.rst``, we are quickly going over
 the main goals and concepts used in this package.
 
 SLMs

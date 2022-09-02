@@ -1,6 +1,6 @@
 import setuptools
 
-with open("readme.rst", "r") as fh:
+with open("README.rst", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
