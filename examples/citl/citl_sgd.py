@@ -21,14 +21,15 @@ import matplotlib.pyplot as plt
 import torch
 from mask_designer import camera
 from mask_designer.experimental_setup import Params, params, slm_device
-from mask_designer.simulated_prop import holoeye_fraunhofer, simulated_prop
+from mask_designer.prop_waveprop_asm import prop_waveprop_asm
+from mask_designer.simulate_prop import holoeye_fraunhofer, simulate_prop
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 from mask_designer.utils import (
     extend_to_field,
     quantize_phase_mask,
     random_init_phase_mask,
 )
-from mask_designer.wrapper import SGD, ImageLoader, PhysicalProp
+from mask_designer.wrapper import SGD, ImageLoader, PropPhysical, prop_asm
 from slm_controller import slm
 from slm_controller.hardware import SLMParam, slm_devices
 
@@ -55,6 +56,9 @@ def main(iterations, slm_show_time, slm_settle_time):
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     roi = params[Params.ROI]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
+
+    # asm_propagator = propagation_ASM # TODO check if this is correct
+    asm_propagator = prop_waveprop_asm
 
     # warm_start_iterations = 500 # TODO use those
     # citl_iterations = iterations
@@ -93,7 +97,15 @@ def main(iterations, slm_show_time, slm_settle_time):
     init_phase = random_init_phase_mask(slm_shape, device)
 
     # Run Stochastic Gradient Descent based method
-    sgd = SGD(prop_dist, wavelength, pixel_pitch, warm_start_iterations, roi, device=device)
+    sgd = SGD(
+        prop_dist,
+        wavelength,
+        pixel_pitch,
+        warm_start_iterations,
+        roi,
+        device=device,
+        propagator=asm_propagator,
+    )
     angles = sgd(target_amp, init_phase).cpu().detach()
 
     # Extend the computed angles, aka the phase values, to be a field which is a complex tensor
@@ -105,7 +117,7 @@ def main(iterations, slm_show_time, slm_settle_time):
         warm_start_field, prop_dist, wavelength, slm_shape, pixel_pitch
     )
 
-    propped_field = simulated_prop(final_phase_sgd, holoeye_fraunhofer)
+    propped_field = simulate_prop(final_phase_sgd, holoeye_fraunhofer)
 
     fig, ax = plt.subplots()
     ax.imshow(propped_field.abs(), cmap="gray")
@@ -141,7 +153,7 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     warm_start_field = warm_start_field.angle().to(device)
 
-    camera_prop = PhysicalProp(
+    prop_physical = PropPhysical(
         s,
         slm_settle_time,
         cam,
@@ -161,8 +173,8 @@ def main(iterations, slm_show_time, slm_settle_time):
         citl_iterations,
         roi,
         device=device,
-        citl=True,
-        camera_prop=camera_prop,
+        prop_model="PHYSICAL",
+        propagator=prop_physical,
     )
     angles = sgd(target_amp, warm_start_field).cpu().detach()
 
@@ -175,7 +187,7 @@ def main(iterations, slm_show_time, slm_settle_time):
         extended, prop_dist, wavelength, slm_shape, pixel_pitch
     )
 
-    propped_field = simulated_prop(final_phase_sgd, holoeye_fraunhofer)
+    propped_field = simulate_prop(final_phase_sgd, holoeye_fraunhofer)
 
     fig, ax = plt.subplots()
     ax.imshow(propped_field.abs(), cmap="gray")

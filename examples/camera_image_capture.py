@@ -13,7 +13,7 @@ sys.path.append(CODE_DIR)
 import matplotlib.pyplot as plt
 from mask_designer import camera
 from mask_designer.experimental_setup import cam_device
-from mask_designer.simulated_prop import plot_mask
+from mask_designer.simulate_prop import plot_mask
 
 
 def main():

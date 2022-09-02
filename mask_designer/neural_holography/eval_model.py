@@ -37,14 +37,14 @@ from mask_designer.experimental_setup import (
     slm_device,
 )
 from mask_designer.neural_holography.augmented_image_loader import ImageLoader
-from mask_designer.neural_holography.modules import PhysicalProp
-from mask_designer.neural_holography.propagation_ASM import propagation_ASM
-from mask_designer.neural_holography.propagation_model import ModelPropagate
+from mask_designer.neural_holography.modules import PropPhysical
+from mask_designer.neural_holography.prop_asm import prop_asm
+from mask_designer.neural_holography.prop_model import PropModel
 from slm_controller import slm
 from slm_controller.hardware import SLMParam, slm_devices
 
 
-def eval(
+def eval_model(
     channel, prop_model, test_phases_path, test_target_amps_path, prop_model_dir, calibration_path,
 ):
     slm_show_time = params[Params.SLM_SHOW_TIME]  # TODO arg or value from experimental setup
@@ -82,7 +82,7 @@ def eval(
     # precomputed_H = [None] * 3
 
     if prop_model == "ASM":
-        propagator = propagation_ASM
+        propagator = prop_asm
         # for c in chs:
         #     precomputed_H[c] = propagator(
         #         torch.empty(1, 1, *slm_shape, 2),
@@ -92,13 +92,13 @@ def eval(
         #         return_H=True,
         #     ).to(device)
 
-    elif prop_model.upper() == "CAMERA":
+    elif prop_model.upper() == "PHYSICAL":
         s = slm.create(slm_device)
         s.set_show_time(slm_show_time)
 
         cam = camera.create(cam_device)
 
-        propagator = PhysicalProp(
+        propagator = PropPhysical(
             s,
             slm_settle_time,
             cam,
@@ -113,7 +113,7 @@ def eval(
         blur = utils.make_kernel_gaussian(0.85, 3)
         propagators = {}
         for c in chs:
-            propagator = ModelPropagate(
+            propagator = PropModel(
                 distance=prop_dists[c],
                 feature_size=feature_size,
                 wavelength=wavelengths[c],

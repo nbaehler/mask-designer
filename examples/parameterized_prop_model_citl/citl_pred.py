@@ -44,15 +44,15 @@ from mask_designer.experimental_setup import (
 )
 from mask_designer.utils import pad_tensor_to_shape
 from mask_designer.wrapper import (
-    ModelPropagate,
-    PhysicalProp,
+    PropModel,
+    PropPhysical,
     cond_mkdir,
     crop_image,
     get_image_filenames,
     make_kernel_gaussian,
     polar_to_rect,
     propagate_field,
-    propagation_ASM,
+    prop_asm,
     srgb_lin2gamma,
 )
 from slm_controller import slm
@@ -65,7 +65,7 @@ from slm_controller.hardware import SLMParam, slm_devices
     "--prop_model",
     type=str,
     default="ASM",
-    help="Type of propagation model for reconstruction: ASM / MODEL / CAMERA",
+    help="Type of propagation model for reconstruction: ASM / MODEL / PHYSICAL",
 )
 @click.option(
     "--pred_phases_path",
@@ -117,15 +117,15 @@ def main(  # TODO buggy
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     if prop_model == "ASM":
-        propagator = propagation_ASM
+        propagator = prop_asm
 
-    elif prop_model.upper() == "CAMERA":
+    elif prop_model.upper() == "PHYSICAL":
         s = slm.create(slm_device)
         s.set_show_time(slm_show_time)
 
         cam = camera.create(cam_device)
 
-        propagator = PhysicalProp(
+        propagator = PropPhysical(
             s,
             slm_settle_time,
             cam,
@@ -140,7 +140,7 @@ def main(  # TODO buggy
         blur = make_kernel_gaussian(0.85, 3)
         propagators = {}
         for c in chs:
-            propagator = ModelPropagate(
+            propagator = PropModel(
                 distance=prop_dists[c],
                 feature_size=feature_size,
                 wavelength=wavelengths[c],

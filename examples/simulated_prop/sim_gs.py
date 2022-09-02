@@ -13,11 +13,11 @@ sys.path.append(CODE_DIR)
 import click
 import torch
 from mask_designer.experimental_setup import Params, params, slm_device
-from mask_designer.simulated_prop import (
+from mask_designer.simulate_prop import (
     holoeye_fraunhofer,
     neural_holography_asm,
     plot_fields,
-    simulated_prop,
+    simulate_prop,
 )
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 from mask_designer.utils import extend_to_field, random_init_phase_mask
@@ -73,12 +73,12 @@ def main(iterations):
 
     # Simulate the propagation in the lens setting and show the results
     unpacked_field = holoeye_field[0, 0, :, :]
-    propped_field = simulated_prop(holoeye_field, holoeye_fraunhofer)
+    propped_field = simulate_prop(holoeye_field, holoeye_fraunhofer)
     plot_fields(unpacked_field, propped_field, "Neural Holography GS with lens")
 
     # Simulate the propagation in the lensless setting and show the results
     unpacked_field = neural_holography_field[0, 0, :, :]
-    propped_field = simulated_prop(
+    propped_field = simulate_prop(
         neural_holography_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
     plot_fields(unpacked_field, propped_field, "Neural Holography GS without lens")

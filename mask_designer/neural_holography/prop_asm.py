@@ -28,7 +28,7 @@ import torch.fft
 from aotools.functions import zernikeArray
 
 
-def propagation_ASM(
+def prop_asm(
     u_in,
     feature_size,
     wavelength,
@@ -190,7 +190,7 @@ def propagation_ASM_zernike(
     """
 
     if return_H or return_H_exp or coeffs is None:
-        return propagation_ASM(
+        return prop_asm(
             u_in,
             feature_size,
             wavelength,
@@ -218,7 +218,7 @@ def propagation_ASM_zernike(
 
     # operator order
     if adjoint:
-        u_out = propagation_ASM(
+        u_out = prop_asm(
             u_in,
             feature_size,
             wavelength,
@@ -233,7 +233,7 @@ def propagation_ASM_zernike(
         u_out = utils.mul_complex(zernike, u_out)
     else:
         u_out = utils.mul_complex(zernike, u_in)
-        u_out = propagation_ASM(
+        u_out = prop_asm(
             u_out,
             feature_size,
             wavelength,
@@ -278,7 +278,7 @@ def propagation_ASM_zernike_fourier(
     """
 
     if return_H or return_H_exp or coeffs is None:
-        return propagation_ASM(
+        return prop_asm(
             u_in,
             feature_size,
             wavelength,
@@ -307,7 +307,7 @@ def propagation_ASM_zernike_fourier(
 
     precomped_H_new = zernike * precomped_H
 
-    return propagation_ASM(
+    return prop_asm(
         u_in,
         feature_size,
         wavelength,

@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import mask_designer.neural_holography.utils as utils
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from mask_designer.neural_holography.propagation_ASM import (
+from mask_designer.neural_holography.prop_asm import (
     compute_zernike_basis,
     combine_zernike_basis,
 )
@@ -35,7 +35,7 @@ class SummaryModelWriter(tensorboardX.SummaryWriter):
     """
     Inherited class of tensorboard summarywriter for visualization of model parameters.
 
-    :param model: ModelPropagate instance that is being trained.
+    :param model: PropModel instance that is being trained.
     :param writer_dir: directory of this summary
     :param slm_res: resolution of the SLM (1080, 1920)
     :param roi_res: resolution of the region of interest, default (880, 1600)

@@ -24,7 +24,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from mask_designer.experimental_setup import amp_mask
-from mask_designer.neural_holography.propagation_ASM import propagation_ASM
+from mask_designer.neural_holography.prop_asm import prop_asm
 
 
 # 1. GS
@@ -36,7 +36,7 @@ def gerchberg_saxton(
     wavelength,
     feature_size=6.4e-6,
     prop_model="ASM",
-    propagator=propagation_ASM,  # TODO before None, why?
+    propagator=prop_asm,
     dtype=torch.float32,
     precomputed_H_f=None,
     precomputed_H_b=None,
@@ -114,13 +114,11 @@ def stochastic_gradient_descent(
     feature_size,
     roi_res=None,
     prop_model="ASM",
-    propagator=propagation_ASM,
+    propagator=prop_asm,
     loss=nn.MSELoss(),
     lr=0.01,
     lr_s=0.003,
     s0=1.0,
-    citl=False,
-    camera_prop=None,
     writer=None,
     dtype=torch.float32,
     precomputed_H=None,
@@ -175,8 +173,8 @@ def stochastic_gradient_descent(
         optimizer.zero_grad()
 
         # camera-in-the-loop technique
-        if citl:
-            captured_amp = camera_prop(slm_phase)
+        if prop_model.upper() == "PHYSICAL":
+            captured_amp = propagator(slm_phase)
 
             # use the gradient of proxy, replacing the amplitudes
             # captured_amp is assumed that its size already matches that of recon_amp

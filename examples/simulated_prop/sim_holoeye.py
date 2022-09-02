@@ -11,11 +11,11 @@ CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
 from mask_designer.experimental_setup import Params, params, slm_device
-from mask_designer.simulated_prop import (
+from mask_designer.simulate_prop import (
     holoeye_fraunhofer,
     neural_holography_asm,
     plot_fields,
-    simulated_prop,
+    simulate_prop,
 )
 from mask_designer.transform_fields import transform_to_neural_holography_setting
 from mask_designer.utils import load_field
@@ -36,7 +36,7 @@ def main():
     unpacked_field = holoeye_field[0, 0, :, :]
 
     # Simulate the propagation in the lens setting and show the results
-    propped_field = simulated_prop(holoeye_field, holoeye_fraunhofer)
+    propped_field = simulate_prop(holoeye_field, holoeye_fraunhofer)
     plot_fields(
         unpacked_field, propped_field, "Holoeye with lens"
     )  # TODO Holoeye logo is dark, normalize image to be in [0, 255]?
@@ -48,7 +48,7 @@ def main():
     unpacked_field = neural_holography_field[0, 0, :, :]
 
     # Simulate the propagation in the lensless setting and show the results
-    propped_field = simulated_prop(
+    propped_field = simulate_prop(
         neural_holography_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
     plot_fields(unpacked_field, propped_field, "Holoeye without lens")

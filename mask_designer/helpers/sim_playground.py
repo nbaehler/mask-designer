@@ -12,13 +12,13 @@ sys.path.append(CODE_DIR)
 
 import torch
 from mask_designer.experimental_setup import Params, params, slm_device
-from mask_designer.simulated_prop import (
+from mask_designer.simulate_prop import (
     holoeye_fraunhofer,
     neural_holography_asm,
     plot_fields,
-    simulated_prop,
-    waveprop_angular_spectrum,
-    waveprop_angular_spectrum_np,
+    simulate_prop,
+    waveprop_asm,
+    waveprop_asm_np,
     waveprop_direct_integration,
     waveprop_fft_di,
     waveprop_fraunhofer,
@@ -53,20 +53,18 @@ def main():
     ]  # TODO improve this data structure, for now only for one image and one channel!
 
     # Simulate the propagation in the lens setting and show the results
-    propped_field = simulated_prop(holoeye_field, holoeye_fraunhofer)
+    propped_field = simulate_prop(holoeye_field, holoeye_fraunhofer)
     plot_fields(unpacked_field, propped_field, "Holoeye with lens")
 
     # TODO test those, add all?
     # ==========================================================================
-    propped_field = simulated_prop(
+    propped_field = simulate_prop(
         holoeye_field, waveprop_fraunhofer, prop_dist, wavelength, pixel_pitch,
     )
     plot_fields(unpacked_field, propped_field, "Holoeye with Fraunhofer")
 
     propped_field = (
-        simulated_prop(
-            holoeye_field, waveprop_angular_spectrum, prop_dist, wavelength, pixel_pitch, device,
-        )
+        simulate_prop(holoeye_field, waveprop_asm, prop_dist, wavelength, pixel_pitch, device,)
         .cpu()
         .detach()
     )
@@ -74,22 +72,22 @@ def main():
         unpacked_field, propped_field, "Holoeye with Angular Spectrum",
     )
 
-    propped_field = simulated_prop(
-        holoeye_field, waveprop_angular_spectrum_np, prop_dist, wavelength, pixel_pitch,
+    propped_field = simulate_prop(
+        holoeye_field, waveprop_asm_np, prop_dist, wavelength, pixel_pitch,
     )
     plot_fields(unpacked_field, propped_field, "Holoeye with Angular Spectrum NP")
 
-    propped_field = simulated_prop(
+    propped_field = simulate_prop(
         holoeye_field, waveprop_fft_di, prop_dist, wavelength, pixel_pitch,  # TODO not working
     )
     plot_fields(unpacked_field, propped_field, "Holoeye with FFT Direct")
 
-    propped_field = simulated_prop(
+    propped_field = simulate_prop(
         holoeye_field, waveprop_direct_integration, prop_dist, wavelength, pixel_pitch,
     )
     plot_fields(unpacked_field, propped_field, "Holoeye with Direct Integration")
 
-    propped_field = simulated_prop(
+    propped_field = simulate_prop(
         holoeye_field,
         waveprop_fresnel_one_step,  # TODO this one seems to be the only one that captures scale
         prop_dist,
@@ -98,7 +96,7 @@ def main():
     )
     plot_fields(unpacked_field, propped_field, "Holoeye with Fresnel One Step")
 
-    propped_field = simulated_prop(
+    propped_field = simulate_prop(
         holoeye_field,
         waveprop_fresnel_two_step,
         prop_dist,
@@ -107,7 +105,7 @@ def main():
     )
     plot_fields(unpacked_field, propped_field, "Holoeye with Fresnel Two Step")
 
-    propped_field = simulated_prop(
+    propped_field = simulate_prop(
         holoeye_field,
         waveprop_fresnel_multi_step,
         prop_dist,
@@ -117,7 +115,7 @@ def main():
     plot_fields(unpacked_field, propped_field, "Holoeye with Fresnel Multi Step")
 
     propped_field = (
-        simulated_prop(
+        simulate_prop(
             holoeye_field, waveprop_fresnel_conv, prop_dist, wavelength, pixel_pitch, device,
         )
         .cpu()
@@ -127,13 +125,13 @@ def main():
         unpacked_field, propped_field, "Holoeye with Fresnel Convolution",
     )
 
-    propped_field = simulated_prop(
+    propped_field = simulate_prop(
         holoeye_field, waveprop_shifted_fresnel, prop_dist, wavelength, pixel_pitch,
     )
     plot_fields(unpacked_field, propped_field, "Holoeye with Shifted Fresnel")
 
     propped_field = (
-        simulated_prop(
+        simulate_prop(
             holoeye_field,
             waveprop_spherical,
             prop_dist,
@@ -155,7 +153,7 @@ def main():
     unpacked_field = neural_holography_field[0, 0, :, :]
 
     # Simulate the propagation in the lensless setting and show the results
-    propped_field = simulated_prop(
+    propped_field = simulate_prop(
         neural_holography_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
     plot_fields(unpacked_field, propped_field, "Holoeye without lens")

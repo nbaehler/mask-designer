@@ -52,8 +52,8 @@ from mask_designer.experimental_setup import (
 )
 
 import mask_designer.neural_holography.utils as utils
-from mask_designer.neural_holography.modules import PhysicalProp
-from mask_designer.neural_holography.propagation_model import ModelPropagate
+from mask_designer.neural_holography.modules import PropPhysical
+from mask_designer.neural_holography.prop_model import PropModel
 from mask_designer.neural_holography.augmented_image_loader import ImageLoader
 from mask_designer.neural_holography.utils_tensorboard import SummaryModelWriter
 
@@ -122,7 +122,7 @@ def train_model(  # TODO buggy
     cam = camera.create(cam_device)
 
     # Hardware setup
-    camera_prop = PhysicalProp(
+    prop_physical = PropPhysical(
         s,
         slm_settle_time,
         cam,
@@ -137,7 +137,7 @@ def train_model(  # TODO buggy
     # Model instance to train
     # Check propagation_model.py for the default parameter settings!
     blur = utils.make_kernel_gaussian(0.85, 3)  # Optional, just be consistent with inference.
-    model = ModelPropagate(
+    model = PropModel(
         distance=prop_dist,
         feature_size=feature_size,
         wavelength=wavelength,
@@ -301,7 +301,7 @@ def train_model(  # TODO buggy
                 # forward physical pass (display), capture and stack them in batch dimension
                 for k, idx in enumerate(idxs):
                     phase_mask = phase_masks[k, np.newaxis, ...]
-                    camera_amp.append(camera_prop(phase_mask))
+                    camera_amp.append(prop_physical(phase_mask))
                 camera_amp = torch.cat(camera_amp, 0)
 
             camera_amp = utils.crop_image(  # TODO needed? Added instead of rescaling

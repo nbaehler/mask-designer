@@ -37,7 +37,7 @@ from mask_designer.neural_holography.algorithms import (
     stochastic_gradient_descent,
 )
 from mask_designer.neural_holography.calibration_module import Calibration
-from mask_designer.neural_holography.propagation_ASM import propagation_ASM
+from mask_designer.neural_holography.prop_asm import prop_asm
 from mask_designer.utils import (
     angularize_phase_mask,
     extend_to_field,
@@ -85,7 +85,7 @@ class GS(nn.Module):
         feature_size,
         num_iters,
         prop_model="ASM",
-        propagator=propagation_ASM,
+        propagator=prop_asm,
         writer=None,
         device="cuda" if torch.cuda.is_available() else "cpu",
     ):
@@ -182,13 +182,11 @@ class SGD(nn.Module):
         num_iters,
         roi_res,
         prop_model="ASM",
-        propagator=propagation_ASM,
+        propagator=prop_asm,
         loss=nn.MSELoss(),
         lr=0.01,
         lr_s=0.003,
         s0=1.0,
-        citl=False,
-        camera_prop=None,
         writer=None,
         device="cuda" if torch.cuda.is_available() else "cpu",
     ):
@@ -207,9 +205,6 @@ class SGD(nn.Module):
         self.lr = lr
         self.lr_s = lr_s
         self.init_scale = s0
-
-        self.citl = citl
-        self.camera_prop = camera_prop
 
         self.writer = writer
         self.dev = device
@@ -243,14 +238,12 @@ class SGD(nn.Module):
             lr=self.lr,
             lr_s=self.lr_s,
             s0=self.init_scale,
-            citl=self.citl,
-            camera_prop=self.camera_prop,
             writer=self.writer,
             precomputed_H=self.precomputed_H,
         )
 
 
-class PhysicalProp(nn.Module):
+class PropPhysical(nn.Module):
     """A module for physical propagation,
     forward pass displays gets phase mask as an input and display the mask on the physical setup,
     and capture the diffraction image at the target plane,
@@ -271,8 +264,8 @@ class PhysicalProp(nn.Module):
     -----
     Functions as a pytorch module:
 
-    >>> camera_prop = PhysicalProp(...)
-    >>> captured_amp = camera_prop(slm_phase)
+    >>> prop_physical = PropPhysical(...)
+    >>> captured_amp = prop_physical(slm_phase)
 
     slm_phase: phase at the SLM plane, with dimensions [batch, 1, height, width]
     captured_amp: amplitude at the target plane, with dimensions [batch, 1, height, width]
@@ -285,22 +278,13 @@ class PhysicalProp(nn.Module):
         cam,
         roi_res,
         channel=1,
-        # roi_res=(1600, 880),
-        # num_circles=(21, 12),
-        # =(640, 880),
-        # num_circles=(
-        #     9,
-        #     12,
-        # ),  # TODO (3, 3) makes dimension flip: width/height, and does not help the blob detector
         num_circles=(5, 8),
-        # range_row=(200, 1000),
-        # range_col=(300, 1700),
         range_row=(0, 768),  # TODO adapt to capture roi in real image
         range_col=(0, 1024),
         pattern_path="./citl/calibration",
         show_preview=False,
     ):
-        super(PhysicalProp, self).__init__()
+        super(PropPhysical, self).__init__()
 
         # 1. Connect Camera
         self.camera = cam
@@ -502,12 +486,12 @@ class PhysicalProp(nn.Module):
 
             field = extend_to_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
-            from mask_designer.simulated_prop import (  # TODO move up!!
+            from mask_designer.simulate_prop import (  # TODO move up!!
                 holoeye_fraunhofer,
-                simulated_prop,
+                simulate_prop,
             )
 
-            propped_field = simulated_prop(field, holoeye_fraunhofer)
+            propped_field = simulate_prop(field, holoeye_fraunhofer)
 
             fig, ax = plt.subplots()
             ax.imshow(propped_field.abs(), cmap="gray")

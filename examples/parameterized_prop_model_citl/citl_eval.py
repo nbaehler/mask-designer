@@ -10,7 +10,7 @@ CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
 import click
-from mask_designer.wrapper import eval
+from mask_designer.wrapper import eval_model
 
 
 @click.command()
@@ -19,7 +19,7 @@ from mask_designer.wrapper import eval
     "--prop_model",
     type=str,
     default="ASM",
-    help="Type of propagation model for reconstruction: ASM / MODEL / CAMERA",
+    help="Type of propagation model for reconstruction: ASM / MODEL / PHYSICAL",
 )
 @click.option(
     "--test_phases_path",
@@ -48,7 +48,7 @@ from mask_designer.wrapper import eval
 def main(  # TODO buggy
     channel, prop_model, test_phases_path, test_target_amps_path, prop_model_dir, calibration_path,
 ):
-    eval(
+    eval_model(
         channel,
         prop_model,
         test_phases_path,

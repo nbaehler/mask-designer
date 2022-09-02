@@ -8,12 +8,17 @@ from waveprop.fresnel import (
     fresnel_two_step,
     shifted_fresnel,
 )
-from waveprop.rs import angular_spectrum, angular_spectrum_np, direct_integration, fft_di
+from waveprop.rs import (
+    angular_spectrum,
+    angular_spectrum_np,
+    direct_integration,
+    fft_di,
+)
 from waveprop.spherical import spherical_prop
 from waveprop.util import ift2
 
 from mask_designer.utils import normalize_mask
-from mask_designer.wrapper import fftshift, propagate_field, propagation_ASM
+from mask_designer.wrapper import fftshift, prop_asm, propagate_field
 
 
 def holoeye_fraunhofer(field):
@@ -37,7 +42,7 @@ def holoeye_fraunhofer(field):
 default_prop_method = holoeye_fraunhofer
 
 
-def simulated_prop(field, propagation_method=default_prop_method, *args):
+def simulate_prop(field, propagation_method=default_prop_method, *args):
     return propagation_method(field, *args)[0, 0, :, :]
 
 
@@ -57,7 +62,7 @@ def neural_holography_asm(field, prop_dist, wavelength, pixel_pitch):
         The result of the propagation at the target plane
     """
     return propagate_field(
-        field, propagation_ASM, prop_dist, wavelength, pixel_pitch, "ASM", torch.float32, None,
+        field, prop_asm, prop_dist, wavelength, pixel_pitch, "ASM", torch.float32, None,
     )
 
 
@@ -88,7 +93,7 @@ def waveprop_fraunhofer(field, prop_dist, wavelength, pixel_pitch):
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def waveprop_angular_spectrum(field, prop_dist, wavelength, pixel_pitch, device):
+def waveprop_asm(field, prop_dist, wavelength, pixel_pitch, device):
     """
     Angular Spectrum Method propagation using waveprop.
 
@@ -126,7 +131,7 @@ def waveprop_angular_spectrum(field, prop_dist, wavelength, pixel_pitch, device)
     ]  # TODO Temporary fix for flipped, copy fixes negative stride issue
 
 
-def waveprop_angular_spectrum_np(field, prop_dist, wavelength, pixel_pitch):
+def waveprop_asm_np(field, prop_dist, wavelength, pixel_pitch):
     """
     Band-limited Angular Spectrum Method for Numerical Simulation of Free-Space
     Propagation in Far and Near Fields propagation using waveprop.

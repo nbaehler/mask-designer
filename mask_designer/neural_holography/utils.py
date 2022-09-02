@@ -369,7 +369,7 @@ def propagate_field(
             dtype=dtype,
             precomped_H=precomputed_H,
         )
-    elif "MODEL" in prop_model.upper() or prop_model == "CAMERA":
+    elif "MODEL" in prop_model.upper() or prop_model == "PHYSICAL":
         # forward propagate through our citl-calibrated model.
         # You can directly use this model propagation, not using this wrapper module.
         _, input_phase = rect_to_polar(input_field.real, input_field.imag)

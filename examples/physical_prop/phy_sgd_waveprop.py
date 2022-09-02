@@ -14,7 +14,7 @@ sys.path.append(CODE_DIR)
 import click
 import torch
 from mask_designer.experimental_setup import Params, params, slm_device
-from mask_designer.prop_models import propagator_waveprop_angular_spectrum
+from mask_designer.prop_waveprop_asm import prop_waveprop_asm
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 from mask_designer.utils import (
     extend_to_field,
@@ -69,7 +69,7 @@ def main(iterations):
         pixel_pitch,
         iterations,
         roi,
-        propagator=propagator_waveprop_angular_spectrum,
+        propagator=prop_waveprop_asm,
         device=device,
     )
     angles = sgd(target_amp, init_phase).cpu().detach()

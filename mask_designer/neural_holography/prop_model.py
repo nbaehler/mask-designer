@@ -20,10 +20,10 @@ import mask_designer.neural_holography.utils as utils
 import numpy as np
 import torch
 import torch.nn as nn
-from mask_designer.neural_holography.propagation_ASM import (
+from mask_designer.neural_holography.prop_asm import (
     combine_zernike_basis,
     compute_zernike_basis,
-    propagation_ASM,
+    prop_asm,
     propagation_ASM_zernike,
     propagation_ASM_zernike_fourier,
 )
@@ -220,7 +220,7 @@ class SourceAmplitude(nn.Module):
         return torch.ger(self.amplitudes[idx] * y_gaussian, x_gaussian)
 
 
-class ModelPropagate(nn.Module):
+class PropModel(nn.Module):
     """Parameterized light transport model, propagates a SLM phase with multipart propagation, including
     learnable Zernike phase, source amplitude, and phase LUT corrections, etc....
 
@@ -247,8 +247,8 @@ class ModelPropagate(nn.Module):
     -----
     Functions as a pytorch module:
 
-    >>> propagate_model = ModelPropagate(...)
-    >>> output_complex = propagate_model(slm_phase)
+    >>> prop_model = PropModel(...)
+    >>> output_complex = prop_model(slm_phase)
 
     slm_phase: encoded phase-only representation at SLM plane , with dimensions
         [batch, 1, height, width]
@@ -284,7 +284,7 @@ class ModelPropagate(nn.Module):
         proptype="ASM",
         linear_conv=True,
     ):
-        super(ModelPropagate, self).__init__()
+        super(PropModel, self).__init__()
 
         # Section 5.1.1. Content-independent Source & Target Field variation
         if num_gaussians:
@@ -387,7 +387,7 @@ class ModelPropagate(nn.Module):
 
         # change out the propagation operator
         if proptype == "ASM":
-            self.prop = propagation_ASM
+            self.prop = prop_asm
             self.prop_zernike = propagation_ASM_zernike
             self.prop_zernike_fourier = propagation_ASM_zernike_fourier
 

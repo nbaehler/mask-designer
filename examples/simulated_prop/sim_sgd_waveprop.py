@@ -14,13 +14,13 @@ sys.path.append(CODE_DIR)
 import click
 import torch
 from mask_designer.experimental_setup import Params, params, slm_device
-from mask_designer.prop_models import propagator_waveprop_angular_spectrum
-from mask_designer.simulated_prop import (
+from mask_designer.prop_waveprop_asm import prop_waveprop_asm
+from mask_designer.simulate_prop import (
     holoeye_fraunhofer,
     neural_holography_asm,
     plot_fields,
-    simulated_prop,
-    waveprop_angular_spectrum,
+    simulate_prop,
+    waveprop_asm,
 )
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 from mask_designer.utils import extend_to_field, random_init_phase_mask
@@ -69,7 +69,7 @@ def main(iterations):
         pixel_pitch,
         iterations,
         roi,
-        propagator=propagator_waveprop_angular_spectrum,  # TODO this propagator is not in the neural holography setting
+        propagator=prop_waveprop_asm,  # TODO this propagator is not in the neural holography setting
         device=device,
     )
     angles = sgd(target_amp, init_phase).cpu().detach()
@@ -84,16 +84,14 @@ def main(iterations):
 
     # Simulate the propagation in the lens setting and show the results
     unpacked_field = holoeye_field[0, 0, :, :]
-    propped_field = simulated_prop(holoeye_field, holoeye_fraunhofer)
+    propped_field = simulate_prop(holoeye_field, holoeye_fraunhofer)
     plot_fields(
         unpacked_field, propped_field, "Neural Holography SGD with lens and Holoeye Fraunhofer",
     )
 
     # Simulate the propagation in the lensless setting and show the results
     unpacked_field = field[0, 0, :, :]
-    propped_field = simulated_prop(
-        field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
-    )
+    propped_field = simulate_prop(field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,)
     plot_fields(
         unpacked_field,
         propped_field,
@@ -103,9 +101,7 @@ def main(iterations):
     # Simulate the propagation in the lens setting and show the results
     unpacked_field = holoeye_field[0, 0, :, :]
     propped_field = (
-        simulated_prop(
-            holoeye_field, waveprop_angular_spectrum, prop_dist, wavelength, pixel_pitch, device,
-        )
+        simulate_prop(holoeye_field, waveprop_asm, prop_dist, wavelength, pixel_pitch, device,)
         .cpu()
         .detach()
     )
