@@ -56,8 +56,6 @@ def main():
     propped_field = simulate_prop(holoeye_field, holoeye_fraunhofer)
     plot_fields(unpacked_field, propped_field, "Holoeye with lens")
 
-    # TODO test those, add all?
-    # ==========================================================================
     propped_field = simulate_prop(
         holoeye_field, waveprop_fraunhofer, prop_dist, wavelength, pixel_pitch,
     )
@@ -89,7 +87,7 @@ def main():
 
     propped_field = simulate_prop(
         holoeye_field,
-        waveprop_fresnel_one_step,  # TODO this one seems to be the only one that captures scale
+        waveprop_fresnel_one_step,  # TODO not working correctly
         prop_dist,
         wavelength,
         pixel_pitch,
@@ -143,8 +141,6 @@ def main():
         .detach()
     )
     plot_fields(unpacked_field, propped_field, "Holoeye with Spherical")
-
-    # ==========================================================================
 
     # Transform the initial phase mask to the lensless setting
     neural_holography_field = transform_to_neural_holography_setting(

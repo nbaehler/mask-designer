@@ -37,9 +37,7 @@ def main():
 
     # Simulate the propagation in the lens setting and show the results
     propped_field = simulate_prop(holoeye_field, holoeye_fraunhofer)
-    plot_fields(
-        unpacked_field, propped_field, "Holoeye with lens"
-    )  # TODO Holoeye logo is dark, normalize image to be in [0, 255]?
+    plot_fields(unpacked_field, propped_field, "Holoeye with lens")
 
     # Transform the initial field to the lensless setting
     neural_holography_field = transform_to_neural_holography_setting(

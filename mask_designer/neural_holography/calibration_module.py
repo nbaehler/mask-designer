@@ -38,10 +38,6 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
              H: a 3x3 homography matrix (numpy)
     """
 
-    # Binarization
-    # org_copy = org.copy() # Otherwise, we write on the original image!
-    # img = (captured_img.copy() * 255).astype(np.uint8) # TODO no need to go
-    # via floats
     img = captured_img.copy()
 
     if len(img.shape) > 2:
@@ -134,7 +130,9 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
             ax4.set_title("Warped image with marked centers")
             ax4.imshow(captured_img_warp, cmap="gray")
 
-        name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+        name = (
+            str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+        )  # TODO remove
         plt.savefig(f"citl/snapshots/sim_{name}_calib.png")
         plt.close()
 

@@ -28,7 +28,7 @@ from mask_designer.utils import (
 from slm_controller.hardware import SLMParam, slm_devices
 
 
-def main():  # TODO buggy
+def main():
     # Define parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -43,7 +43,7 @@ def main():  # TODO buggy
     # Pad roi to full slm shape
     holoeye_phase_mask = torch.from_numpy(pad_image_to_shape(holoeye_phase_mask, slm_shape))[
         None, None, :, :
-    ]  # TODO padding really needed? Done in citl_pred as well, we'll see
+    ]  # TODO padding really needed?
 
     holoeye_field = extend_to_field(angularize_phase_mask(holoeye_phase_mask))
     unpacked_field = holoeye_field[0, 0, :, :]

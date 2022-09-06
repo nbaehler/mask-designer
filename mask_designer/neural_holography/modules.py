@@ -43,6 +43,7 @@ from mask_designer.utils import (
     extend_to_field,
     quantize_phase_mask,
     round_phase_mask_to_uint8,
+    save_image,
 )
 from PIL import Image
 from slm_controller.hardware import SLMParam, slm_devices
@@ -426,7 +427,6 @@ class PropPhysical(nn.Module):
         return self.calibrator(captured_intensity_raw_cropped)
 
     def _transform_phase_mask(self, phase_mask):
-        # TODO where should I switch the hardware setting?
         field = extend_to_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
         prop_dist = params[Params.PROPAGATION_DISTANCE]
@@ -436,7 +436,7 @@ class PropPhysical(nn.Module):
 
         from mask_designer.transform_fields import (
             transform_from_neural_holography_setting,
-        )  # TODO move up!!
+        )  # TODO move import up!!
 
         # Transform the results to the hardware setting using a lens
         field = transform_from_neural_holography_setting(
@@ -486,18 +486,23 @@ class PropPhysical(nn.Module):
 
             field = extend_to_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
-            from mask_designer.simulate_prop import (  # TODO move up!!
+            from mask_designer.simulate_prop import (  # TODO move import up!!
                 holoeye_fraunhofer,
                 simulate_prop,
             )
 
             propped_field = simulate_prop(field, holoeye_fraunhofer)
 
-            fig, ax = plt.subplots()
-            ax.imshow(propped_field.abs(), cmap="gray")
+            from mask_designer.utils import normalize_mask
+
             name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-            plt.savefig(f"citl/snapshots/sim_{name}.png")
-            plt.close(fig)
+            save_image(
+                255
+                * normalize_mask(propped_field.abs()).astype(
+                    np.uint8
+                ),  # TODO remove numpy and check if if abs needs to be scaled to 255
+                f"citl/snapshots/sim_{name}.png",
+            )
 
         self.slm.imshow(phase_mask)
 

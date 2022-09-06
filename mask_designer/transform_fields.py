@@ -5,6 +5,7 @@ import torch
 
 from mask_designer.utils import extend_to_field
 from mask_designer.wrapper import fftshift, ifftshift, polar_to_rect
+from mask_designer.experimental_setup import rectangular_amp
 
 
 def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
@@ -118,9 +119,7 @@ def transform_to_neural_holography_setting(
     H = __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch)
 
     angles = holoeye_field.angle()
-    field = torch.polar(
-        torch.ones_like(angles), angles
-    )  # TODO not sure if needed or circular is okay
+    field = torch.polar(rectangular_amp(), angles)
 
     field = fftshift(
         torch.fft.ifftn(
@@ -164,9 +163,7 @@ def transform_from_neural_holography_setting(
     H = __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch)
 
     angles = neural_holography_field.angle()
-    field = torch.polar(
-        torch.ones_like(angles), angles
-    )  # TODO not sure if needed or circular is okay
+    field = torch.polar(rectangular_amp(), angles)
 
     field = torch.fft.ifftn(
         torch.fft.ifftn(

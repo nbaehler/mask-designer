@@ -76,7 +76,7 @@ from slm_controller.hardware import SLMParam, slm_devices
 @click.option(
     "--prop_model_dir",
     type=str,
-    default="./citl/calibrated_models",  # TODO normally calibrated in manual step? For now just copy there by hand ...
+    default="./citl/calibrated_models",
     help="Directory for the CITL-calibrated wave propagation models",
 )
 @click.option(
@@ -85,7 +85,7 @@ from slm_controller.hardware import SLMParam, slm_devices
     default="./citl/calibration",
     help="Directory where calibration phases are being stored.",
 )
-def main(  # TODO buggy
+def main(
     channel, prop_model, pred_phases_path, prop_model_dir, calibration_path,
 ):
     slm_show_time = params[Params.SLM_SHOW_TIME]  # TODO arg or value from experimental setup
@@ -173,7 +173,7 @@ def main(  # TODO buggy
             # load and invert phase (our SLM setup)
             phase_mask = skimage.io.imread(phase_path) / 255.0
 
-            phase_mask = np.mean(phase_mask, axis=2)  # TODO added to make it grayscale
+            phase_mask = np.mean(phase_mask, axis=2)
 
             # phase_mask = (  #TODO inversion not needed in our setting?
             #     torch.tensor((1 - phase_mask) * 2 * np.pi - np.pi, dtype=dtype)

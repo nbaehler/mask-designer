@@ -69,7 +69,7 @@ def main(iterations):
         pixel_pitch,
         iterations,
         roi,
-        propagator=prop_waveprop_asm,  # TODO this propagator is not in the neural holography setting
+        propagator=prop_waveprop_asm,  # TODO check that this works
         device=device,
     )
     angles = sgd(target_amp, init_phase).cpu().detach()

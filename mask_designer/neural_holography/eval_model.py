@@ -157,7 +157,6 @@ def eval_model(
         # get target image
         target_amp, _, target_filename = target
         _, target_filename = os.path.split(target_filename[0])
-        # target_idx = target_filename.split("_")[-1]
         target_amp = target_amp.to(device)
 
         print(f"    - running for {target_filename}...")
@@ -175,7 +174,7 @@ def eval_model(
             phase_filename = os.path.join(test_phases_path, chan_strs[c], f"{target_filename}.png")
             phase_mask = skimage.io.imread(phase_filename) / 255.0
 
-            phase_mask = np.mean(phase_mask, axis=2)  # TODO added to make it grayscale
+            phase_mask = np.mean(phase_mask, axis=2)
 
             # phase_mask = (  #TODO inversion not needed in our setting?
             #     torch.tensor((1 - phase_mask) * 2 * np.pi - np.pi, dtype=dtype)

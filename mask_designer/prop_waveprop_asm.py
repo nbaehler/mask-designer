@@ -1,6 +1,8 @@
 import torch
 from waveprop.rs import angular_spectrum
 
+from mask_designer.transform_fields import transform_from_neural_holography_setting
+
 
 def prop_waveprop_asm(
     u_in,
@@ -49,3 +51,39 @@ def prop_waveprop_asm(
     )
 
     return res[None, None, :, :]
+
+
+def prop_waveprop_asm_lens(  # TODO does this work?
+    u_in,
+    feature_size,
+    wavelength,
+    z,
+    # linear_conv=True, # TODO check those two parameters
+    # padtype="zero",
+    return_H=False,
+    precomped_H=None,
+    return_H_exp=False,
+    precomped_H_exp=None,
+    dtype=torch.float32,
+):
+    res = prop_waveprop_asm(
+        u_in,
+        feature_size,
+        wavelength,
+        z,
+        # linear_conv,
+        # padtype,
+        return_H,
+        precomped_H,
+        return_H_exp,
+        precomped_H_exp,
+        dtype,
+    )[None, None, :, :]
+
+    print(res.shape)
+    print(u_in.shape[2:])
+    print(feature_size)
+
+    return transform_from_neural_holography_setting(
+        res, z, wavelength, u_in.shape[2:], feature_size
+    )

@@ -23,10 +23,7 @@ def main():
     calib_phase = np.array(calib_phase_img)
     calib_phase = np.mean(calib_phase, axis=2)
 
-    field = extend_to_field(
-        angularize_phase_mask(calib_phase)
-    )  # TODO angularize and quantize should be inverses of one another, test that!
-    # Check the conversions and division you do!
+    field = extend_to_field(angularize_phase_mask(calib_phase))
 
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -35,7 +32,7 @@ def main():
 
     from mask_designer.transform_fields import (
         transform_to_neural_holography_setting,
-    )  # TODO move up!!
+    )  # TODO move import up!!
 
     # Transform the results to the hardware setting using a lens
     field = transform_to_neural_holography_setting(

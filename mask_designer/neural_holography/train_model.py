@@ -58,7 +58,7 @@ from mask_designer.neural_holography.augmented_image_loader import ImageLoader
 from mask_designer.neural_holography.utils_tensorboard import SummaryModelWriter
 
 
-def train_model(  # TODO buggy
+def train_model(
     channel,
     pretrained_path,
     model_path,
@@ -227,9 +227,7 @@ def train_model(  # TODO buggy
                         phase_path, f"{chan_str}", f"{idx}_{channel}", "phasemaps_1000.png",
                     )
 
-                if os.path.exists(
-                    phase_filename
-                ):  # TODO if statement added, create random mask if file does not exist
+                if os.path.exists(phase_filename):
                     phase_mask = skimage.io.imread(phase_filename) / np.iinfo(np.uint8).max
                 else:
                     phase_mask = (
@@ -345,8 +343,6 @@ def train_model(  # TODO buggy
                     )
                 if i % 50 == 0:
                     recon = model_amp[0, ...]
-                    if not recon.any():  # TODO not really black
-                        print("RECON is buggy!!!")
                     captured = camera_amp[0, ...]
                     gt = target_amp[0, ...] / scale_phase[0, ...]
                     max_amp = max(recon.max(), captured.max(), gt.max())

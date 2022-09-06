@@ -47,15 +47,11 @@ from mask_designer.wrapper import train_model
 @click.option("--lr_model", type=float, default=3e-3, help="Learning rate for model parameters")
 @click.option("--lr_phase", type=float, default=5e-3, help="Learning rate for phase")
 @click.option("--num_epochs", type=int, default=15, help="Number of epochs")
-@click.option(
-    "--batch_size", type=int, default=1, help="Size of minibatch"
-)  # TODO adapt batch size
-@click.option("--no_step_lr", is_flag=True, help="Use of lr scheduler")  # TODO replaced with flag
-# @click.option(
-#     "--step_lr", type=str2bool, default=True, help="Use of lr scheduler"
-# )
-# @click.option("--experiment", type=str, default="", help="Name of the experiment")
-def main(  # TODO buggy
+@click.option("--batch_size", type=int, default=1, help="Size of minibatch")
+@click.option("--no_step_lr", is_flag=True, help="Use of lr scheduler")
+# @click.option("--experiment", type=str, default="", help="Name of the
+# experiment") # TODO hard coded here
+def main(
     channel,
     pretrained_path,
     model_path,

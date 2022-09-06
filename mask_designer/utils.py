@@ -46,7 +46,7 @@ def _m_to_cell_idx(val, cell_m):
     return int(val / cell_m)
 
 
-# def si2cell(val: np.ndarray, cell_m): # TODO unused
+# def si2cell(val: np.ndarray, cell_m): # TODO unused, remove
 #     """
 #     Convert locations to cell index.
 #
@@ -212,38 +212,36 @@ def load_image(path):  # TODO need 2 functions, load image and load phase mask?
             img = np.mean(img, axis=2)
 
     if issubclass(dtype.type, np.floating):
-        img = img / np.finfo(dtype).max
-        raise ValueError(
-            "Image must be of type float or int."
-        )  # TODO check if this is correct, makes no sense when [0, 1]
+        img = img / np.finfo(dtype).max  # TODO check if this is correct, makes no sense when [0, 1]
+        raise ValueError("Problematic image type.")
     elif issubclass(dtype.type, np.integer):
         img = img / np.iinfo(dtype).max
 
     return round_phase_mask_to_uint8(img * 255)
 
 
-# def save_image(I, fname): #TODO not used
-#     """
-#     Save image to a file.
+def save_image(I, fname):
+    """
+    Save image to a file.
 
-#     Parameters
-#     ----------
-#     I : :py:class:`~numpy.ndarray`
-#         (N_channel, N_height, N_width) image.
-#     fname : str, path-like
-#         Valid image file (i.e. JPG, PNG, BMP, TIFF, etc.).
-#     """
-#     I_max = I.max()
-#     I_max = 1 if np.isclose(I_max, 0) else I_max
+    Parameters
+    ----------
+    I : :py:class:`~numpy.ndarray`
+        (N_channel, N_height, N_width) image.
+    fname : str, path-like
+        Valid image file (i.e. JPG, PNG, BMP, TIFF, etc.).
+    """
+    # I_max = I.max()   # TODO not needed
+    # I_max = 1 if np.isclose(I_max, 0) else I_max
 
-#     I_f = I / I_max  # float64
-#     I_u = np.uint8(255 * I_f)  # uint8
+    # I_f = I / I_max  # float64
+    # I_u = np.uint8(255 * I_f)  # uint8
 
-#     if I.ndim == 3:
-#         I_u = I_u.transpose(1, 2, 0)
+    if I.ndim == 3:
+        I = I.transpose(1, 2, 0)
 
-#     I_p = Image.fromarray(I_u)
-#     I_p.save(fname)
+    I_p = Image.fromarray(I)
+    I_p.save(fname)
 
 
 def random_init_phase_mask(slm_shape, device, seed=1):
@@ -257,10 +255,6 @@ def normalize_mask(mask):
     Normalize the phase mask to be between 0 and 1.
     """
     if torch.is_tensor(mask):
-        if torch.is_complex(mask):  # TODO don't do conversion
-            mask = mask.angle()
-            raise ValueError("Mask must be real.")
-
         mask = mask.cpu().detach().numpy()
 
     if len(mask.shape) == 4:
@@ -313,6 +307,7 @@ def angularize_phase_mask(phase_mask):  # TODO better name, doc
 
         phase_mask = torch.from_numpy(phase_mask).type(torch.FloatTensor)
     else:
+        print("==> phase_mask is not a numpy array")
         # max_value = float(torch.finfo(phase_mask.dtype).max) # TODO handle this!
         max_value = 255.0
 
@@ -334,13 +329,9 @@ def quantize_phase_mask(phase_mask):
         The discretized map
     """
     if torch.is_tensor(phase_mask):
-        if torch.is_complex(phase_mask):  # TODO don't do this!
-            phase_mask = phase_mask.angle()
-            raise ValueError("phase_mask is complex")
-
         phase_mask = phase_mask.cpu().detach().numpy()
 
-        if len(phase_mask.shape) == 4:  # TODO check that this is correct
+        if len(phase_mask.shape) == 4:
             phase_mask = phase_mask[0, 0, :, :]
 
     new_phase_mask = phase_mask + np.pi
@@ -350,7 +341,7 @@ def quantize_phase_mask(phase_mask):
     return round_phase_mask_to_uint8(new_phase_mask)
 
 
-def round_phase_mask_to_uint8(phase_mask):
+def round_phase_mask_to_uint8(phase_mask):  # Should be normalized?
     """
     Round the phase_mask to the nearest integer and then convert to uint8.
     """
@@ -361,9 +352,7 @@ def scale_image_to_shape(image, shape, pad=False):
     dtype = image.dtype
 
     # Height / Width
-    aspect_ratio_orig = (
-        image.shape[0] / image.shape[1]
-    )  # TODO must also be done to the target amp images! But how much scaling is needed?
+    aspect_ratio_orig = image.shape[0] / image.shape[1]
     aspect_ratio_target = shape[0] / shape[1]
 
     if aspect_ratio_orig != aspect_ratio_target:
@@ -410,7 +399,7 @@ def pad_image_to_shape(image, shape):
     return np.pad(image, pad_shape)
 
 
-def pad_tensor_to_shape(phase_map, shape):  # TODO use the ones below, but check
+def pad_tensor_to_shape(phase_map, shape):  # TODO use the ones below, but check why they failed
     # that you remove and add dims back again where needed for this function
     height_before = (shape[0] - phase_map.shape[2]) // 2
     height_after = shape[0] - phase_map.shape[2] - height_before

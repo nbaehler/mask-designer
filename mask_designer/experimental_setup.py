@@ -36,9 +36,7 @@ slm_device = SLMDevices.HOLOEYE_LC_2012.value
 cam_device = CamDevices.IDS.value
 
 
-def circular_amp():  # TODO use circ aperture from our repo
-    # TODO check this, from here https://stackoverflow.com/a/70283438
-    # TODO remove, computations
+def circular_amp():  # TODO use circ aperture from our repo, documentation, from here https://stackoverflow.com/a/70283438
     # Laser radius = 1cm := r
     # pixel pitch = 0.36e-4 m = 0.0036 cm,
     # ==> r = 278 px

@@ -124,11 +124,7 @@ def waveprop_asm(field, prop_dist, wavelength, pixel_pitch, device):
         # out_shift=1,  # TODO check this parameter
     )
 
-    # return fftshift(res[None, None, :, :])
-
-    return torch.rot90(ift2(res, delta_f=1), 2)[
-        None, None, :, :
-    ]  # TODO Temporary fix for flipped, copy fixes negative stride issue
+    return torch.rot90(ift2(res, delta_f=1), 2)[None, None, :, :]
 
 
 def waveprop_asm_np(field, prop_dist, wavelength, pixel_pitch):

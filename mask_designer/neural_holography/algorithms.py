@@ -157,6 +157,8 @@ def stochastic_gradient_descent(
     # phase at the slm plane
     slm_phase = init_phase.requires_grad_(True)
 
+    initial_phase = slm_phase.clone().detach()  # TODO remove
+
     # optimization variables and adam optimizer
     optvars = [{"params": slm_phase}]
     if lr_s > 0:
@@ -172,44 +174,90 @@ def stochastic_gradient_descent(
     for k in range(num_iters):
         optimizer.zero_grad()
 
+        # # camera-in-the-loop technique
+        # if prop_model.upper() == "PHYSICAL":
+        #     captured_amp = propagator(slm_phase)
+
+        #     # use the gradient of proxy, replacing the amplitudes
+        #     # captured_amp is assumed that its size already matches that of recon_amp
+        #     out_amp = captured_amp.detach()
+        # else:
+        #     # forward propagation from the SLM plane to the target plane
+        #     real, imag = utils.polar_to_rect(slm_amp, slm_phase)
+        #     slm_field = torch.complex(real, imag)
+
+        #     recon_field = utils.propagate_field(
+        #         slm_field,
+        #         propagator,
+        #         prop_dist,
+        #         wavelength,
+        #         feature_size,
+        #         prop_model,
+        #         dtype,
+        #         precomputed_H,
+        #     )
+
+        #     # get amplitude
+        #     recon_amp = recon_field.abs()
+
+        #     # crop roi
+        #     recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
+
+        #     out_amp = recon_amp
+
+        print(f"Diff {str(torch.sum((initial_phase - slm_phase)**2).item())}")
+
+        # forward propagation from the SLM plane to the target plane
+        real, imag = utils.polar_to_rect(slm_amp, slm_phase)
+        slm_field = torch.complex(real, imag)
+
+        recon_field = utils.propagate_field(
+            slm_field,
+            propagator,
+            prop_dist,
+            wavelength,
+            feature_size,
+            prop_model,
+            dtype,
+            precomputed_H,
+        )
+
+        # get amplitude
+        recon_amp = recon_field.abs()  # TODO not in [0,1] !!!
+
+        # crop roi
+        recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
+
         # camera-in-the-loop technique
         if prop_model.upper() == "PHYSICAL":
             captured_amp = propagator(slm_phase)
 
             # use the gradient of proxy, replacing the amplitudes
             # captured_amp is assumed that its size already matches that of recon_amp
-            # out_amp = (
-            #     recon_amp + (captured_amp - recon_amp).detach()
-            # )  # TODO aka captured_amp
-            out_amp = captured_amp.detach()
+            out_amp = recon_amp + (captured_amp - recon_amp).detach()
+            # out_amp = captured_amp.detach() # TODO not enough?
         else:
-            # forward propagation from the SLM plane to the target plane
-            real, imag = utils.polar_to_rect(slm_amp, slm_phase)
-            slm_field = torch.complex(real, imag)
-
-            recon_field = utils.propagate_field(
-                slm_field,
-                propagator,
-                prop_dist,
-                wavelength,
-                feature_size,
-                prop_model,
-                dtype,
-                precomputed_H,
-            )
-
-            # get amplitude
-            recon_amp = recon_field.abs()
-
-            # crop roi
-            recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
-
             out_amp = recon_amp
 
         # calculate loss and backprop
         lossValue = loss(s * out_amp, target_amp)
+
+        print(torch.min(s * out_amp).item(), torch.max(s * out_amp).item())
+        print(torch.min(target_amp).item(), torch.max(target_amp).item())
+
+        print(f"Loss {(lossValue.item())}")
+
         lossValue.backward()
         optimizer.step()
+
+        from mask_designer.utils import save_image, quantize_phase_mask  # TODO remove
+        import datetime
+
+        name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+        save_image(
+            quantize_phase_mask(slm_phase.cpu().detach().numpy()[0, 0, :, :]),
+            f"citl/snapshots/phase_{name}.png",
+        )
 
         # write to tensorboard / write phase image
         # Note that it takes 0.~ s for writing it to tensorboard

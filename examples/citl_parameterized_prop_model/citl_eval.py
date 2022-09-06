@@ -36,7 +36,7 @@ from mask_designer.wrapper import eval_model
 @click.option(
     "--prop_model_dir",
     type=str,
-    default="./citl/calibrated_models",  # TODO normally calibrated in manual step? For now just copy there by hand ...
+    default="./citl/calibrated_models",
     help="Directory for the CITL-calibrated wave propagation models",
 )
 @click.option(
@@ -45,7 +45,7 @@ from mask_designer.wrapper import eval_model
     default="./citl/calibration",
     help="Directory where calibration phases are being stored.",
 )
-def main(  # TODO buggy
+def main(
     channel, prop_model, test_phases_path, test_target_amps_path, prop_model_dir, calibration_path,
 ):
     eval_model(

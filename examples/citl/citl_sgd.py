@@ -21,13 +21,17 @@ import matplotlib.pyplot as plt
 import torch
 from mask_designer import camera
 from mask_designer.experimental_setup import Params, params, slm_device
-from mask_designer.prop_waveprop_asm import prop_waveprop_asm
+from mask_designer.prop_waveprop_asm import (
+    prop_waveprop_asm,
+    prop_waveprop_asm_lens,
+)
 from mask_designer.simulate_prop import holoeye_fraunhofer, simulate_prop
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 from mask_designer.utils import (
     extend_to_field,
     quantize_phase_mask,
     random_init_phase_mask,
+    save_image,
 )
 from mask_designer.wrapper import SGD, ImageLoader, PropPhysical, prop_asm
 from slm_controller import slm
@@ -35,7 +39,9 @@ from slm_controller.hardware import SLMParam, slm_devices
 
 
 @click.command()
-@click.option("--iterations", type=int, default=50, help="Number of iterations to run.")
+@click.option(
+    "--iterations", type=int, default=50, help="Number of iterations to run."
+)  # TODO have two iteration arguments
 @click.option(
     "--slm_show_time",  # TODO what makes sense to keep as arguments here and what should
     # be moved to the experimental setup? Maybe we could just store the default values there ...
@@ -59,6 +65,7 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     # asm_propagator = propagation_ASM # TODO check if this is correct
     asm_propagator = prop_waveprop_asm
+    # asm_propagator = prop_waveprop_asm_lens
 
     # warm_start_iterations = 500 # TODO use those
     # citl_iterations = iterations
@@ -119,16 +126,22 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     propped_field = simulate_prop(final_phase_sgd, holoeye_fraunhofer)
 
-    fig, ax = plt.subplots()
-    ax.imshow(propped_field.abs(), cmap="gray")
+    import numpy as np
+    from mask_designer.utils import normalize_mask
+
     name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-    plt.savefig(f"citl/snapshots/sim_{name}_warm_start.png")
-    plt.close(fig)
+    save_image(
+        255
+        * normalize_mask(propped_field.abs()).astype(
+            np.uint8
+        ),  # TODO remove numpy and check if if abs needs to be scaled to 255
+        f"citl/snapshots/sim_{name}_warm_start.png",
+    )
 
     # Quantize the fields angles, aka phase values, to a bit values
     phase_out = quantize_phase_mask(final_phase_sgd.angle())
 
-    BaseManager.register("HoloeyeSLM", slm.HoloeyeSLM)  # TODO shouldn't to be shared
+    BaseManager.register("HoloeyeSLM", slm.HoloeyeSLM)  # TODO shouldn't to needed to be shared
     BaseManager.register("IDSCamera", camera.IDSCamera)
 
     manager = BaseManager()
@@ -145,13 +158,12 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     final_res = cam.acquire_single_image()
 
-    _, ax = plt.subplots()
-    ax.imshow(final_res, cmap="gray")
     name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-    plt.savefig(f"citl/snapshots/phy_{name}_warm_start.png")
-    plt.close()
+    save_image(
+        final_res, f"citl/snapshots/phy_{name}_warm_start.png",
+    )
 
-    warm_start_field = warm_start_field.angle().to(device)
+    warm_start_phase = warm_start_field.angle().to(device)
 
     prop_physical = PropPhysical(
         s,
@@ -176,7 +188,7 @@ def main(iterations, slm_show_time, slm_settle_time):
         prop_model="PHYSICAL",
         propagator=prop_physical,
     )
-    angles = sgd(target_amp, warm_start_field).cpu().detach()
+    angles = sgd(target_amp, warm_start_phase).cpu().detach()
 
     # Extend the computed angles, aka the phase values, to be a field which is a complex tensor
     # again
@@ -189,11 +201,14 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     propped_field = simulate_prop(final_phase_sgd, holoeye_fraunhofer)
 
-    fig, ax = plt.subplots()
-    ax.imshow(propped_field.abs(), cmap="gray")
     name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-    plt.savefig(f"citl/snapshots/sim_{name}_final.png")
-    plt.close(fig)
+    save_image(
+        255
+        * normalize_mask(propped_field.abs()).astype(
+            np.uint8
+        ),  # TODO remove numpy and check if if abs needs to be scaled to 255
+        f"citl/snapshots/sim_{name}_final.png",
+    )
 
     # Quantize the fields angles, aka phase values, to a bit values
     phase_out = quantize_phase_mask(final_phase_sgd.angle())
@@ -203,11 +218,8 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     final_res = cam.acquire_single_image()
 
-    _, ax = plt.subplots()
-    ax.imshow(final_res, cmap="gray")
     name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-    plt.savefig(f"citl/snapshots/phy_{name}_final.png")
-    plt.close()
+    save_image(final_res, f"citl/snapshots/phy_{name}_final.png")
 
 
 if __name__ == "__main__":

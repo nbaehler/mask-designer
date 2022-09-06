@@ -107,7 +107,7 @@ class Camera:
     def set_correction(
         self,
         correction=np.zeros(cam_devices[CamDevices.DUMMY.value][CamParam.SHAPE], dtype=np.uint8),
-    ):  # TODO remove maybe
+    ):
         """
         Set the correction of the camera to a specific value.
 
@@ -155,9 +155,7 @@ class DummyCamera(Camera):
         self._exposure_time = time
 
     def use_image(self, path="citl/calibration/cali_roi.png"):  # TODO documentation
-        image = (
-            load_image(path) - self._correction
-        )  # TODO scale up and scale down of calibration image...
+        image = load_image(path) - self._correction
         self._image = scale_image_to_shape(image, (self._height, self._width))
 
     def acquire_single_image(self):
@@ -391,7 +389,7 @@ class IDSCamera(Camera):
         self.__node_map.FindNode("TLParamsLocked").SetValue(1)
 
         # Hacky fix for a bug with exposure time
-        self.__single_acquisition()  # TODO Bug, parameters are only committed after a capture
+        self.__single_acquisition()  # Bug fix, parameters are only committed after a capture
 
     def acquire_single_image(self):
         """
@@ -412,15 +410,8 @@ class IDSCamera(Camera):
             buffer.PixelFormat(), buffer.BasePtr(), buffer.Size(), self._width, self._height,
         )
 
-        # # Create IDS peak IPL image for debayering and convert it to RGBa8 format # TODO needed?
-        # ipl_image = ipl_image.ConvertTo(
-        #     peak_ipl.PixelFormatName.BGRa8, peak_ipl.ConversionMode.Fast
-        # )
-
         # Return image as numpy array
-        return (
-            np.flipud(np.fliplr(ipl_image.get_numpy_2D().copy())) - self._correction
-        )  # TODO really need to flip?
+        return np.flipud(np.fliplr(ipl_image.get_numpy_2D().copy())) - self._correction
 
     def acquire_multiple_images(self, number=2):
         """

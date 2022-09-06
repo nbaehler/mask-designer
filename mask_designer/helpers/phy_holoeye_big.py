@@ -15,7 +15,7 @@ from slm_controller import slm
 from slm_controller.hardware import SLMDevices
 
 
-def main():  # TODO buggy
+def main():  # TODO buggy, remove???
     # Load the phase mask generated using the holoeye software
     holoeye_phase_mask = load_phase_mask("images/test/holoeye_logo_big.png")
 
