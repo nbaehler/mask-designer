@@ -174,7 +174,7 @@ def stochastic_gradient_descent(
     for k in range(num_iters):
         optimizer.zero_grad()
 
-        # # camera-in-the-loop technique
+        # # camera-in-the-loop technique # TODO use this version
         # if prop_model.upper() == "PHYSICAL":
         #     captured_amp = propagator(slm_phase)
 
@@ -205,7 +205,7 @@ def stochastic_gradient_descent(
 
         #     out_amp = recon_amp
 
-        print(f"Diff {str(torch.sum((initial_phase - slm_phase)**2).item())}")
+        print(f"Diff {str(torch.sum((initial_phase - slm_phase)**2).item())}")  # TODO remove
 
         # forward propagation from the SLM plane to the target plane
         real, imag = utils.polar_to_rect(slm_amp, slm_phase)
@@ -242,10 +242,25 @@ def stochastic_gradient_descent(
         # calculate loss and backprop
         lossValue = loss(s * out_amp, target_amp)
 
-        print(torch.min(s * out_amp).item(), torch.max(s * out_amp).item())
-        print(torch.min(target_amp).item(), torch.max(target_amp).item())
+        print(  # TODO remove
+            "s * out_amp",
+            torch.min(s * out_amp).item(),
+            torch.max(s * out_amp).item(),
+            torch.median(s * out_amp).item(),
+            torch.mean(s * out_amp).item(),
+            torch.quantile(s * out_amp, 0.95).item(),
+        )
 
-        print(f"Loss {(lossValue.item())}")
+        print(  # TODO remove
+            "target_amp",
+            torch.min(target_amp).item(),
+            torch.max(target_amp).item(),
+            torch.median(target_amp).item(),
+            torch.mean(target_amp).item(),
+            torch.quantile(target_amp, 0.95).item(),
+        )
+
+        print(f"Loss {(lossValue.item())}")  # TODO remove
 
         lossValue.backward()
         optimizer.step()

@@ -17,14 +17,10 @@ import os
 from multiprocessing.managers import BaseManager
 
 import click
-import matplotlib.pyplot as plt
 import torch
 from mask_designer import camera
 from mask_designer.experimental_setup import Params, params, slm_device
-from mask_designer.prop_waveprop_asm import (
-    prop_waveprop_asm,
-    prop_waveprop_asm_lens,
-)
+from mask_designer.prop_waveprop_asm import prop_waveprop_asm, prop_waveprop_asm_lens
 from mask_designer.simulate_prop import holoeye_fraunhofer, simulate_prop
 from mask_designer.transform_fields import transform_from_neural_holography_setting
 from mask_designer.utils import (
@@ -63,8 +59,8 @@ def main(iterations, slm_show_time, slm_settle_time):
     roi = params[Params.ROI]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
-    # asm_propagator = propagation_ASM # TODO check if this is correct
-    asm_propagator = prop_waveprop_asm
+    asm_propagator = prop_asm
+    # asm_propagator = prop_waveprop_asm # TODO check if this is correct
     # asm_propagator = prop_waveprop_asm_lens
 
     # warm_start_iterations = 500 # TODO use those
@@ -130,11 +126,24 @@ def main(iterations, slm_show_time, slm_settle_time):
     from mask_designer.utils import normalize_mask
 
     name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+
+    print(  # TODO remove
+        "propped_field.abs()",
+        torch.min(propped_field.abs()).item(),
+        torch.max(propped_field.abs()).item(),
+        torch.median(propped_field.abs()).item(),
+        torch.mean(propped_field.abs()).item(),
+        torch.quantile(propped_field.abs(), 0.99).item(),
+    )
+
+    # save_image( # TODO remove
+    #     propped_field.abs().numpy(), f"citl/snapshots/sim_{name}_warm_start.png",
+    # )
+
     save_image(
-        255
-        * normalize_mask(propped_field.abs()).astype(
+        (255 * normalize_mask(propped_field.abs())).astype(
             np.uint8
-        ),  # TODO remove numpy and check if if abs needs to be scaled to 255
+        ),  # TODO check this version using normalization and cap using quantile
         f"citl/snapshots/sim_{name}_warm_start.png",
     )
 
@@ -202,11 +211,15 @@ def main(iterations, slm_show_time, slm_settle_time):
     propped_field = simulate_prop(final_phase_sgd, holoeye_fraunhofer)
 
     name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+
+    # save_image( # TODO remove
+    #     propped_field.abs().numpy(), f"citl/snapshots/sim_{name}_final.png",
+    # )
+
     save_image(
-        255
-        * normalize_mask(propped_field.abs()).astype(
+        (255 * normalize_mask(propped_field.abs())).astype(
             np.uint8
-        ),  # TODO remove numpy and check if if abs needs to be scaled to 255
+        ),  # TODO check this version using normalization and cap using quantile
         f"citl/snapshots/sim_{name}_final.png",
     )
 

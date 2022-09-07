@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from PIL import Image
@@ -261,7 +260,12 @@ def normalize_mask(mask):
         mask = mask[0, 0, :, :]
 
     minimum = np.min(mask)
-    maximum = np.max(mask)
+
+    # maximum = np.max(mask)
+
+    quantile = np.quantile(mask, 0.99)  # TODO do we need this?
+    mask[mask > quantile] = quantile
+    maximum = quantile
 
     return mask if minimum == maximum else (mask - minimum) / (maximum - minimum)
 

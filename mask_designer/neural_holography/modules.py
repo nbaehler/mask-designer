@@ -41,6 +41,7 @@ from mask_designer.neural_holography.prop_asm import prop_asm
 from mask_designer.utils import (
     angularize_phase_mask,
     extend_to_field,
+    normalize_mask,
     quantize_phase_mask,
     round_phase_mask_to_uint8,
     save_image,
@@ -279,7 +280,7 @@ class PropPhysical(nn.Module):
         cam,
         roi_res,
         channel=1,
-        num_circles=(5, 8),
+        num_circles=(9, 12),
         range_row=(0, 768),  # TODO adapt to capture roi in real image
         range_col=(0, 1024),
         pattern_path="./citl/calibration",
@@ -388,21 +389,38 @@ class PropPhysical(nn.Module):
             slm_phase_8bit, num_grab_images=num_grab_images
         )
 
-        # convert raw-16 linear intensity image into an amplitude tensor
-        if len(captured_linear_np.shape) > 2:
-            captured_linear = (
-                torch.tensor(captured_linear_np, dtype=torch.float32).permute(2, 0, 1).unsqueeze(0)
-            )
-            captured_linear = captured_linear.to(slm_phase.device)
-            captured_linear = torch.sum(captured_linear, dim=1, keepdim=True)
-        else:
-            captured_linear = (
-                torch.tensor(captured_linear_np, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
-            )
-            captured_linear = captured_linear.to(slm_phase.device)
+        print(  # TODO remove
+            "captured_linear_np",
+            np.min(captured_linear_np).item(),
+            np.max(captured_linear_np).item(),
+            np.median(captured_linear_np).item(),
+            np.mean(captured_linear_np).item(),
+            np.quantile(captured_linear_np, 0.99).item(),
+        )
+
+        # # convert raw-16 linear intensity image into an amplitude tensor # TODO is the difference?
+        # if len(captured_linear_np.shape) > 2:  # TODO do we need this?
+        #     captured_linear = (
+        #         torch.tensor(captured_linear_np, dtype=torch.float32)
+        #         .permute(2, 0, 1)
+        #         .unsqueeze(0)
+        #     )
+        #     captured_linear = captured_linear.to(slm_phase.device)
+        #     captured_linear = torch.sum(captured_linear, dim=1, keepdim=True)
+        # else:
+        #     captured_linear = (
+        #         torch.tensor(captured_linear_np, dtype=torch.float32)
+        #         .unsqueeze(0)
+        #         .unsqueeze(0)
+        #     )
+        #     captured_linear = captured_linear.to(slm_phase.device)
 
         # return amplitude
-        return torch.sqrt(captured_linear)
+        # return torch.sqrt(captured_linear) # TODO really?
+
+        return torch.tensor(normalize_mask(captured_linear_np), dtype=torch.float32)[
+            None, None, :, :
+        ].to(slm_phase.device)
 
     def capture_linear_intensity(self, slm_phase, num_grab_images):
         """
@@ -493,14 +511,18 @@ class PropPhysical(nn.Module):
 
             propped_field = simulate_prop(field, holoeye_fraunhofer)
 
-            from mask_designer.utils import normalize_mask
+            from mask_designer.utils import normalize_mask  # TODO move import up!!
 
             name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+
+            # save_image( # TODO remove
+            #     propped_field.abs().numpy(), f"citl/snapshots/sim_{name}.png",
+            # )
+
             save_image(
-                255
-                * normalize_mask(propped_field.abs()).astype(
+                (255 * normalize_mask(propped_field.abs())).astype(
                     np.uint8
-                ),  # TODO remove numpy and check if if abs needs to be scaled to 255
+                ),  # TODO check this version using normalization and cap using quantile
                 f"citl/snapshots/sim_{name}.png",
             )
 

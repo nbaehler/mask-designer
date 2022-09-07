@@ -154,7 +154,7 @@ class DummyCamera(Camera):
         """
         self._exposure_time = time
 
-    def use_image(self, path="citl/calibration/cali_roi.png"):  # TODO documentation
+    def use_image(self, path="citl/calibration/cali.png"):  # TODO documentation
         image = load_image(path) - self._correction
         self._image = scale_image_to_shape(image, (self._height, self._width))
 

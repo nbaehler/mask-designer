@@ -20,6 +20,8 @@ from waveprop.util import ift2
 from mask_designer.utils import normalize_mask
 from mask_designer.wrapper import fftshift, prop_asm, propagate_field
 
+# TODO simulation results seem stretched in x direction compared to images!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 def holoeye_fraunhofer(field):
     """

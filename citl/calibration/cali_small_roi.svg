@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1025px" height="769px" viewBox="-0.5 -0.5 1025 769" content="&lt;mxfile&gt;&lt;diagram id=&quot;TB4ota5wirnsDeLSB5fu&quot; name=&quot;Page-1&quot;&gt;3Ztfb5swFMU/DY+TwNeQ8LhkbbdJ0x6iaXurWHADKsGR45Skn34mmJAYVetWVdc3eYjg+A/4B+gcYxHAfL2/U9mm+CZzUQUszPcBfAoYi8LE/LfCoRN4u9cKK1Xmts4gLMpn0YlTK+7KXGwv6mkpK11uLsWlrGux1BdappRsLqs9yOryoJtsJUbCYplVY/VnmeuiUwHCcCj4LMpVYQ/Nk6lt8jtbPq6U3NX2gAEzjdpfV7zO+s6ssC2yXDZnEtwEMFdS6m5rvZ+LqkXbY+va3b5QejpxJWr9mgaz+3Iu0i9fk+b+8PxRf49//WAfWGyvw1NW7UQ/kOPp6kPP6DhI0XYTBjBrilKLxSZbtqWNuSeMVuh1ZfYis7nVSj6KuaykMkota1Nt9lBWVS8NnGA2HoMd1pNQWuzPJDumOyHXQquDqdIMlysKGe/aFWeXapLYsWX2HlmdGg+YzIYl9S/U0ujv1Ew/5iYW/0tM1to+LNFbSdlSFtlH1T6pLLR8zkgCG3PstXfAyK4B4xQdI1wBRkjQMfIrwMg5Osb4CjDGDB1jShFj6pnFnHIcbYzYFgMhycCTemYxEJIMPKlnFgMhycCTemYxEE4IYoSJdxbziim0/xjxLYZi4HEx4ltMRDHwuBjxLSaiGHhcjPgWE1GcDPLYN4vpZ6e0MaJbTEQx8LgYPbAYioHHxeiBxVAMPC5GfIthFCeDMfhmMYzi2+8RRnSLYRQDj4sR32IYxcDjYsS3GEYx8LgY8S0GKE4GE9+W+6HvmTZGdIsBioHHxYhvMUAx8LgY8S0GKAYeF6MHFkNxMph4t9zPKb79HmFEtxhOMvB4t9zPSQYe75b7OcnA491yP6c4GZx4t9zPKb79HmHEtxiKgcfFiG8xMcXA42LEt5iYYuBxMb6jxZjd4UulY9nZ12Bw8wc=&lt;/diagram&gt;&lt;/mxfile&gt;" style="background-color: rgb(0, 0, 0);">
+    <defs />
+    <g>
+        <rect x="0" y="0" width="1024" height="768" fill="#000000" stroke="none" pointer-events="all" />
+        <ellipse cx="232" cy="224" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="232" cy="304" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="232" cy="384" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="232" cy="464" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="232" cy="544" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="312" cy="224" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="312" cy="304" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="312" cy="384" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="312" cy="464" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="312" cy="544" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="392" cy="224" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="392" cy="304" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="392" cy="384" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="392" cy="464" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="392" cy="544" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="472" cy="224" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="472" cy="304" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="472" cy="384" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="472" cy="464" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="472" cy="544" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="552" cy="224" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="552" cy="304" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="552" cy="384" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="552" cy="464" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="552" cy="544" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="632" cy="224" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="632" cy="304" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="632" cy="384" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="632" cy="464" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="632" cy="544" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="712" cy="224" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="712" cy="304" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="712" cy="384" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="712" cy="464" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="712" cy="544" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="792" cy="224" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="792" cy="304" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="792" cy="384" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="792" cy="464" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+        <ellipse cx="792" cy="544" rx="16" ry="16" fill="rgb(255, 255, 255)" stroke="none" pointer-events="all" />
+    </g>
+</svg>

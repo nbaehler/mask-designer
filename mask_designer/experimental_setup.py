@@ -23,10 +23,10 @@ class Params(Enum):
 # Actual values of those parameters
 params = {
     Params.WAVELENGTH: 532e-9,
-    Params.PROPAGATION_DISTANCE: 0.315,
+    Params.PROPAGATION_DISTANCE: 0.275,
     Params.SLM_SETTLE_TIME: 0.25,
     Params.SLM_SHOW_TIME: 10,
-    Params.ROI: (320, 560),
+    Params.ROI: (640, 880),
 }
 
 # Choose a slm device
