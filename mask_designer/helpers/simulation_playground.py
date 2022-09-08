@@ -76,49 +76,49 @@ def main():
         unpacked_field, propped_field, "Holoeye with Angular Spectrum",
     )
 
-    propped_field = simulate_prop(
+    propped_field = simulate_prop(  # TODO upside down
         holoeye_field, waveprop_asm_np, prop_dist, wavelength, pixel_pitch,
     )
     plot_fields(unpacked_field, propped_field, "Holoeye with Angular Spectrum NP")
 
-    propped_field = simulate_prop(
-        holoeye_field, waveprop_fft_di, prop_dist, wavelength, pixel_pitch,  # TODO not working
-    )
-    plot_fields(unpacked_field, propped_field, "Holoeye with FFT Direct")
+    # propped_field = simulate_prop(
+    #     holoeye_field, waveprop_fft_di, prop_dist, wavelength, pixel_pitch,  # TODO not working
+    # )
+    # plot_fields(unpacked_field, propped_field, "Holoeye with FFT Direct")
 
-    propped_field = simulate_prop(
-        holoeye_field, waveprop_direct_integration, prop_dist, wavelength, pixel_pitch,
-    )
-    plot_fields(unpacked_field, propped_field, "Holoeye with Direct Integration")
+    # propped_field = simulate_prop(   # TODO not working correctly
+    #     holoeye_field, waveprop_direct_integration, prop_dist, wavelength, pixel_pitch,
+    # )
+    # plot_fields(unpacked_field, propped_field, "Holoeye with Direct Integration")
 
-    propped_field = simulate_prop(
-        holoeye_field,
-        waveprop_fresnel_one_step,  # TODO not working correctly
-        prop_dist,
-        wavelength,
-        pixel_pitch,
-    )
-    plot_fields(unpacked_field, propped_field, "Holoeye with Fresnel One Step")
+    # propped_field = simulate_prop(
+    #     holoeye_field,
+    #     waveprop_fresnel_one_step,  # TODO not working correctly, many small patterns
+    #     prop_dist,
+    #     wavelength,
+    #     pixel_pitch,
+    # )
+    # plot_fields(unpacked_field, propped_field, "Holoeye with Fresnel One Step")
 
-    propped_field = simulate_prop(
-        holoeye_field,
-        waveprop_fresnel_two_step,
-        prop_dist,
-        wavelength,
-        pixel_pitch,  # TODO not working
-    )
-    plot_fields(unpacked_field, propped_field, "Holoeye with Fresnel Two Step")
+    # propped_field = simulate_prop(
+    #     holoeye_field,
+    #     waveprop_fresnel_two_step,
+    #     prop_dist,
+    #     wavelength,
+    #     pixel_pitch,  # TODO not working
+    # )
+    # plot_fields(unpacked_field, propped_field, "Holoeye with Fresnel Two Step")
 
-    propped_field = simulate_prop(
-        holoeye_field,
-        waveprop_fresnel_multi_step,
-        prop_dist,
-        wavelength,
-        pixel_pitch,  # TODO not working
-    )
-    plot_fields(unpacked_field, propped_field, "Holoeye with Fresnel Multi Step")
+    # propped_field = simulate_prop(
+    #     holoeye_field,
+    #     waveprop_fresnel_multi_step,
+    #     prop_dist,
+    #     wavelength,
+    #     pixel_pitch,  # TODO not working
+    # )
+    # plot_fields(unpacked_field, propped_field, "Holoeye with Fresnel Multi Step")
 
-    propped_field = (
+    propped_field = (  # TODO upside down
         simulate_prop(
             holoeye_field, waveprop_fresnel_conv, prop_dist, wavelength, pixel_pitch, device,
         )
@@ -129,24 +129,24 @@ def main():
         unpacked_field, propped_field, "Holoeye with Fresnel Convolution",
     )
 
-    propped_field = simulate_prop(
+    propped_field = simulate_prop(  # TODO upside down
         holoeye_field, waveprop_shifted_fresnel, prop_dist, wavelength, pixel_pitch,
     )
     plot_fields(unpacked_field, propped_field, "Holoeye with Shifted Fresnel")
 
-    propped_field = (
-        simulate_prop(
-            holoeye_field,
-            waveprop_spherical,
-            prop_dist,
-            wavelength,
-            pixel_pitch,  # TODO not working
-            device,
-        )
-        .cpu()
-        .detach()
-    )
-    plot_fields(unpacked_field, propped_field, "Holoeye with Spherical")
+    # propped_field = (
+    #     simulate_prop(
+    #         holoeye_field,
+    #         waveprop_spherical,
+    #         prop_dist,
+    #         wavelength,
+    #         pixel_pitch,  # TODO not working
+    #         device,
+    #     )
+    #     .cpu()
+    #     .detach()
+    # )
+    # plot_fields(unpacked_field, propped_field, "Holoeye with Spherical")
 
     # --------------------------------------------------------------------------------------------
     # Neural Holography
@@ -158,7 +158,7 @@ def main():
     unpacked_field = neural_holography_field[0, 0, :, :]
 
     # Simulate the propagation in the lensless setting and show the results
-    propped_field = simulate_prop(
+    propped_field = simulate_prop(  # TODO is this still correct?
         neural_holography_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
     )
     plot_fields(unpacked_field, propped_field, "Holoeye without lens")

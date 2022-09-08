@@ -30,23 +30,21 @@ def main():  # TODO does not work yet
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
     # Load the field computed with holoeye software
-    holoeye_field = load_field()
+    field = load_field()
 
     # Transform the initial field to the lensless setting
-    neural_holography_field = holoeye_lens_to_lensless(
-        holoeye_field, prop_distance, wavelength, slm_shape, pixel_pitch
-    )
+    field = holoeye_lens_to_lensless(field, prop_distance, wavelength, slm_shape, pixel_pitch)
 
-    unpacked_field = neural_holography_field[0, 0, :, :]
+    unpacked_field = field[0, 0, :, :]
 
     # Simulate the propagation in the lensless setting and show the results
     propped_field = simulate_prop(
-        neural_holography_field, neural_holography_asm, prop_distance, wavelength, pixel_pitch,
+        field, neural_holography_asm, prop_distance, wavelength, pixel_pitch,
     )
     plot_fields(unpacked_field, propped_field, "Holoeye without lens")
 
     # Quantize the fields angles, aka phase values, to a bit values
-    phase = quantize_phase_mask(neural_holography_field.angle())
+    phase = quantize_phase_mask(field.angle())
 
     # Initialize slm
     s = slm.create(SLMDevices.HOLOEYE_LC_2012.value)

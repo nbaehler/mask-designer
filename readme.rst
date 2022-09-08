@@ -5,6 +5,8 @@ Collection of techniques to design mask patterns, e.g. fixed apertures for
 amplitude masks and phase retrieval for determining a phase mask under an
 incoherent light source.
 
+.. TODO rst, math is not rendered properly on GitHub??
+
 
 .. contents:: Table of Contents
    :depth: 5
