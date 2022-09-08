@@ -29,7 +29,7 @@ from mask_designer.simulate_prop import (
     waveprop_shifted_fresnel,
     waveprop_spherical,
 )
-from mask_designer.transform_fields import transform_to_neural_holography_setting
+from mask_designer.transform_fields import holoeye_lens_to_lensless
 from mask_designer.utils import load_field
 from slm_controller.hardware import SLMParam, slm_devices
 
@@ -52,9 +52,15 @@ def main():
         0, 0, :, :
     ]  # TODO improve this data structure, for now only for one image and one channel!
 
+    # --------------------------------------------------------------------------------------------
+    # Holoeye
+
     # Simulate the propagation in the lens setting and show the results
     propped_field = simulate_prop(holoeye_field, holoeye_fraunhofer)
     plot_fields(unpacked_field, propped_field, "Holoeye with lens")
+
+    # --------------------------------------------------------------------------------------------
+    # Waveprop
 
     propped_field = simulate_prop(
         holoeye_field, waveprop_fraunhofer, prop_dist, wavelength, pixel_pitch,
@@ -142,8 +148,11 @@ def main():
     )
     plot_fields(unpacked_field, propped_field, "Holoeye with Spherical")
 
+    # --------------------------------------------------------------------------------------------
+    # Neural Holography
+
     # Transform the initial phase mask to the lensless setting
-    neural_holography_field = transform_to_neural_holography_setting(
+    neural_holography_field = holoeye_lens_to_lensless(
         holoeye_field, prop_dist, wavelength, slm_shape, pixel_pitch
     )
     unpacked_field = neural_holography_field[0, 0, :, :]

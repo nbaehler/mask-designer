@@ -22,7 +22,7 @@ from mask_designer import camera
 from mask_designer.experimental_setup import Params, params, slm_device
 from mask_designer.prop_waveprop_asm import prop_waveprop_asm, prop_waveprop_asm_lens
 from mask_designer.simulate_prop import holoeye_fraunhofer, simulate_prop
-from mask_designer.transform_fields import transform_from_neural_holography_setting
+from mask_designer.transform_fields import neural_holography_lensless_to_lens
 from mask_designer.utils import (
     extend_to_field,
     quantize_phase_mask,
@@ -116,7 +116,7 @@ def main(iterations, slm_show_time, slm_settle_time):
     warm_start_field = extend_to_field(angles)
 
     # Transform the results to the hardware setting using a lens
-    final_phase_sgd = transform_from_neural_holography_setting(
+    final_phase_sgd = neural_holography_lensless_to_lens(
         warm_start_field, prop_dist, wavelength, slm_shape, pixel_pitch
     )
 
@@ -148,7 +148,7 @@ def main(iterations, slm_show_time, slm_settle_time):
     )
 
     # Quantize the fields angles, aka phase values, to a bit values
-    phase_out = quantize_phase_mask(final_phase_sgd.angle())
+    phase = quantize_phase_mask(final_phase_sgd.angle())
 
     BaseManager.register("HoloeyeSLM", slm.HoloeyeSLM)  # TODO shouldn't to needed to be shared
     BaseManager.register("IDSCamera", camera.IDSCamera)
@@ -163,7 +163,7 @@ def main(iterations, slm_show_time, slm_settle_time):
     cam.set_exposure_time(900)
 
     # Display
-    s.imshow(phase_out)
+    s.imshow(phase)
 
     final_res = cam.acquire_single_image()
 
@@ -172,7 +172,9 @@ def main(iterations, slm_show_time, slm_settle_time):
         final_res, f"citl/snapshots/phy_{name}_warm_start.png",
     )
 
-    warm_start_phase = warm_start_field.angle().to(device)
+    warm_start_phase = warm_start_field.angle().to(
+        device
+    )  # TODO is in -1.0734256505966187 1.0754610300064087
 
     prop_physical = PropPhysical(
         s,
@@ -204,7 +206,7 @@ def main(iterations, slm_show_time, slm_settle_time):
     extended = extend_to_field(angles)
 
     # Transform the results to the hardware setting using a lens
-    final_phase_sgd = transform_from_neural_holography_setting(
+    final_phase_sgd = neural_holography_lensless_to_lens(
         extended, prop_dist, wavelength, slm_shape, pixel_pitch
     )
 
@@ -224,10 +226,10 @@ def main(iterations, slm_show_time, slm_settle_time):
     )
 
     # Quantize the fields angles, aka phase values, to a bit values
-    phase_out = quantize_phase_mask(final_phase_sgd.angle())
+    phase = quantize_phase_mask(final_phase_sgd.angle())
 
     # Display
-    s.imshow(phase_out)
+    s.imshow(phase)
 
     final_res = cam.acquire_single_image()
 

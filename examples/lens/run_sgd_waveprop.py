@@ -1,5 +1,5 @@
 """
-Simulated propagation of phase masks generated using the SGD algorithm and the
+Propagation of phase masks generated using the SGD algorithm and the
 angular spectrum propagator implemented in waveprop.
 """
 
@@ -16,15 +16,18 @@ import torch
 from mask_designer.experimental_setup import Params, params, slm_device
 from mask_designer.prop_waveprop_asm import prop_waveprop_asm
 from mask_designer.simulate_prop import (
-    holoeye_fraunhofer,
-    neural_holography_asm,
     plot_fields,
     simulate_prop,
     waveprop_asm,
 )
-from mask_designer.transform_fields import transform_from_neural_holography_setting
-from mask_designer.utils import extend_to_field, random_init_phase_mask
+from mask_designer.transform_fields import neural_holography_lensless_to_lens
+from mask_designer.utils import (
+    extend_to_field,
+    quantize_phase_mask,
+    random_init_phase_mask,
+)
 from mask_designer.wrapper import SGD, ImageLoader
+from slm_controller import slm
 from slm_controller.hardware import SLMParam, slm_devices
 
 
@@ -53,6 +56,8 @@ def main(iterations):
 
     # Load the the first image in the folder
     target_amp, _, _ = image_loader.load_image(0)
+
+    # Make it grayscale
     target_amp = torch.mean(target_amp, axis=0)
 
     # Transform the image to be compliant with the neural holography data structure
@@ -78,36 +83,27 @@ def main(iterations):
     field = extend_to_field(angles)
 
     # Transform the results to the hardware setting using a lens
-    holoeye_field = transform_from_neural_holography_setting(
-        field, prop_dist, wavelength, slm_shape, pixel_pitch
-    )
+    field = neural_holography_lensless_to_lens(field, prop_dist, wavelength, slm_shape, pixel_pitch)
 
     # Simulate the propagation in the lens setting and show the results
-    unpacked_field = holoeye_field[0, 0, :, :]
-    propped_field = simulate_prop(holoeye_field, holoeye_fraunhofer)
-    plot_fields(
-        unpacked_field, propped_field, "Neural Holography SGD with lens and Holoeye Fraunhofer",
-    )
-
-    # Simulate the propagation in the lensless setting and show the results
     unpacked_field = field[0, 0, :, :]
-    propped_field = simulate_prop(field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,)
-    plot_fields(
-        unpacked_field,
-        propped_field,
-        "Neural Holography SGD without lens and Neural Holography ASM",
-    )
-
-    # Simulate the propagation in the lens setting and show the results
-    unpacked_field = holoeye_field[0, 0, :, :]
     propped_field = (
-        simulate_prop(holoeye_field, waveprop_asm, prop_dist, wavelength, pixel_pitch, device,)
+        simulate_prop(field, waveprop_asm, prop_dist, wavelength, pixel_pitch, device,)
         .cpu()
         .detach()
     )
     plot_fields(
         unpacked_field, propped_field, "Neural Holography SGD with lens and waveprop ASM",
     )
+
+    # Quantize the fields angles, aka phase values, to a bit values
+    phase = quantize_phase_mask(field.angle())
+
+    # Instantiate SLM object
+    s = slm.create(slm_device)
+
+    # Display
+    s.imshow(phase)
 
 
 if __name__ == "__main__":

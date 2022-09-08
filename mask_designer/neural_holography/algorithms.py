@@ -157,86 +157,86 @@ def stochastic_gradient_descent(
     # phase at the slm plane
     slm_phase = init_phase.requires_grad_(True)
 
-    initial_phase = slm_phase.clone().detach()  # TODO remove
+    temp = slm_phase.clone().detach()  # TODO remove
 
     # optimization variables and adam optimizer
-    optvars = [{"params": slm_phase}]
+    optimizer = optim.Adam([slm_phase], lr=lr)
+
     if lr_s > 0:
-        optvars += [{"params": s, "lr": lr_s}]
-    optimizer = optim.Adam(optvars, lr=lr)
+        optimizer.add_param_group({"params": s, "lr": lr_s})
 
     # crop target roi
     target_amp = utils.crop_image(target_amp, roi_res, stacked_complex=False)
 
-    slm_amp = amp_mask.to(device)
+    # Only needed for the simulation
+    slm_amp = amp_mask.to(device)[None, None, :, :]
+
+    print("Requires grad", slm_phase.requires_grad)
 
     # run the iterative algorithm
     for k in range(num_iters):
         optimizer.zero_grad()
 
-        # # camera-in-the-loop technique # TODO use this version
-        # if prop_model.upper() == "PHYSICAL":
-        #     captured_amp = propagator(slm_phase)
+        print(f"Diff phase {str(torch.sum((temp - slm_phase)**2).item())}")  # TODO remove
 
-        #     # use the gradient of proxy, replacing the amplitudes
-        #     # captured_amp is assumed that its size already matches that of recon_amp
-        #     out_amp = captured_amp.detach()
-        # else:
-        #     # forward propagation from the SLM plane to the target plane
-        #     real, imag = utils.polar_to_rect(slm_amp, slm_phase)
-        #     slm_field = torch.complex(real, imag)
+        print(f"Same {str(temp.equal(slm_phase))}")  # TODO remove
 
-        #     recon_field = utils.propagate_field(
-        #         slm_field,
-        #         propagator,
-        #         prop_dist,
-        #         wavelength,
-        #         feature_size,
-        #         prop_model,
-        #         dtype,
-        #         precomputed_H,
-        #     )
-
-        #     # get amplitude
-        #     recon_amp = recon_field.abs()
-
-        #     # crop roi
-        #     recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
-
-        #     out_amp = recon_amp
-
-        print(f"Diff {str(torch.sum((initial_phase - slm_phase)**2).item())}")  # TODO remove
-
-        # forward propagation from the SLM plane to the target plane
-        real, imag = utils.polar_to_rect(slm_amp, slm_phase)
-        slm_field = torch.complex(real, imag)
-
-        recon_field = utils.propagate_field(
-            slm_field,
-            propagator,
-            prop_dist,
-            wavelength,
-            feature_size,
-            prop_model,
-            dtype,
-            precomputed_H,
-        )
-
-        # get amplitude
-        recon_amp = recon_field.abs()  # TODO not in [0,1] !!!
-
-        # crop roi
-        recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
+        print(f"Scale {str(s.item())}")  # TODO remove
 
         # camera-in-the-loop technique
         if prop_model.upper() == "PHYSICAL":
-            captured_amp = propagator(slm_phase)
+            print("Requires grad", slm_phase.requires_grad)
+
+            out_amp = propagator(slm_phase)  # .detach()
+
+            print("Requires grad", slm_phase.requires_grad)
+
+            print(  # TODO remove
+                "out_amp",
+                torch.min(out_amp).item(),
+                torch.max(out_amp).item(),
+                torch.median(out_amp).item(),
+                torch.mean(out_amp).item(),
+                torch.quantile(out_amp, 0.99).item(),
+            )
 
             # use the gradient of proxy, replacing the amplitudes
             # captured_amp is assumed that its size already matches that of recon_amp
-            out_amp = recon_amp + (captured_amp - recon_amp).detach()
-            # out_amp = captured_amp.detach() # TODO not enough?
+            # out_amp = recon_amp + (captured_amp - recon_amp).detach()
+            # out_amp = captured_amp.detach()  # TODO not enough?
         else:
+            print("Requires grad", slm_phase.requires_grad)
+
+            # forward propagation from the SLM plane to the target plane
+            real, imag = utils.polar_to_rect(slm_amp, slm_phase)
+            slm_field = torch.complex(real, imag)
+
+            recon_field = utils.propagate_field(
+                slm_field,
+                propagator,
+                prop_dist,
+                wavelength,
+                feature_size,
+                prop_model,
+                dtype,
+                precomputed_H,
+            )
+
+            # get amplitude
+            recon_amp = recon_field.abs()  # TODO not in [0,1], amp can get bigger, normalize?
+
+            # crop roi
+            recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
+
+            print(  # TODO remove
+                "recon_amp",
+                torch.min(recon_amp).item(),
+                torch.max(recon_amp).item(),
+                torch.median(recon_amp).item(),
+                torch.mean(recon_amp).item(),
+                torch.quantile(recon_amp, 0.99).item(),
+            )
+
             out_amp = recon_amp
 
         # calculate loss and backprop
@@ -248,7 +248,7 @@ def stochastic_gradient_descent(
             torch.max(s * out_amp).item(),
             torch.median(s * out_amp).item(),
             torch.mean(s * out_amp).item(),
-            torch.quantile(s * out_amp, 0.95).item(),
+            torch.quantile(s * out_amp, 0.99).item(),
         )
 
         print(  # TODO remove
@@ -257,12 +257,27 @@ def stochastic_gradient_descent(
             torch.max(target_amp).item(),
             torch.median(target_amp).item(),
             torch.mean(target_amp).item(),
-            torch.quantile(target_amp, 0.95).item(),
+            torch.quantile(target_amp, 0.99).item(),
         )
 
         print(f"Loss {(lossValue.item())}")  # TODO remove
 
+        print("Is leaf", slm_phase.is_leaf)  # TODO remove
+
+        # slm_phase.retain_grad()
+        # slm_phase.requires_grad_(True)
+
+        # slm_phase.register_hook(
+        #     lambda d: print("Phase grad non zero", (torch.count_nonzero(d) > 0).item())
+        # )
+
+        print("Requires grad", slm_phase.requires_grad)
+
         lossValue.backward()
+
+        print("Phase grad non zero", (torch.count_nonzero(slm_phase.grad.data) > 0).item())
+        print("Scale grad", s.grad.data.item())
+
         optimizer.step()
 
         from mask_designer.utils import save_image, quantize_phase_mask  # TODO remove

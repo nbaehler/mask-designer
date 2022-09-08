@@ -25,7 +25,7 @@ params = {
     Params.WAVELENGTH: 532e-9,
     Params.PROPAGATION_DISTANCE: 0.275,
     Params.SLM_SETTLE_TIME: 0.25,
-    Params.SLM_SHOW_TIME: 10,
+    Params.SLM_SHOW_TIME: 10,  # TODO change back to 10
     Params.ROI: (640, 880),
 }
 
@@ -43,14 +43,14 @@ def circular_amp():  # TODO use circ aperture from our repo, documentation, from
 
     shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
-    amp_mask = torch.zeros(shape)
+    amp = torch.zeros(shape)
 
     center = (shape[0] / 2, shape[1] / 2)
     radius = 278
     rr, cc = disk(center, radius)
-    amp_mask[rr, cc] = 1
+    amp[rr, cc] = 1
 
-    return amp_mask
+    return amp
 
 
 def rectangular_amp():

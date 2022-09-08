@@ -382,7 +382,7 @@ class PropPhysical(nn.Module):
         :param num_grab_images:
         :return: A pytorch tensor shape of (1, 1, H, W)
         """
-        slm_phase_8bit = utils.phasemap_8bit(slm_phase, True)
+        slm_phase_8bit = utils.phasemap_8bit(slm_phase, False)  # TODO True?
 
         # display the pattern and capture linear intensity, after perspective transform
         captured_linear_np = self.capture_linear_intensity(
@@ -453,11 +453,11 @@ class PropPhysical(nn.Module):
         slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
         from mask_designer.transform_fields import (
-            transform_from_neural_holography_setting,
+            neural_holography_lensless_to_lens,
         )  # TODO move import up!!
 
         # Transform the results to the hardware setting using a lens
-        field = transform_from_neural_holography_setting(
+        field = neural_holography_lensless_to_lens(
             field, prop_dist, wavelength, slm_shape, pixel_pitch
         )
 

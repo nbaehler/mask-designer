@@ -285,10 +285,10 @@ def train_model(
             # write phase (update phase pool)
             with torch.no_grad():
                 for k, idx in enumerate(idxs):
-                    phase_out_8bit = utils.phasemap_8bit(
+                    phase_8bit = utils.phasemap_8bit(
                         phase_masks[k, np.newaxis, ...].cpu().detach(), inverted=True
                     )
-                    cv2.imwrite(os.path.join(phase_path, f"{idx}.png"), phase_out_8bit)
+                    cv2.imwrite(os.path.join(phase_path, f"{idx}.png"), phase_8bit)
 
             # make slm phases 8bit variable as displayed
             phase_masks = utils.quantized_phase(phase_masks)

@@ -1,5 +1,5 @@
 """
-Physical propagation of phase masks generated using the GS algorithm.
+Propagation of phase masks generated using the GS algorithm.
 """
 
 import sys
@@ -13,7 +13,12 @@ sys.path.append(CODE_DIR)
 import click
 import torch
 from mask_designer.experimental_setup import Params, params, slm_device
-from mask_designer.transform_fields import transform_from_neural_holography_setting
+from mask_designer.simulate_prop import (
+    holoeye_fraunhofer,
+    plot_fields,
+    simulate_prop,
+)
+from mask_designer.transform_fields import neural_holography_lensless_to_lens
 from mask_designer.utils import (
     extend_to_field,
     quantize_phase_mask,
@@ -28,7 +33,7 @@ from slm_controller.hardware import SLMParam, slm_devices
 @click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
 def main(iterations):
     # Set parameters
-    prop_distance = params[Params.PROPAGATION_DISTANCE]
+    prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     roi = params[Params.ROI]
@@ -61,25 +66,28 @@ def main(iterations):
     init_phase = random_init_phase_mask(slm_shape, device)
 
     # Run Gerchberg-Saxton
-    gs = GS(prop_distance, wavelength, pixel_pitch, iterations, device=device)
+    gs = GS(prop_dist, wavelength, pixel_pitch, iterations, device=device)
     angles = gs(target_amp, init_phase).cpu().detach()
 
     # Extend the computed angles, aka the phase values, to be a field which is a complex tensor again
-    extended = extend_to_field(angles)
+    field = extend_to_field(angles)
 
     # Transform the results to the hardware setting using a lens
-    final_phase_gs = transform_from_neural_holography_setting(
-        extended, prop_distance, wavelength, slm_shape, pixel_pitch
-    ).angle()
+    field = neural_holography_lensless_to_lens(field, prop_dist, wavelength, slm_shape, pixel_pitch)
+
+    # Simulate the propagation in the lens setting and show the results
+    unpacked_field = field[0, 0, :, :]
+    propped_field = simulate_prop(field, holoeye_fraunhofer)
+    plot_fields(unpacked_field, propped_field, "Neural Holography GS with lens")
 
     # Quantize the fields angles, aka phase values, to a bit values
-    phase_out = quantize_phase_mask(final_phase_gs)
+    phase = quantize_phase_mask(field.angle())
 
     # Instantiate SLM object
     s = slm.create(slm_device)
 
     # Display
-    s.imshow(phase_out)
+    s.imshow(phase)
 
 
 if __name__ == "__main__":

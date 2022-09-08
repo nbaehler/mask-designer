@@ -90,9 +90,9 @@ def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
     return H
 
 
-def transform_to_neural_holography_setting(
+def holoeye_lens_to_lensless(
     holoeye_field, prop_dist, wavelength, slm_shape, pixel_pitch
-):
+):  # TODO name
     """
     Transform from normal setting (with lens) to the lensless setting used by neural
     holography.
@@ -135,7 +135,7 @@ def transform_to_neural_holography_setting(
     return extend_to_field(field.angle())
 
 
-def transform_from_neural_holography_setting(
+def neural_holography_lensless_to_lens(  # TODO name
     neural_holography_field, prop_dist, wavelength, slm_shape, pixel_pitch
 ):
     """

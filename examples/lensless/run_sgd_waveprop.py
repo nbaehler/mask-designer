@@ -1,5 +1,6 @@
 """
-Simulated propagation of phase masks generated using the GS algorithm.
+Propagation of phase masks generated using the SGD algorithm and a
+waveprop propagator.
 """
 
 import sys
@@ -13,21 +14,29 @@ sys.path.append(CODE_DIR)
 import click
 import torch
 from mask_designer.experimental_setup import Params, params, slm_device
+from mask_designer.prop_waveprop_asm import prop_waveprop_asm
+from mask_designer.transform_fields import neural_holography_lensless_to_lens
+from mask_designer.utils import (
+    extend_to_field,
+    quantize_phase_mask,
+    random_init_phase_mask,
+)
 from mask_designer.simulate_prop import (
     holoeye_fraunhofer,
     neural_holography_asm,
     plot_fields,
     simulate_prop,
+    waveprop_asm,
 )
-from mask_designer.transform_fields import transform_from_neural_holography_setting
 from mask_designer.utils import extend_to_field, random_init_phase_mask
-from mask_designer.wrapper import GS, ImageLoader
+from mask_designer.wrapper import SGD, ImageLoader
+from slm_controller import slm
 from slm_controller.hardware import SLMParam, slm_devices
 
 
 @click.command()
 @click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
-def main(iterations):
+def main(iterations):  # TODO does not work yet
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -50,6 +59,8 @@ def main(iterations):
 
     # Load the the first image in the folder
     target_amp, _, _ = image_loader.load_image(0)
+
+    # Make it grayscale
     target_amp = torch.mean(target_amp, axis=0)
 
     # Transform the image to be compliant with the neural holography data structure
@@ -59,29 +70,44 @@ def main(iterations):
     # Setup a random initial slm phase mask with values in [-0.5, 0.5]
     init_phase = random_init_phase_mask(slm_shape, device)
 
-    # Run Gerchberg-Saxton
-    gs = GS(prop_dist, wavelength, pixel_pitch, iterations, device=device)
-    angles = gs(target_amp, init_phase).cpu().detach()
+    # Run Stochastic Gradient Descent based method
+    sgd = SGD(
+        prop_dist,
+        wavelength,
+        pixel_pitch,
+        iterations,
+        roi,
+        propagator=prop_waveprop_asm,  # TODO check that this works
+        device=device,
+    )
+    angles = sgd(target_amp, init_phase).cpu().detach()
 
-    # Extend the computed angles, aka the phase values, to be a field which is a complex tensor again
-    neural_holography_field = extend_to_field(angles)
+    # Extend the computed angles, aka the phase values, to be a field which is a complex tensor
+    # again
+    field = extend_to_field(angles)
 
     # Transform the results to the hardware setting using a lens
-    holoeye_field = transform_from_neural_holography_setting(
-        neural_holography_field, prop_dist, wavelength, slm_shape, pixel_pitch
-    )
+    field = neural_holography_lensless_to_lens(field, prop_dist, wavelength, slm_shape, pixel_pitch)
 
     # Simulate the propagation in the lens setting and show the results
-    unpacked_field = holoeye_field[0, 0, :, :]
-    propped_field = simulate_prop(holoeye_field, holoeye_fraunhofer)
-    plot_fields(unpacked_field, propped_field, "Neural Holography GS with lens")
-
-    # Simulate the propagation in the lensless setting and show the results
-    unpacked_field = neural_holography_field[0, 0, :, :]
-    propped_field = simulate_prop(
-        neural_holography_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
+    unpacked_field = field[0, 0, :, :]
+    propped_field = (
+        simulate_prop(field, waveprop_asm, prop_dist, wavelength, pixel_pitch, device,)
+        .cpu()
+        .detach()
     )
-    plot_fields(unpacked_field, propped_field, "Neural Holography GS without lens")
+    plot_fields(
+        unpacked_field, propped_field, "Neural Holography SGD with lens and waveprop ASM",
+    )
+
+    # Quantize the fields angles, aka phase values, to a bit values
+    phase = quantize_phase_mask(field.angle())
+
+    # Instantiate SLM object
+    s = slm.create(slm_device)
+
+    # Display
+    s.imshow(phase)
 
 
 if __name__ == "__main__":

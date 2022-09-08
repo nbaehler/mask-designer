@@ -18,7 +18,7 @@ from mask_designer.simulate_prop import (
     plot_fields,
     simulate_prop,
 )
-from mask_designer.transform_fields import transform_to_neural_holography_setting
+from mask_designer.transform_fields import holoeye_lens_to_lensless
 from mask_designer.utils import (
     angularize_phase_mask,
     extend_to_field,
@@ -53,7 +53,7 @@ def main():
     plot_fields(unpacked_field, propped_field, "CITL with lens")
 
     # Transform the initial field to the lensless setting
-    neural_holography_field = transform_to_neural_holography_setting(
+    neural_holography_field = holoeye_lens_to_lensless(
         holoeye_field, prop_dist, wavelength, slm_shape, pixel_pitch
     )
     unpacked_field = neural_holography_field[0, 0, :, :]

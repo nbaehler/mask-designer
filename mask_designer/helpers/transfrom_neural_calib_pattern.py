@@ -30,14 +30,10 @@ def main():
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
-    from mask_designer.transform_fields import (
-        transform_to_neural_holography_setting,
-    )  # TODO move import up!!
+    from mask_designer.transform_fields import holoeye_lens_to_lensless  # TODO move import up!!
 
     # Transform the results to the hardware setting using a lens
-    field = transform_to_neural_holography_setting(
-        field, prop_dist, wavelength, slm_shape, pixel_pitch
-    )
+    field = holoeye_lens_to_lensless(field, prop_dist, wavelength, slm_shape, pixel_pitch)
 
     phase_mask = quantize_phase_mask(field.angle())
 

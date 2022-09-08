@@ -128,33 +128,66 @@ def rgb2gray(rgb, weights=None):
     return np.tensordot(rgb, weights, axes=((0,), 0))
 
 
-def load_phase_mask(path="images/holoeye_phase_mask/holoeye_logo.png"):
+def load_image(path):
     """
-    Load a phase mask, by default one generated with holoeye software and transform it into a
-    compliant form.
+    Load an image from a path.
 
     Parameters
     ----------
-    path : str, optional
-        The path to the phase mask to load, by default
-        "images/holoeye_phase_mask/holoeye_logo.png"
+    path : String
+        The path to the image
 
     Returns
     -------
-    torch.Tensor
-        The phase mask transformed into a compliant form
+    numpy.ndarray
+        The image
     """
-    im = Image.open(path)
-    phase_mask = np.array(im)
+    img = Image.open(path)
+    img = np.array(img)
+    dtype = img.dtype
 
-    if len(phase_mask.shape) == 3:
-        if phase_mask.shape[2] == 4:
-            phase_mask = phase_mask[:, :, :3]
+    if issubclass(dtype.type, np.floating):
+        raise ValueError(
+            "Problematic image type."
+        )  # TODO check if this is correct, makes no sense when [0, 1]
 
-        if phase_mask.shape[2] == 3:
-            phase_mask = np.mean(phase_mask, axis=2)
+    if len(img.shape) == 3:
+        if img.shape[2] == 4:
+            img = img[:, :, :3]
 
-    return round_phase_mask_to_uint8(phase_mask)
+        if img.shape[2] == 3:
+            img = np.mean(img, axis=2)
+
+    if issubclass(dtype.type, np.integer):
+        img = img / np.iinfo(dtype).max
+
+    # img = normalize_mask(img) # TODO check if this is correct
+
+    return round_phase_mask_to_uint8(img * 255)
+
+
+def save_image(I, fname):
+    """
+    Save image to a file.
+
+    Parameters
+    ----------
+    I : :py:class:`~numpy.ndarray`
+        (N_channel, N_height, N_width) image.
+    fname : str, path-like
+        Valid image file (i.e. JPG, PNG, BMP, TIFF, etc.).
+    """
+    # I_max = I.max()   # TODO needed ?
+    # I_max = 1 if np.isclose(I_max, 0) else I_max
+
+    # I_f = I / I_max  # float64
+    # I_u = np.uint8(255 * I_f)  # uint8
+
+    # if I.ndim == 3:
+    #     I = I.transpose(1, 2, 0)
+
+    I_p = Image.fromarray(I)
+    I_p.save(fname)
 
 
 def load_field(path="images/holoeye_phase_mask/holoeye_logo.png"):
@@ -173,7 +206,7 @@ def load_field(path="images/holoeye_phase_mask/holoeye_logo.png"):
     torch.Tensor
         The field mask transformed into a compliant form
     """
-    phase_mask = torch.from_numpy(load_phase_mask(path))
+    phase_mask = load_image(path)
 
     return extend_to_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
@@ -183,64 +216,6 @@ def extend_to_field(angles):
     Extend angles into a field.
     """
     return torch.polar(amp_mask, angles)
-
-
-def load_image(path):  # TODO need 2 functions, load image and load phase mask?
-    """
-    Load an image from a path.
-
-    Parameters
-    ----------
-    path : String
-        The path to the image
-
-    Returns
-    -------
-    numpy.ndarray
-        The image
-    """
-    img = Image.open(path)
-    img = np.array(img)
-    dtype = img.dtype
-
-    if len(img.shape) == 3:
-        if img.shape[2] == 4:
-            img = img[:, :, :3]
-
-        if img.shape[2] == 3:
-            img = np.mean(img, axis=2)
-
-    if issubclass(dtype.type, np.floating):
-        img = img / np.finfo(dtype).max  # TODO check if this is correct, makes no sense when [0, 1]
-        raise ValueError("Problematic image type.")
-    elif issubclass(dtype.type, np.integer):
-        img = img / np.iinfo(dtype).max
-
-    return round_phase_mask_to_uint8(img * 255)
-
-
-def save_image(I, fname):
-    """
-    Save image to a file.
-
-    Parameters
-    ----------
-    I : :py:class:`~numpy.ndarray`
-        (N_channel, N_height, N_width) image.
-    fname : str, path-like
-        Valid image file (i.e. JPG, PNG, BMP, TIFF, etc.).
-    """
-    # I_max = I.max()   # TODO not needed
-    # I_max = 1 if np.isclose(I_max, 0) else I_max
-
-    # I_f = I / I_max  # float64
-    # I_u = np.uint8(255 * I_f)  # uint8
-
-    if I.ndim == 3:
-        I = I.transpose(1, 2, 0)
-
-    I_p = Image.fromarray(I)
-    I_p.save(fname)
 
 
 def random_init_phase_mask(slm_shape, device, seed=1):
@@ -270,51 +245,27 @@ def normalize_mask(mask):
     return mask if minimum == maximum else (mask - minimum) / (maximum - minimum)
 
 
-# def angularize_phase_mask(phase_mask):  # TODO Normalized version of those?
-#     phase_mask = normalize(phase_mask)
+def angularize_phase_mask(phase_mask):
+    if torch.is_tensor(phase_mask):
+        phase_mask = phase_mask.cpu().detach().numpy()
 
-#     angles = phase_mask * 2 * np.pi - np.pi
-#     phase_mask = build_field(torch.from_numpy(angles))
+    dtype = phase_mask.dtype
 
-#     return phase_mask[None, None, :, :]
+    if issubclass(dtype.type, np.floating):
+        raise ValueError(
+            "Problematic image type."
+        )  # TODO check if this is correct, makes no sense when [0, 1]
 
+    if len(phase_mask.shape) == 4:
+        phase_mask = phase_mask[0, 0, :, :]
 
-# def quantize_phase_mask(phase_mask):
-#     """
-#     Transform [-pi, pi] angles into the discrete interval 0-255.
+    max_value = np.iinfo(dtype).max
 
-#     Parameters
-#     ----------
-#     phase_mask : torch.Tensor or numpy.ndarray
-#         The angles to be quantized/discretized
+    # epsilon = 1e-6  # TODO how to handle the wrap around at -pi/pi when in [0,1
+    # ]?
+    # phase_mask = normalize_mask(phase_mask) # TODO check if this is correct
 
-#     Returns
-#     -------
-#     numpy.ndarray
-#         The discretized map
-#     """
-#     new_phase_mask = normalize(phase_mask)
-
-#     return round_to_uint8(new_phase_mask)
-
-# epsilon = 1e-6  # TODO how to handle the wrap around at -pi/pi?
-
-
-def angularize_phase_mask(phase_mask):  # TODO better name, doc
-    if isinstance(phase_mask, np.ndarray):
-        dtype = phase_mask.dtype
-
-        if issubclass(dtype.type, np.integer):
-            max_value = float(np.iinfo(dtype).max)
-        else:
-            max_value = 1.0
-
-        phase_mask = torch.from_numpy(phase_mask).type(torch.FloatTensor)
-    else:
-        print("==> phase_mask is not a numpy array")
-        # max_value = float(torch.finfo(phase_mask.dtype).max) # TODO handle this!
-        max_value = 255.0
-
+    phase_mask = torch.from_numpy(phase_mask).type(torch.FloatTensor)
     return (phase_mask / max_value) * (2 * np.pi) - np.pi
 
 
@@ -335,17 +286,20 @@ def quantize_phase_mask(phase_mask):
     if torch.is_tensor(phase_mask):
         phase_mask = phase_mask.cpu().detach().numpy()
 
-        if len(phase_mask.shape) == 4:
-            phase_mask = phase_mask[0, 0, :, :]
+    if len(phase_mask.shape) == 4:
+        phase_mask = phase_mask[0, 0, :, :]
 
     new_phase_mask = phase_mask + np.pi
     new_phase_mask /= 2 * np.pi
+
+    # new_phase_mask = normalize_mask(new_phase_mask) # TODO check if this is correct
+
     new_phase_mask *= 255.0
 
     return round_phase_mask_to_uint8(new_phase_mask)
 
 
-def round_phase_mask_to_uint8(phase_mask):  # Should be normalized?
+def round_phase_mask_to_uint8(phase_mask):
     """
     Round the phase_mask to the nearest integer and then convert to uint8.
     """
@@ -367,9 +321,7 @@ def scale_image_to_shape(image, shape, pad=False):
             and not pad
         ):
             target_shape = (round(image.shape[1] * aspect_ratio_target), image.shape[1])
-        elif (
-            aspect_ratio_orig < aspect_ratio_target
-        ) or aspect_ratio_orig > aspect_ratio_target:  # TODO check those parenthesis
+        elif aspect_ratio_orig < aspect_ratio_target or aspect_ratio_orig > aspect_ratio_target:
             target_shape = (image.shape[0], round(image.shape[0] / aspect_ratio_target))
         if pad:
             image = pad_image_to_shape(image, target_shape)
@@ -382,70 +334,34 @@ def scale_image_to_shape(image, shape, pad=False):
 
 
 def crop_image_to_shape(image, shape):
-    height_before = (image.shape[0] - shape[0]) // 2
-    height_after = image.shape[0] - shape[0] - height_before
-    width_before = (image.shape[1] - shape[1]) // 2
-    width_after = image.shape[1] - shape[1] - width_before
+    top = (image.shape[0] - shape[0]) // 2
+    bottom = image.shape[0] - shape[0] - top
+    left = (image.shape[1] - shape[1]) // 2
+    right = image.shape[1] - shape[1] - left
 
     return image[
-        height_before : image.shape[0] - height_after, width_before : image.shape[1] - width_after,
+        top : image.shape[0] - bottom, left : image.shape[1] - right,
     ]
 
 
 def pad_image_to_shape(image, shape):
-    height_before = (shape[0] - image.shape[0]) // 2
-    height_after = shape[0] - image.shape[0] - height_before
-    width_before = (shape[1] - image.shape[1]) // 2
-    width_after = shape[1] - image.shape[1] - width_before
+    top = (shape[0] - image.shape[0]) // 2
+    bottom = shape[0] - image.shape[0] - top
+    left = (shape[1] - image.shape[1]) // 2
+    right = shape[1] - image.shape[1] - left
 
-    pad_shape = ((height_before, height_after), (width_before, width_after))
+    pad_shape = ((top, bottom), (left, right))
 
     return np.pad(image, pad_shape)
 
 
-def pad_tensor_to_shape(phase_map, shape):  # TODO use the ones below, but check why they failed
+def pad_tensor_to_shape(phase_map, shape):
     # that you remove and add dims back again where needed for this function
-    height_before = (shape[0] - phase_map.shape[2]) // 2
-    height_after = shape[0] - phase_map.shape[2] - height_before
-    width_before = (shape[1] - phase_map.shape[3]) // 2
-    width_after = shape[1] - phase_map.shape[3] - width_before
+    top = (shape[0] - phase_map.shape[2]) // 2
+    bottom = shape[0] - phase_map.shape[2] - top
+    left = (shape[1] - phase_map.shape[3]) // 2
+    right = shape[1] - phase_map.shape[3] - left
 
-    pad_shape = (width_before, width_after, height_before, height_after)
+    pad_shape = (left, right, top, bottom)
 
     return F.pad(phase_map, pad_shape, "constant", 0)
-
-
-# def _get_shape(image, shape):
-#     """
-#     Get the shape of the image after padding.
-#     """
-#     top = (shape[0] - image.shape[0]) // 2
-#     bottom = shape[0] - image.shape[0] - top
-#     left = (shape[1] - image.shape[1]) // 2
-#     right = shape[1] - image.shape[1] - left
-
-#     return top, bottom, left, right
-
-
-# def crop_image_to_shape(image, shape):
-#     top, bottom, left, right = _get_shape(image, shape)
-
-#     return image.copy()[
-#         top : image.shape[0] - bottom, left : image.shape[1] - right,
-#     ]
-
-
-# def pad_image_to_shape(image, shape, value=0):
-#     top, bottom, left, right = _get_shape(image, shape)
-
-#     return np.pad(
-#         image, ((top, bottom), (left, right)), mode="constant", constant_values=value
-#     )
-
-
-# def pad_tensor_to_shape(
-#     tensor, shape, value=0
-# ):  # TODO name, sometimes also a field or just mask
-#     top, bottom, left, right = _get_shape(tensor, shape)
-
-#     return F.pad(tensor, (left, right, top, bottom), "constant", value)

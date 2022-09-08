@@ -1,7 +1,7 @@
 import torch
 from waveprop.rs import angular_spectrum
 
-from mask_designer.transform_fields import transform_from_neural_holography_setting
+from mask_designer.transform_fields import neural_holography_lensless_to_lens
 
 
 def prop_waveprop_asm(
@@ -53,7 +53,7 @@ def prop_waveprop_asm(
     return res[None, None, :, :]
 
 
-def prop_waveprop_asm_lens(  # TODO does this work?
+def prop_waveprop_asm_lens(  # TODO does not work
     u_in,
     feature_size,
     wavelength,
@@ -84,6 +84,4 @@ def prop_waveprop_asm_lens(  # TODO does this work?
     print(u_in.shape[2:])
     print(feature_size)
 
-    return transform_from_neural_holography_setting(
-        res, z, wavelength, u_in.shape[2:], feature_size
-    )
+    return neural_holography_lensless_to_lens(res, z, wavelength, u_in.shape[2:], feature_size)
