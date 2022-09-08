@@ -28,6 +28,7 @@ from mask_designer.utils import (
     quantize_phase_mask,
     random_init_phase_mask,
     save_image,
+    round_phase_mask_to_uint8,
 )
 from mask_designer.wrapper import SGD, ImageLoader, PropPhysical, prop_asm
 from slm_controller import slm
@@ -141,8 +142,8 @@ def main(iterations, slm_show_time, slm_settle_time):
     # )
 
     save_image(
-        (255 * normalize_mask(propped_field.abs())).astype(
-            np.uint8
+        round_phase_mask_to_uint8(
+            255 * normalize_mask(propped_field.abs())
         ),  # TODO check this version using normalization and cap using quantile
         f"citl/snapshots/sim_{name}_warm_start.png",
     )
@@ -219,8 +220,8 @@ def main(iterations, slm_show_time, slm_settle_time):
     # )
 
     save_image(
-        (255 * normalize_mask(propped_field.abs())).astype(
-            np.uint8
+        round_phase_mask_to_uint8(
+            255 * normalize_mask(propped_field.abs())
         ),  # TODO check this version using normalization and cap using quantile
         f"citl/snapshots/sim_{name}_final.png",
     )

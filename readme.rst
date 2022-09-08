@@ -201,7 +201,7 @@ Those parameters are then used in the remainder of the code base.
 Holoeye provides a graphical software called `SLM Pattern
 Generator <https://customers.holoeye.com/slm-pattern-generator-v5-1-1-windows/>`_
 that has built-in functionality for performing phase retrieval for a given
-target amplitude. One such example can be found in ``images/holoeye_phase_mask``
+target amplitude. One such example can be found in ``images/phase_mask``
 and its corresponding amplitude at the target plane under ``images/target_amplitude``.
 This software assumes an experimental setup that uses a convex lens in between the SLM and
 the target plane.

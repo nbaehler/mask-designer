@@ -36,7 +36,7 @@ from slm_controller.hardware import SLMParam, slm_devices
 
 @click.command()
 @click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
-def main(iterations):  # TODO does not work yet
+def main(iterations):
     # Set parameters
     prop_dist = params[Params.PROPAGATION_DISTANCE]
     wavelength = params[Params.WAVELENGTH]
@@ -77,7 +77,7 @@ def main(iterations):  # TODO does not work yet
         pixel_pitch,
         iterations,
         roi,
-        propagator=prop_waveprop_asm,  # TODO check that this works
+        propagator=prop_waveprop_asm,
         device=device,
     )
     angles = sgd(target_amp, init_phase).cpu().detach()
@@ -85,9 +85,6 @@ def main(iterations):  # TODO does not work yet
     # Extend the computed angles, aka the phase values, to be a field which is a complex tensor
     # again
     field = extend_to_field(angles)
-
-    # Transform the results to the hardware setting using a lens
-    field = neural_holography_lensless_to_lens(field, prop_dist, wavelength, slm_shape, pixel_pitch)
 
     # Simulate the propagation in the lens setting and show the results
     unpacked_field = field[0, 0, :, :]

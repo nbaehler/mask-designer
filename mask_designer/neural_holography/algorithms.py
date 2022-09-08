@@ -183,64 +183,123 @@ def stochastic_gradient_descent(
 
         print(f"Scale {str(s.item())}")  # TODO remove
 
+        print("Requires grad", slm_phase.requires_grad)
+
+        # forward propagation from the SLM plane to the target plane
+        real, imag = utils.polar_to_rect(slm_amp, slm_phase)
+        slm_field = torch.complex(real, imag)
+
+        recon_field = utils.propagate_field(
+            slm_field,
+            propagator,
+            prop_dist,
+            wavelength,
+            feature_size,
+            prop_model,
+            dtype,
+            precomputed_H,
+        )
+
+        # get amplitude
+        recon_amp = recon_field.abs()  # TODO not in [0,1], amp can get bigger, normalize?
+
+        # crop roi
+        recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
+
+        print(  # TODO remove
+            "recon_amp",
+            torch.min(recon_amp).item(),
+            torch.max(recon_amp).item(),
+            torch.median(recon_amp).item(),
+            torch.mean(recon_amp).item(),
+            torch.quantile(recon_amp, 0.99).item(),
+        )
+
         # camera-in-the-loop technique
         if prop_model.upper() == "PHYSICAL":
             print("Requires grad", slm_phase.requires_grad)
 
-            out_amp = propagator(slm_phase)  # .detach()
+            captured_amp = propagator(slm_phase)  # .detach()
 
             print("Requires grad", slm_phase.requires_grad)
 
             print(  # TODO remove
-                "out_amp",
-                torch.min(out_amp).item(),
-                torch.max(out_amp).item(),
-                torch.median(out_amp).item(),
-                torch.mean(out_amp).item(),
-                torch.quantile(out_amp, 0.99).item(),
+                "captured_amp",
+                torch.min(captured_amp).item(),
+                torch.max(captured_amp).item(),
+                torch.median(captured_amp).item(),
+                torch.mean(captured_amp).item(),
+                torch.quantile(captured_amp, 0.99).item(),
             )
 
             # use the gradient of proxy, replacing the amplitudes
             # captured_amp is assumed that its size already matches that of recon_amp
-            # out_amp = recon_amp + (captured_amp - recon_amp).detach()
+            out_amp = recon_amp + (captured_amp - recon_amp).detach()
             # out_amp = captured_amp.detach()  # TODO not enough?
         else:
-            print("Requires grad", slm_phase.requires_grad)
-
-            # forward propagation from the SLM plane to the target plane
-            real, imag = utils.polar_to_rect(slm_amp, slm_phase)
-            slm_field = torch.complex(real, imag)
-
-            recon_field = utils.propagate_field(
-                slm_field,
-                propagator,
-                prop_dist,
-                wavelength,
-                feature_size,
-                prop_model,
-                dtype,
-                precomputed_H,
-            )
-
-            # get amplitude
-            recon_amp = recon_field.abs()  # TODO not in [0,1], amp can get bigger, normalize?
-
-            # crop roi
-            recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
-
-            print(  # TODO remove
-                "recon_amp",
-                torch.min(recon_amp).item(),
-                torch.max(recon_amp).item(),
-                torch.median(recon_amp).item(),
-                torch.mean(recon_amp).item(),
-                torch.quantile(recon_amp, 0.99).item(),
-            )
-
             out_amp = recon_amp
 
-        # calculate loss and backprop
-        lossValue = loss(s * out_amp, target_amp)
+        # -----------------------------------------------------------------
+
+        # # camera-in-the-loop technique # TODO this version is better and should work
+        # if prop_model.upper() == "PHYSICAL":
+        #     print("Requires grad", slm_phase.requires_grad)
+
+        #     out_amp = propagator(slm_phase)  # .detach()
+
+        #     print("Requires grad", slm_phase.requires_grad)
+
+        #     print(  # TODO remove
+        #         "out_amp",
+        #         torch.min(out_amp).item(),
+        #         torch.max(out_amp).item(),
+        #         torch.median(out_amp).item(),
+        #         torch.mean(out_amp).item(),
+        #         torch.quantile(out_amp, 0.99).item(),
+        #     )
+        # else:
+        #     print("Requires grad", slm_phase.requires_grad)
+
+        #     # forward propagation from the SLM plane to the target plane
+        #     real, imag = utils.polar_to_rect(slm_amp, slm_phase)
+        #     slm_field = torch.complex(real, imag)
+
+        #     recon_field = utils.propagate_field(
+        #         slm_field,
+        #         propagator,
+        #         prop_dist,
+        #         wavelength,
+        #         feature_size,
+        #         prop_model,
+        #         dtype,
+        #         precomputed_H,
+        #     )
+
+        #     # get amplitude
+        #     recon_amp = recon_field.abs()  # TODO not in [0,1], amp can get bigger, normalize?
+
+        #     # crop roi
+        #     recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
+
+        #     print(  # TODO remove
+        #         "recon_amp",
+        #         torch.min(recon_amp).item(),
+        #         torch.max(recon_amp).item(),
+        #         torch.median(recon_amp).item(),
+        #         torch.mean(recon_amp).item(),
+        #         torch.quantile(recon_amp, 0.99).item(),
+        #     )
+
+        #     out_amp = recon_amp
+
+        print(  # TODO remove
+            "out_amp",
+            torch.min(out_amp).item(),
+            torch.max(out_amp).item(),
+            torch.median(out_amp).item(),
+            torch.mean(out_amp).item(),
+            torch.quantile(out_amp, 0.99).item(),
+        )
 
         print(  # TODO remove
             "s * out_amp",
@@ -259,6 +318,9 @@ def stochastic_gradient_descent(
             torch.mean(target_amp).item(),
             torch.quantile(target_amp, 0.99).item(),
         )
+
+        # calculate loss and backprop
+        lossValue = loss(s * out_amp, target_amp)
 
         print(f"Loss {(lossValue.item())}")  # TODO remove
 

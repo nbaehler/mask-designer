@@ -439,9 +439,7 @@ class IDSCamera(Camera):
             )
 
             # Append images as numpy array to list of acquired images
-            images.append(
-                np.flipud(np.fliplr(ipl_image.get_numpy_2D().copy())) - self._correction
-            )  # TODO really need to flip?
+            images.append(np.flipud(np.fliplr(ipl_image.get_numpy_2D().copy())) - self._correction)
 
         return images
 

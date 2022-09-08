@@ -97,8 +97,8 @@ want to get this target amplitude.
 Any of those algorithms then computes the corresponding phase map.
 
 
-.. image:: ../../images/holoeye_phase_mask/holoeye_logo.png
-   :target: ../../images/holoeye_phase_mask/holoeye_logo.png
+.. image:: ../../images/phase_mask/holoeye_logo.png
+   :target: ../../images/phase_mask/holoeye_logo.png
    :alt: Holoeye logo phase
 
 

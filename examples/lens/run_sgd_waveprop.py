@@ -74,7 +74,7 @@ def main(iterations):
         pixel_pitch,
         iterations,
         roi,
-        propagator=prop_waveprop_asm,  # TODO check that this works
+        propagator=prop_waveprop_asm,
         device=device,
     )
     angles = sgd(target_amp, init_phase).cpu().detach()

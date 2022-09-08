@@ -23,7 +23,7 @@ def main():
     resized_image = scale_image_to_shape(image, slm_shape, pad=True)
     resized_image = Image.fromarray(resized_image)
 
-    resized_image.save("images/test/holoeye_logo_big.png")
+    resized_image.save("images/test/target_amplitude/holoeye_logo_big.png")
 
 
 if __name__ == "__main__":

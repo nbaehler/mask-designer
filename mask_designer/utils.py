@@ -161,7 +161,7 @@ def load_image(path):
     if issubclass(dtype.type, np.integer):
         img = img / np.iinfo(dtype).max
 
-    # img = normalize_mask(img) # TODO check if this is correct
+    # img = normalize_mask(img) # TODO needed?
 
     return round_phase_mask_to_uint8(img * 255)
 
@@ -190,7 +190,7 @@ def save_image(I, fname):
     I_p.save(fname)
 
 
-def load_field(path="images/holoeye_phase_mask/holoeye_logo.png"):
+def load_field(path="images/phase_mask/holoeye_logo.png"):
     """
     Load a phase map, by default one generated with holoeye software, extends it
     to a field and transform it into a compliant form.
@@ -199,7 +199,7 @@ def load_field(path="images/holoeye_phase_mask/holoeye_logo.png"):
     ----------
     path : str, optional
         The path to the phase mask to load, by default
-        "images/holoeye_phase_mask/holoeye_logo.png"
+        "images/phase_mask/holoeye_logo.png"
 
     Returns
     -------
@@ -263,7 +263,7 @@ def angularize_phase_mask(phase_mask):
 
     # epsilon = 1e-6  # TODO how to handle the wrap around at -pi/pi when in [0,1
     # ]?
-    # phase_mask = normalize_mask(phase_mask) # TODO check if this is correct
+    # phase_mask = normalize_mask(phase_mask) # TODO needed?
 
     phase_mask = torch.from_numpy(phase_mask).type(torch.FloatTensor)
     return (phase_mask / max_value) * (2 * np.pi) - np.pi
@@ -292,7 +292,7 @@ def quantize_phase_mask(phase_mask):
     new_phase_mask = phase_mask + np.pi
     new_phase_mask /= 2 * np.pi
 
-    # new_phase_mask = normalize_mask(new_phase_mask) # TODO check if this is correct
+    # new_phase_mask = normalize_mask(new_phase_mask) # TODOneeded?
 
     new_phase_mask *= 255.0
 

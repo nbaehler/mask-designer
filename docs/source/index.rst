@@ -24,7 +24,7 @@ Indices and tables
 ------------------
 
 * :ref:`genindex`
-* :ref:`modindex` ..TODO: what's that?
+* :ref:`modindex` ..TODO: what's that? keep it?
 * :ref:`search`
 
 

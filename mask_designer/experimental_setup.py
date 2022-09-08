@@ -25,7 +25,7 @@ params = {
     Params.WAVELENGTH: 532e-9,
     Params.PROPAGATION_DISTANCE: 0.275,
     Params.SLM_SETTLE_TIME: 0.25,
-    Params.SLM_SHOW_TIME: 10,  # TODO change back to 10
+    Params.SLM_SHOW_TIME: 10,
     Params.ROI: (640, 880),
 }
 
@@ -36,7 +36,7 @@ slm_device = SLMDevices.HOLOEYE_LC_2012.value
 cam_device = CamDevices.IDS.value
 
 
-def circular_amp():  # TODO use circ aperture from our repo, documentation, from here https://stackoverflow.com/a/70283438
+def circular_amp():  # From here https://stackoverflow.com/a/70283438
     # Laser radius = 1cm := r
     # pixel pitch = 0.36e-4 m = 0.0036 cm,
     # ==> r = 278 px

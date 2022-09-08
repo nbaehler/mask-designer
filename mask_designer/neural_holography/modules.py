@@ -520,8 +520,8 @@ class PropPhysical(nn.Module):
             # )
 
             save_image(
-                (255 * normalize_mask(propped_field.abs())).astype(
-                    np.uint8
+                round_phase_mask_to_uint8(
+                    255 * normalize_mask(propped_field.abs())
                 ),  # TODO check this version using normalization and cap using quantile
                 f"citl/snapshots/sim_{name}.png",
             )
