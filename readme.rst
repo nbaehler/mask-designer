@@ -10,6 +10,9 @@ incoherent light source.
 
 .. contents:: Table of Contents
    :depth: 5
+.. :local:
+.. :backlinks: none
+
 
 
 The main goal of the project is tackle the inverse problem called phase retrieval,
@@ -80,8 +83,7 @@ dependencies intended for developing while the virtual environment is activated.
 .. code-block:: sh
 
    source mask_designer_env/bin/activate
-   # pip install -e .[dev] #TODO does not work, dev not found
-   pip install click black pytest tensorboard torch_tb_profiler
+   pip install click black pytest tensorboard torch_tb_profiler sphinx-rtd-theme
 
 Optional setup for Camera-In-The-Loop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

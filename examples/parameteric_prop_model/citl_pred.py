@@ -181,7 +181,8 @@ def main(
 
             phase_mask = np.mean(phase_mask, axis=2)
 
-            # phase_mask = (  #TODO inversion not needed in our setting?
+            # No inversion not needed in our setting
+            # phase_mask = (
             #     torch.tensor((1 - phase_mask) * 2 * np.pi - np.pi, dtype=dtype)
             #     .reshape(1, 1, *slm_shape)
             #     .to(device)
@@ -215,7 +216,8 @@ def main(
         # list to tensor, scaling
         amp = torch.cat(amp, dim=1)
 
-        amp = pad_tensor_to_shape(amp, slm_shape)  # TODO need to pad here?
+        # pad to the correct shape
+        amp = pad_tensor_to_shape(amp, slm_shape)
 
         # tensor to numpy
         amp = amp.squeeze().cpu().detach().numpy()

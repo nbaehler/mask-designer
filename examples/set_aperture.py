@@ -53,7 +53,6 @@ from slm_controller.slm import create
     "--vertical",
     is_flag=True,
     help="Whether line should be vertical (True) or horizontal (False).",
-    show_default=True,
 )
 @click.option(
     "--device",

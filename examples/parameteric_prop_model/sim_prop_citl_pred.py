@@ -39,9 +39,7 @@ def main():
     holoeye_phase_mask = load_image("citl/predictions/0_holoeye_logo_pred_phases_ASM_green.png")
 
     # Pad roi to full slm shape
-    holoeye_phase_mask = torch.from_numpy(
-        pad_image_to_shape(holoeye_phase_mask, slm_shape)  # TODO padding really needed?
-    )
+    holoeye_phase_mask = torch.from_numpy(pad_image_to_shape(holoeye_phase_mask, slm_shape))
 
     holoeye_field = extend_to_field(angularize_phase_mask(holoeye_phase_mask))[None, None, :, :]
     unpacked_field = holoeye_field[0, 0, :, :]

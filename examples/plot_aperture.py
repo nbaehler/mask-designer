@@ -50,13 +50,9 @@ from slm_controller.hardware import SLMDevices, SLMParam, slm_devices
     "--vertical",
     is_flag=True,
     help="Whether line should be vertical (True) or horizontal (False).",
-    show_default=True,
 )
 @click.option(
-    "--show_tick_labels",
-    is_flag=True,
-    help="Whether or not to show cell values along axes.",
-    show_default=True,
+    "--show_tick_labels", is_flag=True, help="Whether or not to show cell values along axes.",
 )
 @click.option(
     "--pixel_pitch",

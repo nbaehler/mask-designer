@@ -27,7 +27,7 @@ class VirtualSLM:
         assert np.all(pixel_pitch) > 0
         self._shape = shape
         self._pixel_pitch = pixel_pitch
-        self._values = np.zeros((3,) + shape)
+        self._values = np.zeros((3,) + shape, dtype=np.uint8)
 
     @property
     def size(self):

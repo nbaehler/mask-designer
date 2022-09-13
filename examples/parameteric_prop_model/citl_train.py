@@ -71,10 +71,10 @@ from mask_designer.wrapper import train_model
     "--batch_size", type=int, default=1, help="Size of minibatch", show_default=True,
 )
 @click.option(
-    "--no_step_lr", is_flag=True, help="Use of lr scheduler", show_default=True,
+    "--no_step_lr", is_flag=True, help="Use of lr scheduler",
 )
 # @click.option("--experiment", type=str, default="", help="Name of the
-# experiment", show_default=True,) # TODO hard coded here
+# experiment", show_default=True,) # hard coded
 def main(
     channel,
     pretrained_path,

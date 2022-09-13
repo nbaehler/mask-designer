@@ -176,7 +176,8 @@ def eval_model(
 
             phase_mask = np.mean(phase_mask, axis=2)
 
-            # phase_mask = (  #TODO inversion not needed in our setting?
+            # Inversion not needed in our setting
+            # phase_mask = (
             #     torch.tensor((1 - phase_mask) * 2 * np.pi - np.pi, dtype=dtype)
             #     .reshape(1, 1, *slm_shape)
             #     .to(device)

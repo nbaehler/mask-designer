@@ -237,7 +237,8 @@ def train_model(
                         / np.iinfo(np.uint8).max
                     )
 
-                # invert phase (our SLM setup) #TODO inversion not needed in our setting?
+                # Inversion not needed in our setting
+                # invert phase (our SLM setup)
                 # phase_mask = (
                 #     torch.tensor((1 - phase_mask) * 2 * np.pi - np.pi, dtype=dtype)
                 #     .reshape(1, 1, *slm_shape)

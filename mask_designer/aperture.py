@@ -4,6 +4,7 @@ email: ebezzam@gmail.com,
 GitHub: https://github.com/ebezzam
 """
 
+
 from enum import Enum
 
 import numpy as np
@@ -26,23 +27,19 @@ def rect_aperture(slm_shape, pixel_pitch, apert_dim, center=None):
     """
     Create and return VirtualSLM object with rectangular aperture of desired dimensions.
 
-    Parameters
-    ----------
-    slm_shape : tuple(int)
-        Dimensions (height, width) of VirtualSLM in cells.
-    pixel_pitch : tuple(float)
-        Dimensions (height, width) of each cell in meters.
-    apert_dim : tuple(float)
-        Dimensions (height, width) of aperture in meters.
-    center : tuple(float)
-        [Optional] center of aperture along (SLM) coordinates, indexing starts in top-left corner.
-        Default is to place center of aperture at center of SLM.
-
-    Returns
-    -------
-    slm : :py:class:`~mask_designer.virtual_slm.VirtualSLM`
-        VirtualSLM object with cells programmed to desired rectangular aperture.
-
+    :param slm_shape: Dimensions (height, width) of VirtualSLM in cells.
+    :type slm_shape: tuple(int)
+    :param pixel_pitch: Dimensions (height, width) of each cell in meters.
+    :type pixel_pitch: tuple(float)
+    :param apert_dim: Dimensions (height, width) of aperture in meters.
+    :type apert_dim: tuple(float)
+    :param center: [Optional] center of aperture along (SLM) coordinates, indexing starts in top-left corner.
+        Default is to place center of aperture at center of SLM, defaults to
+        None # TODO improve
+    :type center: tuple(float), optional
+    :raises ValueError: _description_ # TODO: add description
+    :return: VirtualSLM object with cells programmed to desired rectangular aperture.
+    :rtype: :py:class:`~mask_designer.virtual_slm.VirtualSLM`
     """
     # check input values
     assert np.all(apert_dim) > 0

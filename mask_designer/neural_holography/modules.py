@@ -398,7 +398,7 @@ class PropPhysical(nn.Module):
             np.quantile(captured_linear_np, 0.99).item(),
         )
 
-        # # convert raw-16 linear intensity image into an amplitude tensor # TODO is the difference?
+        # # convert raw-16 linear intensity image into an amplitude tensor # TODO what is the difference?
         # if len(captured_linear_np.shape) > 2:  # TODO do we need this?
         #     captured_linear = (
         #         torch.tensor(captured_linear_np, dtype=torch.float32)
