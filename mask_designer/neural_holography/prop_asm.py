@@ -43,23 +43,18 @@ def prop_asm(
 ):
     """Propagates the input field using the angular spectrum method
 
-    Inputs
-    ------
-    u_in: PyTorch Complex tensor (torch.cfloat) of size (num_images, 1, height, width) -- updated with PyTorch 1.7.0
-    feature_size: (height, width) of individual holographic features in m
-    wavelength: wavelength in m
-    z: propagation distance
-    linear_conv: if True, pad the input to obtain a linear convolution
-    padtype: 'zero' to pad with zeros, 'median' to pad with median of u_in's
+    :param u_in: PyTorch Complex tensor (torch.cfloat) of size (num_images, 1, height, width) -- updated with PyTorch 1.7.0
+    :param feature_size: (height, width) of individual holographic features in m
+    :param wavelength: wavelength in m
+    :param z: propagation distance
+    :param linear_conv: if True, pad the input to obtain a linear convolution
+    :param padtype: 'zero' to pad with zeros, 'median' to pad with median of u_in's
         amplitude
-    return_H[_exp]: used for precomputing H or H_exp, ends the computation early
+    :param return_H[_exp]: used for precomputing H or H_exp, ends the computation early
         and returns the desired variable
-    precomped_H[_exp]: the precomputed value for H or H_exp
-    dtype: torch dtype for computation at different precision
-
-    Output
-    ------
-    tensor of size (num_images, 1, height, width, 2)
+    :param precomped_H[_exp]: the precomputed value for H or H_exp
+    :param dtype: torch dtype for computation at different precision
+    :return: tensor of size (num_images, 1, height, width, 2)
     """
 
     if linear_conv:
@@ -177,13 +172,11 @@ def propagation_ASM_zernike(
 ):
     """A wrapper around propagation_ASM that applies a Zernike phase correction
 
-    Inputs
-    ------
-    coeffs: a 1d tensor of Zernike coefficients
-    zernike: a precomputed Zernike function basis. Should contain the same
+    :param coeffs: a 1d tensor of Zernike coefficients
+    :param zernike: a precomputed Zernike function basis. Should contain the same
         number of basis functions as number of coeffs, and be the same height
         and width as u_in. Use compute_zernike_basis to compute
-    adjoint: if True, propagate then apply zernike. If False, apply then prop
+    :param adjoint: if True, propagate then apply zernike. If False, apply then prop
 
     See propagation_ASM for u_in, feature_size, wavelength, z, linear_conv,
     padtype, return_H, precomped_H, return_H_exp, precomped_H_exp, dtype
@@ -266,10 +259,8 @@ def propagation_ASM_zernike_fourier(
 ):
     """A wrapper around propagation_ASM that applies a Zernike phase correction at Fourier plane
 
-    Inputs
-    ------
-    coeffs: a 1d tensor of Zernike coefficients
-    zernike: a precomputed Zernike function basis. Should contain the same
+    :param coeffs: a 1d tensor of Zernike coefficients
+    :param zernike: a precomputed Zernike function basis. Should contain the same
         number of basis functions as number of coeffs, and be the same height
         and width as u_in. Use compute_zernike_basis to compute
 

@@ -28,23 +28,17 @@ def __compute_H(prop_distance, wavelength, slm_shape, pixel_pitch):
 
     Refer to the LICENSE file for more information.
 
-    Parameters
-    ----------
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    slm_shape : tuple(int)
-        The shape or the resolution of the SLM
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        H, the homography matrix
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param slm_shape: The shape or the resolution of the SLM
+    :type slm_shape: tuple(int)
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: H matrix
+    :rtype: torch.Tensor
     """
-
     # number of pixels
     num_y, num_x = slm_shape
 
@@ -97,25 +91,19 @@ def holoeye_lens_to_lensless(
     Transform from normal setting (with lens) to the lensless setting used by neural
     holography.
 
-    Parameters
-    ----------
-    holoeye_field : torch.Tensor
-        The field that needs to be transformed
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    slm_shape : tuple(int)
-        The shape or the resolution of the SLM
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The transformed field
+    :param holoeye_field: The field that needs to be transformed
+    :type holoeye_field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param slm_shape: The shape or the resolution of the SLM
+    :type slm_shape: tuple(int)
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: torch.Tensor
+    :rtype: The transformed field
     """
-
     H = __compute_H(prop_distance, wavelength, slm_shape, pixel_pitch)
 
     angles = holoeye_field.angle()
@@ -142,23 +130,18 @@ def neural_holography_lensless_to_lens(  # TODO name
     Transform from the lensless setting used by neural holography to the the
     normal lens setting.
 
-    Parameters
-    ----------
-    neural_holography_field : torch.Tensor
-        The field that needs to be transformed
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    slm_shape : tuple(int)
-        The shape or the resolution of the SLM
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The transformed field
+    :param neural_holography_field: The field that needs to be transformed
+    :type neural_holography_field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param slm_shape: The shape or the resolution of the SLM
+    :type slm_shape: tuple(int)
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: torch.Tensor
+    :rtype: The transformed field
     """
     H = __compute_H(prop_distance, wavelength, slm_shape, pixel_pitch)
 

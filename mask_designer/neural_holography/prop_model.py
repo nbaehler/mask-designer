@@ -224,7 +224,7 @@ class PropModel(nn.Module):
     """Parameterized light transport model, propagates a SLM phase with multipart propagation, including
     learnable Zernike phase, source amplitude, and phase LUT corrections, etc....
 
-    Class initialization parameters
+    Class initialization parameters # TODO fix
     -------------------------------
     distance: propagation dist between SLM and target, in meters, default 0.1
     wavelength: the wavelength of interest, in meters, default 520e-9
@@ -243,7 +243,7 @@ class PropModel(nn.Module):
         'fresnel': propagation_fresnel). Default ASM.
     linear_conv: if True, pads for linear conv for propagation, default True
 
-    Usage
+    Usage # TODO fix
     -----
     Functions as a pytorch module:
 

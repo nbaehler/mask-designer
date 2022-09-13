@@ -5,7 +5,7 @@ from ids_peak import ids_peak as peak
 from ids_peak_ipl import ids_peak_ipl as peak_ipl
 from slm_controller.hardware import SLMParam, slm_devices
 
-from mask_designer.experimental_setup import slm_device
+from mask_designer.experimental_setup import cam_device, slm_device
 from mask_designer.hardware import CamDevices, CamParam, cam_devices
 from mask_designer.utils import load_image, scale_image_to_shape
 
@@ -42,15 +42,10 @@ class Camera:
         Triggers the acquisition of multiple images and then resizes them to the size
         of the SLM.
 
-        Parameters
-        ----------
-        number : int, optional
-            The number of images taken, by default 2
-
-        Returns
-        -------
-        list
-            The list of the acquired images that are resized to match the slm shape
+        :param number: The number of images taken, defaults to 2
+        :type number: int, optional
+        :return: The list of the acquired images that are resized to match the slm shape
+        :rtype: list[ndarray]
         """
         images = self.acquire_multiple_images(number)
 
@@ -64,10 +59,8 @@ class Camera:
         Triggers the acquisition of a single images and then resizes it to the size
         of the SLM.
 
-        Returns
-        -------
-        ndarray
-            The acquired image that is resized to match the slm shape
+        :return: The acquired image that is resized to match the slm shape
+        :rtype: ndarray
         """
         image = self.acquire_single_image()
 
@@ -85,10 +78,8 @@ class Camera:
         """
         Triggers the acquisition of multiple images.
 
-        Parameters
-        ----------
-        number : int, optional
-            The number of images taken, by default 2
+        :param number: The number of images taken, defaults to 2
+        :type number: int, optional
         """
         pass
 
@@ -97,26 +88,21 @@ class Camera:
         """
         Set the exposure time of the camera to a specific value.
 
-        Parameters
-        ----------
-        time : int
-            New exposure time
+        :param time: New exposure time
+        :type time: int
         """
         pass
 
     def set_correction(
-        self,
-        correction=np.zeros(cam_devices[CamDevices.DUMMY.value][CamParam.SHAPE], dtype=np.uint8),
+        self, correction=np.zeros(cam_devices[cam_device][CamParam.SHAPE], dtype=np.uint8),
     ):
         """
         Set the correction of the camera to a specific value.
 
-        Parameters
-        ----------
-        correction : ndarray
-            New correction
+        :param correction: New image used for correction, defaults to np.zeros(cam_devices[cam_device][CamParam.SHAPE], dtype=np.uint8)
+        :type correction: ndarray, optional
+        :raises ValueError: _description_ #TODO improve
         """
-
         if correction.shape != cam_devices[CamDevices.DUMMY.value][CamParam.SHAPE]:
             raise ValueError("The correction must have the same shape as the camera image")
 
@@ -147,10 +133,8 @@ class DummyCamera(Camera):
         """
         Set the exposure time of the camera to a specific value.
 
-        Parameters
-        ----------
-        time : int, optional
-            New exposure time, by default pi
+        :param time: New exposure time, defaults to np.pi :)
+        :type time: float, optional
         """
         self._exposure_time = time
 
@@ -162,12 +146,9 @@ class DummyCamera(Camera):
         """
         Acquire a single dummy image.
 
-        Returns
-        -------
-        ndarray
-            The acquired dummy image
+        :return: The acquired dummy image
+        :rtype: ndarray
         """
-
         self._frame_count += 1
         return self._image.copy()
 
@@ -175,15 +156,10 @@ class DummyCamera(Camera):
         """
         Acquire multiple dummy images.
 
-        Parameters
-        ----------
-        number : int, optional
-            The number of images to be taken, by default 2
-
-        Returns
-        -------
-        list
-            The list of acquired dummy images
+        :param number: The number of images to be taken, defaults to 2
+        :type number: int, optional
+        :return: The list of acquired dummy images
+        :rtype: list[ndarray]
         """
         self._frame_count += number
         return [self._image.copy() for _ in range(number)]
@@ -216,10 +192,7 @@ class IDSCamera(Camera):
         Initializes the camera and sets all the parameters such that acquisition
         in out setting can be started right away.
 
-        Raises
-        ------
-        IOError
-            If no compatible devices cameras are detected by the system
+        :raises IOError: If no compatible devices cameras are detected by the system
         """
         super().__init__()
 
@@ -370,11 +343,9 @@ class IDSCamera(Camera):
         """
         Set the exposure time of the camera to a specific value.
 
-        Parameters
-        ----------
-        time : int, optional
-            New exposure time in microseconds, by default 33.189 (which is the
+        :param time: New exposure time in microseconds, defaults to 33.189 (which is the
             minimal value supported by the camera)
+        :type time: float, optional
         """
         # Store the new exposure time
         self._exposure_time = time
@@ -395,10 +366,8 @@ class IDSCamera(Camera):
         """
         Acquire a single image.
 
-        Returns
-        -------
-        ndarray
-            Acquired image
+        :return: Acquired image
+        :rtype: ndarray
         """
         self._frame_count += 1
 
@@ -417,15 +386,10 @@ class IDSCamera(Camera):
         """
         Acquire multiple images.
 
-        Parameters
-        ----------
-        number : int, optional
-            The number of images to be taken, by default 2
-
-        Returns
-        -------
-        list
-            The list of acquired images
+        :param number: The number of images to be taken, defaults to 2
+        :type number: int, optional
+        :return: The list of acquired images
+        :rtype: list[ndarray]
         """
         images = []
         self._frame_count += number
@@ -457,10 +421,11 @@ def create(device_key):
     """
     Factory method to create `Camera` object.
 
-    Parameters
-    ----------
-    device_key : str
-        Option from `CamDevices`.
+
+    :param device_key: Option from `CamDevices`.
+    :type device_key: str
+    :return: _description_ #TODO improve
+    :rtype: _type_
     """
     assert device_key in CamDevices.values()
 

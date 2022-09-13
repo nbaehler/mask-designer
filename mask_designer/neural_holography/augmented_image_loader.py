@@ -29,7 +29,7 @@ from skimage.transform import resize
 class ImageLoader:
     """Loads images a folder with augmentation for generator training
 
-    Class initialization parameters
+    Class initialization parameters # TODO fix
     -------------------------------
     data_path: folder containing images
     channel: color channel to load (0, 1, 2 for R, G, B, None for all 3),
@@ -49,7 +49,7 @@ class ImageLoader:
     crop_to_homography: if True, only crops the image instead of scaling to get
         to target homography resolution, default False
 
-    Usage
+    Usage # TODO fix
     -----
     To be used as an iterator:
 

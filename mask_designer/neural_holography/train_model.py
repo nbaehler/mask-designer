@@ -20,7 +20,6 @@ Copyright (c) 2020, Stanford University
 All rights reserved.
 
 Refer to the LICENSE file for more information.
------
 
 $ python train_model.py --channel=1 --experiment=test
 

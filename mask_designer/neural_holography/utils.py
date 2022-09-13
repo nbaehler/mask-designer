@@ -28,7 +28,8 @@ from skimage.metrics import structural_similarity as ssim
 
 
 def mul_complex(t1, t2):
-    """multiply two complex valued tensors element-wise. the two last dimensions are
+    """
+    multiply two complex valued tensors element-wise. the two last dimensions are
     assumed to be the real and imaginary part
 
     complex multiplication: (a+bi)(c+di) = (ac-bd) + (bc+ad)i
@@ -43,7 +44,8 @@ def mul_complex(t1, t2):
 
 
 def div_complex(t1, t2):
-    """divide two complex valued tensors element-wise. the two last dimensions are
+    """
+    divide two complex valued tensors element-wise. the two last dimensions are
     assumed to be the real and imaginary part
 
     complex division: (a+bi) / (c+di) = (ac+bd)/(c^2+d^2) + (bc-ad)/(c^2+d^2) i
@@ -290,13 +292,8 @@ def cond_mkdir(path):
 def phasemap_8bit(phasemap, inverted=True):
     """convert a phasemap tensor into a numpy 8bit phasemap that can be directly displayed
 
-    Input
-    -----
     :param phasemap: input phasemap tensor, which is supposed to be in the range of [-pi, pi].
     :param inverted: a boolean value that indicates whether the phasemap is inverted.
-
-    Output
-    ------
     :return: output phasemap, with uint8 dtype (in [0, 255])
     """
 
@@ -342,8 +339,6 @@ def propagate_field(
     A wrapper for various propagation methods, including the parameterized model.
     Note that input_field is supposed to be in Cartesian coordinate, not polar!
 
-    Input
-    -----
     :param input_field: pytorch complex tensor shape of (1, C, H, W), the field before propagation, in X, Y coordinates
     :param prop_distance: propagation distance in m.
     :param wavelength: wavelength of the wave in m.
@@ -352,9 +347,6 @@ def propagate_field(
     :param trained_model: function or model instance for propagation
     :param dtype: torch.float32 by default
     :param precomputed_H: Propagation Kernel in Fourier domain (could be calculated at the very first time and reuse)
-
-    Output
-    -----
     :return: output_field: pytorch complex tensor shape of (1, C, H, W), the field after propagation, in X, Y coordinates
     """
 

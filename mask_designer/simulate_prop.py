@@ -28,15 +28,10 @@ def holoeye_fraunhofer(field):
     Simulated propagation with a lens (holoeye setup) between slm and target
     plane using Fraunhofer's equation.
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :return: The result of the propagation at the target plane
+    :rtype: torch.Tensor
     """
     return fftshift(torch.fft.fftn(field, dim=(-2, -1), norm="ortho"))
 
@@ -53,21 +48,16 @@ def neural_holography_asm(field, prop_distance, wavelength, pixel_pitch):
     Simulated propagation with a no lens (neural holography setup) between slm
     and target plane using the angular spectrum method.
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: The result of the propagation at the target plan
+    :rtype: torch.Tensor
     """
     return propagate_field(
         field, prop_asm, prop_distance, wavelength, pixel_pitch, "ASM", torch.float32, None,
@@ -78,21 +68,16 @@ def waveprop_fraunhofer(field, prop_distance, wavelength, pixel_pitch):
     """
     Fraunhofer propagation using waveprop.
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: The result of the propagation at the target plan
+    :rtype: torch.Tensor
     """
     field = field[0, 0, :, :]
 
@@ -105,21 +90,16 @@ def waveprop_asm(field, prop_distance, wavelength, pixel_pitch, device):
     """
     Angular Spectrum Method propagation using waveprop.
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: The result of the propagation at the target plan
+    :rtype: torch.Tensor
     """
     field = field[0, 0, :, :]
 
@@ -140,21 +120,16 @@ def waveprop_asm_np(field, prop_distance, wavelength, pixel_pitch):
     Band-limited Angular Spectrum Method for Numerical Simulation of Free-Space
     Propagation in Far and Near Fields propagation using waveprop.
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: The result of the propagation at the target plan
+    :rtype: torch.Tensor
     """
     field = field[0, 0, :, :]
 
@@ -169,21 +144,16 @@ def waveprop_fft_di(field, prop_distance, wavelength, pixel_pitch):
     """
     _summary_ #TODO add those summaries
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: The result of the propagation at the target plan
+    :rtype: torch.Tensor
     """
     field = field[0, 0, :, :]
 
@@ -196,21 +166,16 @@ def waveprop_direct_integration(field, prop_distance, wavelength, pixel_pitch):
     """
     _summary_
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: The result of the propagation at the target plan
+    :rtype: torch.Tensor
     """
     field = field[0, 0, :, :]
 
@@ -230,21 +195,16 @@ def waveprop_fresnel_one_step(field, prop_distance, wavelength, pixel_pitch):
     """
     _summary_
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: The result of the propagation at the target plan
+    :rtype: torch.Tensor
     """
     field = field[0, 0, :, :]
 
@@ -259,21 +219,16 @@ def waveprop_fresnel_two_step(field, prop_distance, wavelength, pixel_pitch):
     """
     _summary_
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: The result of the propagation at the target plan
+    :rtype: torch.Tensor
     """
     field = field[0, 0, :, :]
 
@@ -288,21 +243,16 @@ def waveprop_fresnel_multi_step(field, prop_distance, wavelength, pixel_pitch):
     """
     _summary_
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: The result of the propagation at the target plan
+    :rtype: torch.Tensor
     """
     field = field[0, 0, :, :]
 
@@ -321,21 +271,16 @@ def waveprop_fresnel_conv(field, prop_distance, wavelength, pixel_pitch, device)
     """
     _summary_
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: The result of the propagation at the target plan
+    :rtype: torch.Tensor
     """
     field = field[0, 0, :, :]
 
@@ -350,21 +295,16 @@ def waveprop_shifted_fresnel(field, prop_distance, wavelength, pixel_pitch):
     """
     _summary_
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: The result of the propagation at the target plan
+    :rtype: torch.Tensor
     """
     field = field[0, 0, :, :]
 
@@ -379,21 +319,16 @@ def waveprop_spherical(field, prop_distance, wavelength, pixel_pitch, device):
     """
     _summary_
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field to be propagated
-    prop_distance : float
-        The propagation distance from the SLM to the target plane
-    wavelength : float
-        The wavelength of the light
-    pixel_pitch : float
-        The pixel pitch of the SLM
-
-    Returns
-    -------
-    torch.Tensor
-        The result of the propagation at the target plane
+    :param field: The field to be propagated
+    :type field: torch.Tensor
+    :param prop_distance: The propagation distance from the SLM to the target plane
+    :type prop_distance: float
+    :param wavelength: The wavelength of the light
+    :type wavelength: float
+    :param pixel_pitch: The pixel pitch of the SLM
+    :type pixel_pitch: float
+    :return: The result of the propagation at the target plan
+    :rtype: torch.Tensor
     """
     field = field[0, 0, :, :]
 
@@ -415,14 +350,12 @@ def plot_fields(field, propped_field, title):
     """
     Plotting utility function.
 
-    Parameters
-    ----------
-    field : torch.Tensor
-        The field before propagation
-    propped_field : torch.Tensor
-        The field after propagation
-    title : String
-        The title of the plot
+    :param field: The field before propagation
+    :type field: torch.Tensor
+    :param propped_field: The field after propagation
+    :type propped_field: torch.Tensor
+    :param title: The title of the plot
+    :type title: str
     """
     fig = plt.figure()
     fig.suptitle(title)

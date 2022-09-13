@@ -56,7 +56,7 @@ from slm_controller.hardware import SLMParam, slm_devices
 class GS(nn.Module):
     """Classical Gerchberg-Saxton algorithm
 
-    Class initialization parameters
+    Class initialization parameters # TODO fix
     -------------------------------
     :param prop_distance: propagation dist between SLM and target, in meters
     :param wavelength: the wavelength of interest, in meters
@@ -68,7 +68,7 @@ class GS(nn.Module):
     :param propagator: propagator instance (function / pytorch module)
     :param device: torch.device
 
-    Usage
+    Usage # TODO fix
     -----
     Functions as a pytorch module:
 
@@ -147,7 +147,7 @@ class GS(nn.Module):
 class SGD(nn.Module):
     """Proposed Stochastic Gradient Descent Algorithm using Auto-diff Function of PyTorch
 
-    Class initialization parameters
+    Class initialization parameters # TODO fix
     -------------------------------
     :param prop_distance: propagation dist between SLM and target, in meters
     :param wavelength: the wavelength of interest, in meters
@@ -164,7 +164,7 @@ class SGD(nn.Module):
     :param writer: SummaryWrite instance for tensorboard
     :param device: torch.device
 
-    Usage
+    Usage # TODO fix
     -----
     Functions as a pytorch module:
 
@@ -251,7 +251,7 @@ class PropPhysical(nn.Module):
     and capture the diffraction image at the target plane,
     and then return warped image using pre-calibrated homography from instantiation.
 
-    Class initialization parameters
+    Class initialization parameters # TODO fix
     -------------------------------
     :param channel:
     :param slm_settle_time:
@@ -262,7 +262,7 @@ class PropPhysical(nn.Module):
     :param pattern_path:
     :param calibration_preview:
 
-    Usage
+    Usage # TODO fix
     -----
     Functions as a pytorch module:
 

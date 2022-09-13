@@ -14,12 +14,12 @@ def _cell_slice(_slice, cell_m):
     email: ebezzam@gmail.com,
     GitHub: https://github.com/ebezzam
 
-    Parameters
-    ----------
-    _slice : slice
-        Original slice in meters.
-    cell_m : float
-        Dimension of cell in meters.
+    :param _slice: Original slice in meters.
+    :type _slice: slice
+    :param cell_m: Dimension of cell in meters.
+    :type cell_m: float
+    :return: _description_ # TODO add description
+    :rtype: _type_
     """
     start = None if _slice.start is None else _m_to_cell_idx(_slice.start, cell_m)
     stop = _m_to_cell_idx(_slice.stop, cell_m) if _slice.stop is not None else None
@@ -35,12 +35,12 @@ def _m_to_cell_idx(val, cell_m):
     email: ebezzam@gmail.com,
     GitHub: https://github.com/ebezzam
 
-    Parameters
-    ----------
-    val : float
-        Location in meters.
-    cell_m : float
-        Dimension of cell in meters.
+    :param val: Location in meters.
+    :type val: float
+    :param cell_m: Dimension of cell in meters.
+    :type cell_m: float
+    :return: _description_ # TODO add description
+    :rtype: _type_
     """
     return int(val / cell_m)
 
@@ -48,17 +48,17 @@ def _m_to_cell_idx(val, cell_m):
 # def si2cell(val: np.ndarray, cell_m): # TODO unused, remove
 #     """
 #     Convert locations to cell index.
-#
+
 #     author: Eric Bezzam,
 #     email: ebezzam@gmail.com,
 #     GitHub: https://github.com/ebezzam
-#
-#     Parameters
-#     ----------
-#     val : :py:class:`~numpy.ndarray`
-#         Locations in meters.
-#     cell_m : float
-#         Dimension of cell in meters.
+
+#     :param val: Locations in meters.
+#     :type val: :py:class:`~numpy.ndarray`
+#     :param cell_m: Dimension of cell in meters.
+#     :type cell_m: float
+#     :return: _description_ # TODO add description
+#     :rtype: _type_
 #     """
 #     return np.array(val // cell_m, dtype=int)
 
@@ -71,14 +71,16 @@ def prepare_index_vals(key, pixel_pitch):
     email: ebezzam@gmail.com,
     GitHub: https://github.com/ebezzam
 
-    Parameters
-    ----------
-    key : int, float, slice, or list
-        Indexing operation in meters.
-    pixel_pitch : tuple(float)
-        Pixel pitch (height, width) in meters.
+    :param key: Indexing operation in meters.
+    :type key: int, float, slice, or list
+    :param pixel_pitch: Pixel pitch (height, width) in meters.
+    :type pixel_pitch: tuple(float)
+    :raises ValueError: _description_ # TODO add description
+    :raises NotImplementedError: _description_
+    :raises ValueError: _description_
+    :return: _description_
+    :rtype: _type_
     """
-
     if isinstance(key, (float, int)):
         idx = slice(None), _m_to_cell_idx(key, pixel_pitch[0])
 
@@ -115,12 +117,13 @@ def rgb2gray(rgb, weights=None):
     email: ebezzam@gmail.com,
     GitHub: https://github.com/ebezzam
 
-    Parameters
-    ----------
-    rgb : :py:class:`~numpy.ndarray`
-        (N_channel, N_height, N_width) image.
-    weights : :py:class:`~numpy.ndarray`
-        [Optional] (3,) weights to convert from RGB to grayscale.
+    :param rgb: (N_channel, N_height, N_width) image.
+    :type rgb: :py:class:`~numpy.ndarray`
+    :param weights: [Optional] (3,) weights to convert from RGB to grayscale.,
+        defaults to None # TODO improve description
+    :type weights: :py:class:`~numpy.ndarray`, optional
+    :return: _description_ # TODO add description
+    :rtype: _type_
     """
     if weights is None:
         weights = np.array([0.299, 0.587, 0.144])
@@ -132,15 +135,11 @@ def load_image(path):
     """
     Load an image from a path.
 
-    Parameters
-    ----------
-    path : String
-        The path to the image
-
-    Returns
-    -------
-    numpy.ndarray
-        The image
+    :param path: The path to the image
+    :type path: str
+    :raises ValueError: _description_ # TODO add description
+    :return: The image
+    :rtype: numpy.ndarray
     """
     img = Image.open(path)
     img = np.array(img)
@@ -170,12 +169,10 @@ def save_image(I, fname):
     """
     Save image to a file.
 
-    Parameters
-    ----------
-    I : :py:class:`~numpy.ndarray`
-        (N_channel, N_height, N_width) image.
-    fname : str, path-like
-        Valid image file (i.e. JPG, PNG, BMP, TIFF, etc.).
+    :param I: (N_channel, N_height, N_width) image.
+    :type I: :py:class:`~numpy.ndarray`
+    :param fname: Valid image file (i.e. JPG, PNG, BMP, TIFF, etc.).
+    :type fname: str, path-like
     """
     # I_max = I.max()   # TODO needed ?
     # I_max = 1 if np.isclose(I_max, 0) else I_max
@@ -195,16 +192,10 @@ def load_field(path="images/phase_mask/holoeye_logo.png"):
     Load a phase map, by default one generated with holoeye software, extends it
     to a field and transform it into a compliant form.
 
-    Parameters
-    ----------
-    path : str, optional
-        The path to the phase mask to load, by default
-        "images/phase_mask/holoeye_logo.png"
-
-    Returns
-    -------
-    torch.Tensor
-        The field mask transformed into a compliant form
+    :param path: The path to the phase mask to load, defaults to "images/phase_mask/holoeye_logo.png"
+    :type path: str, optional
+    :return: The field mask transformed into a compliant form
+    :rtype: torch.Tensor
     """
     phase_mask = load_image(path)
 
@@ -273,15 +264,10 @@ def quantize_phase_mask(phase_mask):
     """
     Transform [-pi, pi] angles into the discrete interval 0-255.
 
-    Parameters
-    ----------
-    phase_mask : torch.Tensor or numpy.ndarray
-        The angles to be quantized/discretized
-
-    Returns
-    -------
-    numpy.ndarray
-        The discretized map
+    :param phase_mask: The angles to be quantized/discretized
+    :type phase_mask: torch.Tensor or numpy.ndarray
+    :return: The discretized mask
+    :rtype: numpy.ndarray
     """
     if torch.is_tensor(phase_mask):
         phase_mask = phase_mask.cpu().detach().numpy()

@@ -16,12 +16,10 @@ class VirtualSLM:
         """
         Class for defining VirtualSLM.
 
-        Parameters
-        ----------
-        shape : tuple(int)
-            (height, width) in number of cell.
-        pixel_pitch : tuple(float)
-            Pixel pitch (height, width) in meters.
+        :param shape: (height, width) in number of cell.
+        :type shape: tuple(int)
+        :param pixel_pitch: Pixel pitch (height, width) in meters.
+        :type pixel_pitch: tuple(float)
         """
         assert np.all(shape) > 0
         assert np.all(pixel_pitch) > 0
@@ -69,12 +67,13 @@ class VirtualSLM:
         """
         Get/set values of VirtualSLM at physical coordinate in meters.
 
-        Parameters
-        ----------
-        physical_coord : int, float, slice tuples
-            Physical coordinates to get/set VirtualSLM values.
-        value : int, float, :py:class:`~numpy.ndarray`
-            [Optional] values to set, otherwise return values at specified coordinates.
+        :param physical_coord: Physical coordinates to get/set VirtualSLM values.
+        :type physical_coord: int, float, slice tuples
+        :param value: [Optional] values to set, otherwise return values at
+            specified coordinates., defaults to None #TODO improve
+        :type value: int, float, :py:class:`~numpy.ndarray`, optional
+        :return: _description_ #TODO improve
+        :rtype: _type_
         """
         idx = prepare_index_vals(physical_coord, self._pixel_pitch)
         if value is None:
@@ -94,12 +93,11 @@ class VirtualSLM:
         """
         Plot VirtualSLM mask.
 
-        Parameters
-        ----------
-        show_tick_labels : bool
-            Whether to show cell number along x- and y-axis.
+        :param show_tick_labels: Whether to show cell number along x- and y-axis, defaults to False
+        :type show_tick_labels: bool, optional
+        :return: _description_ # TODO: add description
+        :rtype: _type_
         """
-
         # prepare mask data for `imshow`, expects the input data array size to be (width, height, 3)
         Z = self.values.transpose(1, 2, 0)
 

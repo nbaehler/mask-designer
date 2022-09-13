@@ -84,25 +84,22 @@ def line_aperture(slm_shape, pixel_pitch, length, vertical=True, center=None):
     """
     Create and return VirtualSLM object with a line aperture of desired length.
 
-    Parameters
-    ----------
-    slm_shape : tuple(int)
-        Dimensions (height, width) of VirtualSLM in cells.
-    pixel_pitch : tuple(float)
-        Dimensions (height, width) of each cell in meters.
-    length : float
-        Length of aperture in meters.
-    center : tuple(float)
-        [Optional] center of aperture along (SLM) coordinates, indexing starts in top-left corner.
-        Default is to place center of aperture at center of SLM.
 
-    Returns
-    -------
-    slm : :py:class:`~mask_designer.virtual_slm.VirtualSLM`
-        VirtualSLM object with cells programmed to desired line aperture.
-
+    :param slm_shape: Dimensions (height, width) of VirtualSLM in cells.
+    :type slm_shape: tuple(int)
+    :param pixel_pitch: Dimensions (height, width) of each cell in meters.
+    :type pixel_pitch: tuple(float)
+    :param length: Length of aperture in meters.
+    :type length: float
+    :param vertical: _description_, defaults to True # TODO: add description
+    :type vertical: bool, optional
+    :param center: [Optional] center of aperture along (SLM) coordinates, indexing starts in top-left corner.
+        Default is to place center of aperture at center of SLM., defaults to
+        None # TODO improve
+    :type center: tuple(float), optional
+    :return: VirtualSLM object with cells programmed to desired line aperture.
+    :rtype: :py:class:`~mask_designer.virtual_slm.VirtualSLM`
     """
-
     # call `create_rect_aperture`
     apert_dim = (length, pixel_pitch[1]) if vertical else (pixel_pitch[0], length)
     return rect_aperture(slm_shape, pixel_pitch, apert_dim, center)
@@ -112,23 +109,18 @@ def square_aperture(slm_shape, pixel_pitch, side, center=None):
     """
     Create and return VirtualSLM object with a square aperture of desired shape.
 
-    Parameters
-    ----------
-    slm_shape : tuple(int)
-        Dimensions (height, width) of VirtualSLM in cells.
-    pixel_pitch : tuple(float)
-        Dimensions (height, width) of each cell in meters.
-    side : float
-        Side length of square aperture in meters.
-    center : tuple(float)
-        [Optional] center of aperture along (SLM) coordinates, indexing starts in top-left corner.
-        Default is to place center of aperture at center of SLM.
-
-    Returns
-    -------
-    slm : :py:class:`~mask_designer.virtual_slm.VirtualSLM`
-        VirtualSLM object with cells programmed to desired square aperture.
-
+    :param slm_shape: Dimensions (height, width) of VirtualSLM in cells.
+    :type slm_shape: tuple(int)
+    :param pixel_pitch: Dimensions (height, width) of each cell in meters.
+    :type pixel_pitch: tuple(float)
+    :param side: Side length of square aperture in meters.
+    :type side: float
+    :param center: [Optional] center of aperture along (SLM) coordinates, indexing starts in top-left corner.
+        Default is to place center of aperture at center of SLM., defaults to
+        None # TODO improve
+    :type center: tuple(float), optional 
+    :return: VirtualSLM object with cells programmed to desired square aperture.
+    :rtype: :py:class:`~mask_designer.virtual_slm.VirtualSLM`
     """
     return rect_aperture(slm_shape, pixel_pitch, (side, side), center)
 
@@ -137,23 +129,18 @@ def circ_aperture(slm_shape, pixel_pitch, radius, center=None):
     """
     Create and return VirtualSLM object with a circle aperture of desired shape.
 
-    Parameters
-    ----------
-    slm_shape : tuple(int)
-        Dimensions (height, width) of VirtualSLM in cells.
-    pixel_pitch : tuple(float)
-        Dimensions (height, width) of each cell in meters.
-    radius : float
-        Radius of aperture in meters.
-    center : tuple(float)
-        [Optional] center of aperture along (SLM) coordinates, indexing starts in top-left corner.
-        Default is to place center of aperture at center of SLM.
-
-    Returns
-    -------
-    slm : :py:class:`~mask_designer.virtual_slm.VirtualSLM`
-        VirtualSLM object with cells programmed to desired circle aperture.
-
+    :param slm_shape: Dimensions (height, width) of VirtualSLM in cells.
+    :type slm_shape: tuple(int)
+    :param pixel_pitch: Dimensions (height, width) of each cell in meters.
+    :type pixel_pitch: tuple(float)
+    :param radius: Radius of aperture in meters.
+    :type radius: float
+    :param center: [Optional] center of aperture along (SLM) coordinates, indexing starts in top-left corner.
+        Default is to place center of aperture at center of SLM., defaults to
+        None # TODO improve
+    :type center: tuple(float), optional
+    :return: VirtualSLM object with cells programmed to desired circle aperture.
+    :rtype: :py:class:`~mask_designer.virtual_slm.VirtualSLM`
     """
     # check input values
     assert radius > 0

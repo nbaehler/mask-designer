@@ -56,9 +56,6 @@ def gerchberg_saxton(
     :param dtype: torch datatype for computation at different precision, default torch.float32.
     :param precomputed_H_f: A Pytorch complex64 tensor, pre-computed kernel for forward prop (SLM to image)
     :param precomputed_H_b: A Pytorch complex64 tensor, pre-computed kernel for backward propagation (image to SLM)
-
-    Output
-    ------
     :return: a tensor, the optimized phase mask at the SLM plane, in the shape of (1,1,H,W)
     """
 
@@ -127,8 +124,6 @@ def stochastic_gradient_descent(
     """
     Given the initial guess, run the SGD algorithm to calculate the optimal phase mask of spatial light modulator.
 
-    Input
-    ------
     :param init_phase: a tensor, in the shape of (1,1,H,W), initial guess for the phase.
     :param target_amp: a tensor, in the shape of (1,1,H,W), the amplitude of the target image.
     :param num_iters: the number of iterations to run the SGD.
@@ -145,9 +140,6 @@ def stochastic_gradient_descent(
     :param writer: Tensorboard writer instance
     :param dtype: default torch.float32
     :param precomputed_H: A Pytorch complex64 tensor, pre-computed kernel shape of (1,1,2H,2W) for fast computation.
-
-    Output
-    ------
     :return: a tensor, the optimized phase mask at the SLM plane, in the shape of (1,1,H,W)
     """
 
