@@ -11,22 +11,30 @@ from mask_designer.hardware import CamDevices
 class Params(Enum):
     WAVELENGTH = "wavelength"
     PROPAGATION_DISTANCE = "prop_distance"
+    ROI = "roi"
+
     SLM_SETTLE_TIME = "slm_settle_time"
     SLM_SHOW_TIME = "slm_show_time"
-    ROI = "roi"
+
+    ITERATIONS = "iterations"
+    WARM_START_ITERATIONS = "warm_start_iterations"
+    CITL_ITERATIONS = "citl_iterations"
 
     @staticmethod
     def values():
         return [param.value for param in Params]
 
 
-# Actual values of those parameters
-params = {
+# Default values of those parameters
+default_params = {
     Params.WAVELENGTH: 532e-9,
     Params.PROPAGATION_DISTANCE: 0.275,
+    Params.ROI: (640, 880),
     Params.SLM_SETTLE_TIME: 0.25,
     Params.SLM_SHOW_TIME: 10,
-    Params.ROI: (640, 880),
+    Params.ITERATIONS: 500,
+    Params.WARM_START_ITERATIONS: 100,
+    Params.CITL_ITERATIONS: 10,
 }
 
 # Choose a slm device

@@ -10,7 +10,8 @@ THIS_DIR = dirname(__file__)
 CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
-from mask_designer.experimental_setup import Params, params, slm_device
+import click
+from mask_designer.experimental_setup import Params, default_params, slm_device
 from mask_designer.simulate_prop import (
     neural_holography_asm,
     plot_fields,
@@ -22,10 +23,23 @@ from slm_controller import slm
 from slm_controller.hardware import SLMDevices, SLMParam, slm_devices
 
 
-def main():  # TODO does not work yet
+@click.command()
+@click.option(
+    "--wavelength",
+    type=float,
+    default=default_params[Params.WAVELENGTH],
+    help="The wavelength of the laser that is used in meters.",
+    show_default=True,
+)
+@click.option(
+    "--prop_distance",
+    type=float,
+    default=default_params[Params.PROPAGATION_DISTANCE],
+    help="The propagation distance of the light in meters.",
+    show_default=True,
+)
+def main(wavelength, prop_distance):  # TODO does not work yet
     # Set parameters
-    prop_distance = params[Params.PROPAGATION_DISTANCE]
-    wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 

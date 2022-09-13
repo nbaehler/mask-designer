@@ -12,7 +12,7 @@ sys.path.append(CODE_DIR)
 
 import click
 import torch
-from mask_designer.experimental_setup import Params, params, slm_device
+from mask_designer.experimental_setup import Params, default_params, slm_device
 from mask_designer.simulate_prop import (
     neural_holography_asm,
     plot_fields,
@@ -29,13 +29,37 @@ from slm_controller.hardware import SLMParam, slm_devices
 
 
 @click.command()
-@click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
-def main(iterations):
+@click.option(
+    "--wavelength",
+    type=float,
+    default=default_params[Params.WAVELENGTH],
+    help="The wavelength of the laser that is used in meters.",
+    show_default=True,
+)
+@click.option(
+    "--prop_distance",
+    type=float,
+    default=default_params[Params.PROPAGATION_DISTANCE],
+    help="The propagation distance of the light in meters.",
+    show_default=True,
+)
+@click.option(
+    "--roi",
+    type=(int, int),
+    default=default_params[Params.ROI],
+    help="The Region Of Interest used for computing the loss between the target and the current amplitude.",
+    show_default=True,
+)
+@click.option(
+    "--iterations",
+    type=int,
+    default=default_params[Params.ITERATIONS],
+    help="Number of iterations to run.",
+    show_default=True,
+)
+def main(wavelength, prop_distance, roi, iterations):
     # Set parameters
-    prop_distance = params[Params.PROPAGATION_DISTANCE]
-    wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
-    roi = params[Params.ROI]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
     # Use GPU if detected in system

@@ -28,6 +28,7 @@ from slm_controller.hardware import SLMDevices, SLMParam, slm_devices
     default=ApertureOptions.RECT.value,
     type=click.Choice(ApertureOptions.values()),
     help="Shape of aperture.",
+    show_default=True,
 )
 @click.option(
     "--n_cells",
@@ -35,6 +36,7 @@ from slm_controller.hardware import SLMDevices, SLMParam, slm_devices
     type=int,
     help="Side length for 'square', length for 'line', radius for 'circ'. To set shape for "
     "'rect', use`rect_shape`.",
+    show_default=True,
 )
 @click.option(
     "--rect_shape",
@@ -42,14 +44,19 @@ from slm_controller.hardware import SLMDevices, SLMParam, slm_devices
     nargs=2,
     type=int,
     help="Shape for 'rect' in number of cells; `shape` must be set to 'rect'.",
+    show_default=True,
 )
 @click.option(
     "--vertical",
     is_flag=True,
     help="Whether line should be vertical (True) or horizontal (False).",
+    show_default=True,
 )
 @click.option(
-    "--show_tick_labels", is_flag=True, help="Whether or not to show cell values along axes.",
+    "--show_tick_labels",
+    is_flag=True,
+    help="Whether or not to show cell values along axes.",
+    show_default=True,
 )
 @click.option(
     "--pixel_pitch",
@@ -57,6 +64,7 @@ from slm_controller.hardware import SLMDevices, SLMParam, slm_devices
     nargs=2,
     type=float,
     help="Shape of cell in meters (height, width).",
+    show_default=True,
 )
 @click.option(
     "--slm_shape",
@@ -64,11 +72,13 @@ from slm_controller.hardware import SLMDevices, SLMParam, slm_devices
     nargs=2,
     type=int,
     help="Dimension of SLM in number of cells (height, width).",
+    show_default=True,
 )
 @click.option(
     "--device",
     type=click.Choice(SLMDevices.values()),
     help="Which device to program with aperture.",
+    show_default=True,
 )
 def main(
     shape, n_cells, rect_shape, vertical, show_tick_labels, pixel_pitch, slm_shape, device,

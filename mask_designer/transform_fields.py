@@ -5,10 +5,10 @@ import torch
 
 from mask_designer.utils import extend_to_field
 from mask_designer.wrapper import fftshift, ifftshift, polar_to_rect
-from mask_designer.experimental_setup import rectangular_amp
+from mask_designer.experimental_setup import amp_mask
 
 
-def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
+def __compute_H(prop_distance, wavelength, slm_shape, pixel_pitch):
     """
     https://github.com/computational-imaging/neural-holography/blob/d2e399014aa80844edffd98bca34d2df80a69c84/propagation_ASM.py
 
@@ -30,7 +30,7 @@ def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
 
     Parameters
     ----------
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -71,11 +71,11 @@ def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
     H_exp = torch.reshape(H_exp, (1, 1, *H_exp.size()))
 
     # multiply by distance
-    H_exp = torch.mul(H_exp, prop_dist)
+    H_exp = torch.mul(H_exp, prop_distance)
 
     # band-limited ASM - Matsushima et al. (2009)
-    fy_max = 1 / np.sqrt((2 * prop_dist * (1 / y)) ** 2 + 1) / wavelength
-    fx_max = 1 / np.sqrt((2 * prop_dist * (1 / x)) ** 2 + 1) / wavelength
+    fy_max = 1 / np.sqrt((2 * prop_distance * (1 / y)) ** 2 + 1) / wavelength
+    fx_max = 1 / np.sqrt((2 * prop_distance * (1 / x)) ** 2 + 1) / wavelength
     H_filter = torch.tensor(
         ((np.abs(FX) < fx_max) & (np.abs(FY) < fy_max)).astype(np.uint8), dtype=torch.float32,
     )
@@ -91,7 +91,7 @@ def __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch):
 
 
 def holoeye_lens_to_lensless(
-    holoeye_field, prop_dist, wavelength, slm_shape, pixel_pitch
+    holoeye_field, prop_distance, wavelength, slm_shape, pixel_pitch
 ):  # TODO name
     """
     Transform from normal setting (with lens) to the lensless setting used by neural
@@ -101,7 +101,7 @@ def holoeye_lens_to_lensless(
     ----------
     holoeye_field : torch.Tensor
         The field that needs to be transformed
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -116,10 +116,10 @@ def holoeye_lens_to_lensless(
         The transformed field
     """
 
-    H = __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch)
+    H = __compute_H(prop_distance, wavelength, slm_shape, pixel_pitch)
 
     angles = holoeye_field.angle()
-    field = torch.polar(rectangular_amp(), angles)
+    field = torch.polar(amp_mask, angles)
 
     field = fftshift(
         torch.fft.ifftn(
@@ -136,7 +136,7 @@ def holoeye_lens_to_lensless(
 
 
 def neural_holography_lensless_to_lens(  # TODO name
-    neural_holography_field, prop_dist, wavelength, slm_shape, pixel_pitch
+    neural_holography_field, prop_distance, wavelength, slm_shape, pixel_pitch
 ):
     """
     Transform from the lensless setting used by neural holography to the the
@@ -146,7 +146,7 @@ def neural_holography_lensless_to_lens(  # TODO name
     ----------
     neural_holography_field : torch.Tensor
         The field that needs to be transformed
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -160,10 +160,10 @@ def neural_holography_lensless_to_lens(  # TODO name
     torch.Tensor
         The transformed field
     """
-    H = __compute_H(prop_dist, wavelength, slm_shape, pixel_pitch)
+    H = __compute_H(prop_distance, wavelength, slm_shape, pixel_pitch)
 
     angles = neural_holography_field.angle()
-    field = torch.polar(rectangular_amp(), angles)
+    field = torch.polar(amp_mask, angles)
 
     field = torch.fft.ifftn(
         torch.fft.ifftn(

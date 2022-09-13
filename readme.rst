@@ -402,7 +402,6 @@ mask is finally submitted to a real SLM.
    Usage: physical_prop_dpac.py [OPTIONS]
 
    Options:
-     --slm_show_time FLOAT  Time to show the mask on the SLM.
      --help             Show this message and exit.
 
 The next script does basically the same just using the GS method.
@@ -416,7 +415,6 @@ and you can set the number of iterations.
 
    Options:
      --iterations INTEGER  Number of iterations to run.
-     --slm_show_time FLOAT     Time to show the mask on the SLM.
      --help                Show this message and exit.
 
 Unlike before, this script does not perform any computation. Instead it
@@ -431,7 +429,6 @@ software (again, for the Holoeye logo).
    Usage: physical_prop_holoeye.py [OPTIONS]
 
    Options:
-     --slm_show_time FLOAT  Time to show the mask on the SLM.
      --help             Show this message and exit.
 
 Similar to GS, for SGD you can also specify the number of iterations you want to
@@ -444,7 +441,6 @@ perform and a random initial state of the phase mask is required.
 
    Options:
      --iterations INTEGER  Number of iterations to run.
-     --slm_show_time FLOAT     Time to show the mask on the SLM.
      --help                Show this message and exit.
 
 Simulated propagation examples

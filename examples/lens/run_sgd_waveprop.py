@@ -13,7 +13,7 @@ sys.path.append(CODE_DIR)
 
 import click
 import torch
-from mask_designer.experimental_setup import Params, params, slm_device
+from mask_designer.experimental_setup import Params, default_params, slm_device
 from mask_designer.prop_waveprop_asm import prop_waveprop_asm
 from mask_designer.simulate_prop import (
     plot_fields,
@@ -32,13 +32,37 @@ from slm_controller.hardware import SLMParam, slm_devices
 
 
 @click.command()
-@click.option("--iterations", type=int, default=500, help="Number of iterations to run.")
-def main(iterations):
+@click.option(
+    "--wavelength",
+    type=float,
+    default=default_params[Params.WAVELENGTH],
+    help="The wavelength of the laser that is used in meters.",
+    show_default=True,
+)
+@click.option(
+    "--prop_distance",
+    type=float,
+    default=default_params[Params.PROPAGATION_DISTANCE],
+    help="The propagation distance of the light in meters.",
+    show_default=True,
+)
+@click.option(
+    "--roi",
+    type=(int, int),
+    default=default_params[Params.ROI],
+    help="The Region Of Interest used for computing the loss between the target and the current amplitude.",
+    show_default=True,
+)
+@click.option(
+    "--iterations",
+    type=int,
+    default=default_params[Params.ITERATIONS],
+    help="Number of iterations to run.",
+    show_default=True,
+)
+def main(wavelength, prop_distance, roi, iterations):
     # Set parameters
-    prop_dist = params[Params.PROPAGATION_DISTANCE]
-    wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
-    roi = params[Params.ROI]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
     # Use GPU if detected in system
@@ -69,7 +93,7 @@ def main(iterations):
 
     # Run Stochastic Gradient Descent based method
     sgd = SGD(
-        prop_dist,
+        prop_distance,
         wavelength,
         pixel_pitch,
         iterations,
@@ -83,12 +107,14 @@ def main(iterations):
     field = extend_to_field(angles)
 
     # Transform the results to the hardware setting using a lens
-    field = neural_holography_lensless_to_lens(field, prop_dist, wavelength, slm_shape, pixel_pitch)
+    field = neural_holography_lensless_to_lens(
+        field, prop_distance, wavelength, slm_shape, pixel_pitch
+    )
 
     # Simulate the propagation in the lens setting and show the results
     unpacked_field = field[0, 0, :, :]
     propped_field = (
-        simulate_prop(field, waveprop_asm, prop_dist, wavelength, pixel_pitch, device,)
+        simulate_prop(field, waveprop_asm, prop_distance, wavelength, pixel_pitch, device,)
         .cpu()
         .detach()
     )

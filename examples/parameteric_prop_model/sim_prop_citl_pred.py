@@ -11,7 +11,7 @@ CODE_DIR = abspath(join(THIS_DIR, "../.."))
 sys.path.append(CODE_DIR)
 
 import torch
-from mask_designer.experimental_setup import Params, params, slm_device
+from mask_designer.experimental_setup import Params, default_params, slm_device
 from mask_designer.simulate_prop import (
     holoeye_fraunhofer,
     neural_holography_asm,
@@ -30,8 +30,8 @@ from slm_controller.hardware import SLMParam, slm_devices
 
 def main():
     # Define parameters
-    prop_dist = params[Params.PROPAGATION_DISTANCE]
-    wavelength = params[Params.WAVELENGTH]
+    prop_distance = default_params[Params.PROPAGATION_DISTANCE]
+    wavelength = default_params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
@@ -52,13 +52,13 @@ def main():
 
     # Transform the initial field to the lensless setting
     neural_holography_field = holoeye_lens_to_lensless(
-        holoeye_field, prop_dist, wavelength, slm_shape, pixel_pitch
+        holoeye_field, prop_distance, wavelength, slm_shape, pixel_pitch
     )
     unpacked_field = neural_holography_field[0, 0, :, :]
 
     # Simulate the propagation in the lensless setting and show the results
     propped_field = simulate_prop(
-        neural_holography_field, neural_holography_asm, prop_dist, wavelength, pixel_pitch,
+        neural_holography_field, neural_holography_asm, prop_distance, wavelength, pixel_pitch,
     )
     plot_fields(unpacked_field, propped_field, "CITL without lens")
 

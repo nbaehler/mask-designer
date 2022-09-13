@@ -46,7 +46,7 @@ from mask_designer import camera
 
 from mask_designer.experimental_setup import (
     Params,
-    params,
+    default_params,
     slm_device,
     cam_device,
 )
@@ -72,11 +72,11 @@ def train_model(
     step_lr,
     experiment,
 ):
-    slm_show_time = params[Params.SLM_SHOW_TIME]
-    slm_settle_time = params[Params.SLM_SETTLE_TIME]
-    prop_dist = params[Params.PROPAGATION_DISTANCE]
-    wavelength = params[Params.WAVELENGTH]
-    roi = params[Params.ROI]
+    slm_show_time = default_params[Params.SLM_SHOW_TIME]
+    slm_settle_time = default_params[Params.SLM_SETTLE_TIME]
+    prop_distance = default_params[Params.PROPAGATION_DISTANCE]
+    wavelength = default_params[Params.WAVELENGTH]
+    roi = default_params[Params.ROI]
 
     # channel = channel  # Red:0 / Green:1 / Blue:2
     chan_str = ("red", "green", "blue")[channel]
@@ -84,7 +84,7 @@ def train_model(
 
     print(f"   - training parameterized wave propagation model....")
 
-    prop_dist = (prop_dist, prop_dist, prop_dist)[
+    prop_distance = (prop_distance, prop_distance, prop_distance)[
         channel
     ]  # propagation distance from SLM plane to target plane
     wavelength = (wavelength, wavelength, wavelength)[channel]
@@ -138,7 +138,7 @@ def train_model(
     # Check propagation_model.py for the default parameter settings!
     blur = utils.make_kernel_gaussian(0.85, 3)  # Optional, just be consistent with inference.
     model = PropModel(
-        distance=prop_dist,
+        distance=prop_distance,
         feature_size=feature_size,
         wavelength=wavelength,
         blur=blur,

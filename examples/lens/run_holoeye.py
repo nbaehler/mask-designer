@@ -1,5 +1,5 @@
 """
-Simulated propagation of the phase mask generated using the holoeye software.
+Propagation of the phase mask generated using the holoeye software.
 """
 
 import sys

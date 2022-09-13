@@ -28,6 +28,7 @@ from slm_controller.slm import create
     default=ApertureOptions.RECT.value,
     type=click.Choice(ApertureOptions.values()),
     help="Shape of aperture.",
+    show_default=True,
 )
 @click.option(
     "--n_cells",
@@ -35,6 +36,7 @@ from slm_controller.slm import create
     type=int,
     help="Side length for 'square', length for 'line', radius for 'circ'. To set shape for "
     "'rect', use`rect_shape`.",
+    show_default=True,
 )
 @click.option(
     "--rect_shape",
@@ -42,19 +44,22 @@ from slm_controller.slm import create
     nargs=2,
     type=int,
     help="Shape for 'rect' in number of cells; `shape` must be set to 'rect'.",
+    show_default=True,
 )
 @click.option(
-    "--center", default=None, nargs=2, type=int, help="Coordinate for center.",
+    "--center", default=None, nargs=2, type=int, help="Coordinate for center.", show_default=True,
 )
 @click.option(
     "--vertical",
     is_flag=True,
     help="Whether line should be vertical (True) or horizontal (False).",
+    show_default=True,
 )
 @click.option(
     "--device",
     type=click.Choice(SLMDevices.values()),
     help="Which device to program with aperture.",
+    show_default=True,
 )
 def main(shape, n_cells, rect_shape, center, vertical, device):
     """

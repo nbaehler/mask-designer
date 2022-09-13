@@ -18,6 +18,7 @@ Documentation:
 - How do you save a pattern in Pattern Generator
 - Adapt to lightweight CITL
 - Check that RST is equivalent to md and remove those
+- GIF of SGD
 
 Nice-to-have
 ------------

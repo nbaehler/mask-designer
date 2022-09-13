@@ -33,7 +33,7 @@ from mask_designer.experimental_setup import (
     Params,
     amp_mask,
     cam_device,
-    params,
+    default_params,
     slm_device,
 )
 from mask_designer.neural_holography.augmented_image_loader import ImageLoader
@@ -47,11 +47,11 @@ from slm_controller.hardware import SLMParam, slm_devices
 def eval_model(
     channel, prop_model, test_phases_path, test_target_amps_path, prop_model_dir, calibration_path,
 ):
-    slm_show_time = params[Params.SLM_SHOW_TIME]  # TODO arg or value from experimental setup
-    slm_settle_time = params[Params.SLM_SETTLE_TIME]
-    prop_dist = params[Params.PROPAGATION_DISTANCE]
-    wavelength = params[Params.WAVELENGTH]
-    roi = params[Params.ROI]
+    slm_show_time = default_params[Params.SLM_SHOW_TIME]
+    slm_settle_time = default_params[Params.SLM_SETTLE_TIME]
+    prop_distance = default_params[Params.PROPAGATION_DISTANCE]
+    wavelength = default_params[Params.WAVELENGTH]
+    roi = default_params[Params.ROI]
 
     # Parse
     # opt = p.parse_args()
@@ -62,7 +62,7 @@ def eval_model(
     run_id = f'{test_phases_path.split("/")[-1]}_{prop_model}'  # {algorithm}_{prop_model}
 
     # Hyperparameters setting
-    prop_dists = (prop_dist, prop_dist, prop_dist)
+    prop_dists = (prop_distance, prop_distance, prop_distance)
     wavelengths = (wavelength, wavelength, wavelength)  # wavelength of each color
     feature_size = slm_devices[slm_device][SLMParam.PIXEL_PITCH]  # SLM pitch
 

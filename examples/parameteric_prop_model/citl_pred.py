@@ -39,7 +39,7 @@ from mask_designer.experimental_setup import (
     Params,
     amp_mask,
     cam_device,
-    params,
+    default_params,
     slm_device,
 )
 from mask_designer.utils import pad_tensor_to_shape
@@ -60,39 +60,45 @@ from slm_controller.hardware import SLMParam, slm_devices
 
 
 @click.command()
-@click.option("--channel", type=int, default=1, help="red:0, green:1, blue:2, rgb:3")
+@click.option(
+    "--channel", type=int, default=1, help="red:0, green:1, blue:2, rgb:3", show_default=True,
+)
 @click.option(
     "--prop_model",
     type=str,
     default="ASM",
     help="Type of propagation model for reconstruction: ASM / MODEL / PHYSICAL",
+    show_default=True,
 )
 @click.option(
     "--pred_phases_path",
     type=str,
     default="./citl/data/pred_phases",
     help="Directory where test phases are being stored.",
+    show_default=True,
 )
 @click.option(
     "--prop_model_dir",
     type=str,
     default="./citl/calibrated_models",
     help="Directory for the CITL-calibrated wave propagation models",
+    show_default=True,
 )
 @click.option(
     "--calibration_path",
     type=str,
     default="./citl/calibration",
     help="Directory where calibration phases are being stored.",
+    show_default=True,
 )
 def main(
     channel, prop_model, pred_phases_path, prop_model_dir, calibration_path,
 ):
-    slm_show_time = params[Params.SLM_SHOW_TIME]  # TODO arg or value from experimental setup
-    slm_settle_time = params[Params.SLM_SETTLE_TIME]
-    prop_dist = params[Params.PROPAGATION_DISTANCE]
-    wavelength = params[Params.WAVELENGTH]
-    roi = params[Params.ROI]
+    slm_show_time = default_params[Params.SLM_SHOW_TIME]
+    slm_settle_time = default_params[Params.SLM_SETTLE_TIME]
+    prop_distance = default_params[Params.PROPAGATION_DISTANCE]
+    wavelength = default_params[Params.WAVELENGTH]
+    roi = default_params[Params.ROI]
 
     chs = range(channel) if channel == 3 else [channel]  # retrieve all channels if channel is 3
     chan_strs = ("red", "green", "blue", "rgb")
@@ -100,7 +106,7 @@ def main(
     run_id = f'{pred_phases_path.split("/")[-1]}_{prop_model}'  # {algorithm}_{prop_model}
 
     # Hyperparameters setting
-    prop_dists = (prop_dist, prop_dist, prop_dist)
+    prop_dists = (prop_distance, prop_distance, prop_distance)
     wavelengths = (wavelength, wavelength, wavelength)  # wavelength of each color
     feature_size = slm_devices[slm_device][SLMParam.PIXEL_PITCH]  # SLM pitch
 

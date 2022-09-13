@@ -1,5 +1,5 @@
 """
-Physical propagation of phase masks generated using the SGD algorithm.
+Propagation of phase masks generated using the SGD algorithm and CITL.
 """
 
 
@@ -19,7 +19,7 @@ from multiprocessing.managers import BaseManager
 import click
 import torch
 from mask_designer import camera
-from mask_designer.experimental_setup import Params, params, slm_device
+from mask_designer.experimental_setup import Params, default_params, slm_device
 from mask_designer.prop_waveprop_asm import prop_waveprop_asm, prop_waveprop_asm_lens
 from mask_designer.simulate_prop import holoeye_fraunhofer, simulate_prop
 from mask_designer.transform_fields import neural_holography_lensless_to_lens
@@ -37,37 +37,72 @@ from slm_controller.hardware import SLMParam, slm_devices
 
 @click.command()
 @click.option(
-    "--iterations", type=int, default=50, help="Number of iterations to run."
-)  # TODO have two iteration arguments
-@click.option(
-    "--slm_show_time",  # TODO what makes sense to keep as arguments here and what should
-    # be moved to the experimental setup? Maybe we could just store the default values there ...
+    "--wavelength",
     type=float,
-    default=params[Params.SLM_SHOW_TIME],
+    default=default_params[Params.WAVELENGTH],
+    help="The wavelength of the laser that is used in meters.",
+    show_default=True,
+)
+@click.option(
+    "--prop_distance",
+    type=float,
+    default=default_params[Params.PROPAGATION_DISTANCE],
+    help="The propagation distance of the light in meters.",
+    show_default=True,
+)
+@click.option(
+    "--roi",
+    type=(int, int),
+    default=default_params[Params.ROI],
+    help="The Region Of Interest used for computing the loss between the target and the current amplitude.",
+    show_default=True,
+)
+@click.option(
+    "--slm_show_time",
+    type=float,
+    default=default_params[Params.SLM_SHOW_TIME],
     help="Time to show the mask on the SLM.",
+    show_default=True,
 )
 @click.option(
     "--slm_settle_time",
     type=float,
-    default=params[Params.SLM_SETTLE_TIME],
+    default=default_params[Params.SLM_SETTLE_TIME],
     help="Time to let the SLM to settle before taking images of the amplitude at the target plane.",
+    show_default=True,
 )
-def main(iterations, slm_show_time, slm_settle_time):
+@click.option(
+    "--warm_start_iterations",
+    type=int,
+    default=default_params[Params.WARM_START_ITERATIONS],
+    help="Number of warm start iterations (using simulation only) to run.",
+    show_default=True,
+)
+@click.option(
+    "--citl_iterations",
+    type=int,
+    default=default_params[Params.CITL_ITERATIONS],
+    help="Number of CITL iterations to run.",
+    show_default=True,
+)
+def main(
+    wavelength,
+    prop_distance,
+    roi,
+    slm_show_time,
+    slm_settle_time,
+    warm_start_iterations,
+    citl_iterations,
+):
     # Set parameters
-    prop_dist = params[Params.PROPAGATION_DISTANCE]
-    wavelength = params[Params.WAVELENGTH]
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
-    roi = params[Params.ROI]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
     asm_propagator = prop_asm
     # asm_propagator = prop_waveprop_asm # TODO check if this is correct
     # asm_propagator = prop_waveprop_asm_lens
 
-    # warm_start_iterations = 500 # TODO use those
-    # citl_iterations = iterations
-
-    warm_start_iterations = 50
+    warm_start_iterations = 50  # TODO remove
     citl_iterations = 5
 
     # Use GPU if detected in system
@@ -102,7 +137,7 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     # Run Stochastic Gradient Descent based method
     sgd = SGD(
-        prop_dist,
+        prop_distance,
         wavelength,
         pixel_pitch,
         warm_start_iterations,
@@ -118,12 +153,11 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     # Transform the results to the hardware setting using a lens
     final_phase_sgd = neural_holography_lensless_to_lens(
-        warm_start_field, prop_dist, wavelength, slm_shape, pixel_pitch
+        warm_start_field, prop_distance, wavelength, slm_shape, pixel_pitch
     )
 
     propped_field = simulate_prop(final_phase_sgd, holoeye_fraunhofer)
 
-    import numpy as np
     from mask_designer.utils import normalize_mask
 
     name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
@@ -191,7 +225,7 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     # Run Stochastic Gradient Descent based method
     sgd = SGD(
-        prop_dist,
+        prop_distance,
         wavelength,
         pixel_pitch,
         citl_iterations,
@@ -208,7 +242,7 @@ def main(iterations, slm_show_time, slm_settle_time):
 
     # Transform the results to the hardware setting using a lens
     final_phase_sgd = neural_holography_lensless_to_lens(
-        extended, prop_dist, wavelength, slm_shape, pixel_pitch
+        extended, prop_distance, wavelength, slm_shape, pixel_pitch
     )
 
     propped_field = simulate_prop(final_phase_sgd, holoeye_fraunhofer)

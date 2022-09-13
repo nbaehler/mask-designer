@@ -331,7 +331,7 @@ def im2float(im, dtype=np.float32):
 def propagate_field(
     input_field,
     propagator,
-    prop_dist=0.2,
+    prop_distance=0.2,
     wavelength=5.2e-07,
     feature_size=(6.4e-06, 6.4e-06),
     prop_model="ASM",
@@ -345,7 +345,7 @@ def propagate_field(
     Input
     -----
     :param input_field: pytorch complex tensor shape of (1, C, H, W), the field before propagation, in X, Y coordinates
-    :param prop_dist: propagation distance in m.
+    :param prop_distance: propagation distance in m.
     :param wavelength: wavelength of the wave in m.
     :param feature_size: pixel pitch
     :param prop_model: propagation model ('ASM', 'MODEL', 'fresnel', ...)
@@ -361,7 +361,7 @@ def propagate_field(
     if prop_model == "ASM":
         output_field = propagator(
             u_in=input_field,
-            z=prop_dist,
+            z=prop_distance,
             feature_size=feature_size,
             wavelength=wavelength,
             dtype=dtype,

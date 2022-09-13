@@ -48,7 +48,7 @@ def simulate_prop(field, propagation_method=default_prop_method, *args):
     return propagation_method(field, *args)[0, 0, :, :]
 
 
-def neural_holography_asm(field, prop_dist, wavelength, pixel_pitch):
+def neural_holography_asm(field, prop_distance, wavelength, pixel_pitch):
     """
     Simulated propagation with a no lens (neural holography setup) between slm
     and target plane using the angular spectrum method.
@@ -57,6 +57,12 @@ def neural_holography_asm(field, prop_dist, wavelength, pixel_pitch):
     ----------
     field : torch.Tensor
         The field to be propagated
+    prop_distance : float
+        The propagation distance from the SLM to the target plane
+    wavelength : float
+        The wavelength of the light
+    pixel_pitch : float
+        The pixel pitch of the SLM
 
     Returns
     -------
@@ -64,11 +70,11 @@ def neural_holography_asm(field, prop_dist, wavelength, pixel_pitch):
         The result of the propagation at the target plane
     """
     return propagate_field(
-        field, prop_asm, prop_dist, wavelength, pixel_pitch, "ASM", torch.float32, None,
+        field, prop_asm, prop_distance, wavelength, pixel_pitch, "ASM", torch.float32, None,
     )
 
 
-def waveprop_fraunhofer(field, prop_dist, wavelength, pixel_pitch):
+def waveprop_fraunhofer(field, prop_distance, wavelength, pixel_pitch):
     """
     Fraunhofer propagation using waveprop.
 
@@ -76,7 +82,7 @@ def waveprop_fraunhofer(field, prop_dist, wavelength, pixel_pitch):
     ----------
     field : torch.Tensor
         The field to be propagated
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -90,12 +96,12 @@ def waveprop_fraunhofer(field, prop_dist, wavelength, pixel_pitch):
     """
     field = field[0, 0, :, :]
 
-    res, _, _ = fraunhofer(u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,)
+    res, _, _ = fraunhofer(u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_distance,)
 
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def waveprop_asm(field, prop_dist, wavelength, pixel_pitch, device):
+def waveprop_asm(field, prop_distance, wavelength, pixel_pitch, device):
     """
     Angular Spectrum Method propagation using waveprop.
 
@@ -103,7 +109,7 @@ def waveprop_asm(field, prop_dist, wavelength, pixel_pitch, device):
     ----------
     field : torch.Tensor
         The field to be propagated
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -121,7 +127,7 @@ def waveprop_asm(field, prop_dist, wavelength, pixel_pitch, device):
         u_in=field,
         wv=wavelength,
         d1=pixel_pitch[0],
-        dz=prop_dist,
+        dz=prop_distance,
         device=device,
         # out_shift=1,  # TODO check this parameter
     )
@@ -129,7 +135,7 @@ def waveprop_asm(field, prop_dist, wavelength, pixel_pitch, device):
     return torch.rot90(ift2(res, delta_f=1), 2)[None, None, :, :]
 
 
-def waveprop_asm_np(field, prop_dist, wavelength, pixel_pitch):
+def waveprop_asm_np(field, prop_distance, wavelength, pixel_pitch):
     """
     Band-limited Angular Spectrum Method for Numerical Simulation of Free-Space
     Propagation in Far and Near Fields propagation using waveprop.
@@ -138,7 +144,7 @@ def waveprop_asm_np(field, prop_dist, wavelength, pixel_pitch):
     ----------
     field : torch.Tensor
         The field to be propagated
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -153,13 +159,13 @@ def waveprop_asm_np(field, prop_dist, wavelength, pixel_pitch):
     field = field[0, 0, :, :]
 
     res, _, _ = angular_spectrum_np(
-        u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
+        u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_distance,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def waveprop_fft_di(field, prop_dist, wavelength, pixel_pitch):
+def waveprop_fft_di(field, prop_distance, wavelength, pixel_pitch):
     """
     _summary_ #TODO add those summaries
 
@@ -167,7 +173,7 @@ def waveprop_fft_di(field, prop_dist, wavelength, pixel_pitch):
     ----------
     field : torch.Tensor
         The field to be propagated
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -181,12 +187,12 @@ def waveprop_fft_di(field, prop_dist, wavelength, pixel_pitch):
     """
     field = field[0, 0, :, :]
 
-    res, _, _ = fft_di(u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,)
+    res, _, _ = fft_di(u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_distance,)
 
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def waveprop_direct_integration(field, prop_dist, wavelength, pixel_pitch):
+def waveprop_direct_integration(field, prop_distance, wavelength, pixel_pitch):
     """
     _summary_
 
@@ -194,7 +200,7 @@ def waveprop_direct_integration(field, prop_dist, wavelength, pixel_pitch):
     ----------
     field : torch.Tensor
         The field to be propagated
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -212,7 +218,7 @@ def waveprop_direct_integration(field, prop_dist, wavelength, pixel_pitch):
         u_in=field.numpy(),
         wv=wavelength,
         d1=pixel_pitch[0],
-        dz=prop_dist,
+        dz=prop_distance,
         x=[0],  # TODO wrong
         y=[0],  # TODO wrong
     )
@@ -220,7 +226,7 @@ def waveprop_direct_integration(field, prop_dist, wavelength, pixel_pitch):
     return torch.from_numpy(res)[None, None, :, :]
 
 
-def waveprop_fresnel_one_step(field, prop_dist, wavelength, pixel_pitch):
+def waveprop_fresnel_one_step(field, prop_distance, wavelength, pixel_pitch):
     """
     _summary_
 
@@ -228,7 +234,7 @@ def waveprop_fresnel_one_step(field, prop_dist, wavelength, pixel_pitch):
     ----------
     field : torch.Tensor
         The field to be propagated
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -243,13 +249,13 @@ def waveprop_fresnel_one_step(field, prop_dist, wavelength, pixel_pitch):
     field = field[0, 0, :, :]
 
     res, _, _ = fresnel_one_step(  # TODO Too small
-        u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,
+        u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_distance,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def waveprop_fresnel_two_step(field, prop_dist, wavelength, pixel_pitch):
+def waveprop_fresnel_two_step(field, prop_distance, wavelength, pixel_pitch):
     """
     _summary_
 
@@ -257,7 +263,7 @@ def waveprop_fresnel_two_step(field, prop_dist, wavelength, pixel_pitch):
     ----------
     field : torch.Tensor
         The field to be propagated
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -272,13 +278,13 @@ def waveprop_fresnel_two_step(field, prop_dist, wavelength, pixel_pitch):
     field = field[0, 0, :, :]
 
     res, _, _ = fresnel_two_step(
-        u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], d2=pixel_pitch[0], dz=prop_dist,
+        u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], d2=pixel_pitch[0], dz=prop_distance,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def waveprop_fresnel_multi_step(field, prop_dist, wavelength, pixel_pitch):
+def waveprop_fresnel_multi_step(field, prop_distance, wavelength, pixel_pitch):
     """
     _summary_
 
@@ -286,7 +292,7 @@ def waveprop_fresnel_multi_step(field, prop_dist, wavelength, pixel_pitch):
     ----------
     field : torch.Tensor
         The field to be propagated
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -305,13 +311,13 @@ def waveprop_fresnel_multi_step(field, prop_dist, wavelength, pixel_pitch):
         wv=wavelength,
         delta1=pixel_pitch[0],
         deltan=pixel_pitch[0],
-        z=prop_dist,
+        z=prop_distance,
     )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def waveprop_fresnel_conv(field, prop_dist, wavelength, pixel_pitch, device):
+def waveprop_fresnel_conv(field, prop_distance, wavelength, pixel_pitch, device):
     """
     _summary_
 
@@ -319,7 +325,7 @@ def waveprop_fresnel_conv(field, prop_dist, wavelength, pixel_pitch, device):
     ----------
     field : torch.Tensor
         The field to be propagated
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -334,13 +340,13 @@ def waveprop_fresnel_conv(field, prop_dist, wavelength, pixel_pitch, device):
     field = field[0, 0, :, :]
 
     res, _, _ = fresnel_conv(
-        u_in=field, wv=wavelength, d1=pixel_pitch[0], dz=prop_dist, device=device,
+        u_in=field, wv=wavelength, d1=pixel_pitch[0], dz=prop_distance, device=device,
     )
 
     return ift2(res, delta_f=1)[None, None, :, :]
 
 
-def waveprop_shifted_fresnel(field, prop_dist, wavelength, pixel_pitch):
+def waveprop_shifted_fresnel(field, prop_distance, wavelength, pixel_pitch):
     """
     _summary_
 
@@ -348,7 +354,7 @@ def waveprop_shifted_fresnel(field, prop_dist, wavelength, pixel_pitch):
     ----------
     field : torch.Tensor
         The field to be propagated
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -362,12 +368,14 @@ def waveprop_shifted_fresnel(field, prop_dist, wavelength, pixel_pitch):
     """
     field = field[0, 0, :, :]
 
-    res, _, _ = shifted_fresnel(u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_dist,)
+    res, _, _ = shifted_fresnel(
+        u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_distance,
+    )
 
     return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
 
 
-def waveprop_spherical(field, prop_dist, wavelength, pixel_pitch, device):
+def waveprop_spherical(field, prop_distance, wavelength, pixel_pitch, device):
     """
     _summary_
 
@@ -375,7 +383,7 @@ def waveprop_spherical(field, prop_dist, wavelength, pixel_pitch, device):
     ----------
     field : torch.Tensor
         The field to be propagated
-    prop_dist : float
+    prop_distance : float
         The propagation distance from the SLM to the target plane
     wavelength : float
         The wavelength of the light
@@ -390,7 +398,7 @@ def waveprop_spherical(field, prop_dist, wavelength, pixel_pitch, device):
     field = field[0, 0, :, :]
 
     res, _, _ = spherical_prop(
-        u_in=field, wv=wavelength, d1=pixel_pitch[0], dz=prop_dist, device=device
+        u_in=field, wv=wavelength, d1=pixel_pitch[0], dz=prop_distance, device=device
     )
 
     return res[None, None, :, :]

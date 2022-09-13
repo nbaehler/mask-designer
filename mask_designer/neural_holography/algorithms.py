@@ -32,7 +32,7 @@ def gerchberg_saxton(
     init_phase,
     target_amp,
     num_iters,
-    prop_dist,
+    prop_distance,
     wavelength,
     feature_size=6.4e-6,
     prop_model="ASM",
@@ -47,7 +47,7 @@ def gerchberg_saxton(
     :param init_phase: a tensor, in the shape of (1,1,H,W), initial guess for the phase.
     :param target_amp: a tensor, in the shape of (1,1,H,W), the amplitude of the target image.
     :param num_iters: the number of iterations to run the GS.
-    :param prop_dist: propagation distance in m.
+    :param prop_distance: propagation distance in m.
     :param wavelength: wavelength in m.
     :param feature_size: the SLM pixel pitch, in meters, default 6.4e-6
     :param prop_model: string indicating the light transport model, default 'ASM'. ex) 'ASM', 'fresnel', 'model'
@@ -74,7 +74,7 @@ def gerchberg_saxton(
         recon_field = utils.propagate_field(
             slm_field,
             propagator,
-            prop_dist,
+            prop_distance,
             wavelength,
             feature_size,
             prop_model,
@@ -89,7 +89,7 @@ def gerchberg_saxton(
         slm_field = utils.propagate_field(
             recon_field,
             propagator,
-            -prop_dist,
+            -prop_distance,
             wavelength,
             feature_size,
             prop_model,
@@ -109,7 +109,7 @@ def stochastic_gradient_descent(
     init_phase,
     target_amp,
     num_iters,
-    prop_dist,
+    prop_distance,
     wavelength,
     feature_size,
     roi_res=None,
@@ -132,7 +132,7 @@ def stochastic_gradient_descent(
     :param init_phase: a tensor, in the shape of (1,1,H,W), initial guess for the phase.
     :param target_amp: a tensor, in the shape of (1,1,H,W), the amplitude of the target image.
     :param num_iters: the number of iterations to run the SGD.
-    :param prop_dist: propagation distance in m.
+    :param prop_distance: propagation distance in m.
     :param wavelength: wavelength in m.
     :param feature_size: the SLM pixel pitch, in meters, default 6.4e-6
     :param roi_res: a tuple of integer, region of interest, like (880, 1600)
@@ -192,7 +192,7 @@ def stochastic_gradient_descent(
         recon_field = utils.propagate_field(
             slm_field,
             propagator,
-            prop_dist,
+            prop_distance,
             wavelength,
             feature_size,
             prop_model,
@@ -267,7 +267,7 @@ def stochastic_gradient_descent(
         #     recon_field = utils.propagate_field(
         #         slm_field,
         #         propagator,
-        #         prop_dist,
+        #         prop_distance,
         #         wavelength,
         #         feature_size,
         #         prop_model,

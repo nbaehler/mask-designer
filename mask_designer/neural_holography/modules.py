@@ -31,7 +31,7 @@ import numpy as np
 import skimage.io
 import torch
 import torch.nn as nn
-from mask_designer.experimental_setup import Params, params, slm_device
+from mask_designer.experimental_setup import Params, default_params, slm_device
 from mask_designer.neural_holography.algorithms import (
     gerchberg_saxton,
     stochastic_gradient_descent,
@@ -58,7 +58,7 @@ class GS(nn.Module):
 
     Class initialization parameters
     -------------------------------
-    :param prop_dist: propagation dist between SLM and target, in meters
+    :param prop_distance: propagation dist between SLM and target, in meters
     :param wavelength: the wavelength of interest, in meters
     :param feature_size: the SLM pixel pitch, in meters
     :param num_iters: the number of iteration, default 500
@@ -82,7 +82,7 @@ class GS(nn.Module):
 
     def __init__(
         self,
-        prop_dist,
+        prop_distance,
         wavelength,
         feature_size,
         num_iters,
@@ -94,7 +94,7 @@ class GS(nn.Module):
         super(GS, self).__init__()
 
         # Setting parameters
-        self.prop_dist = prop_dist
+        self.prop_distance = prop_distance
         self.wavelength = wavelength
         self.feature_size = feature_size
         self.precomputed_H_f = None
@@ -112,7 +112,7 @@ class GS(nn.Module):
                 torch.empty(*init_phase.shape, dtype=torch.complex64),
                 self.feature_size,
                 self.wavelength,
-                self.prop_dist,
+                self.prop_distance,
                 return_H=True,
             )
             self.precomputed_H_f = self.precomputed_H_f.to(self.dev).detach()
@@ -123,7 +123,7 @@ class GS(nn.Module):
                 torch.empty(*init_phase.shape, dtype=torch.complex64),
                 self.feature_size,
                 self.wavelength,
-                -self.prop_dist,
+                -self.prop_distance,
                 return_H=True,
             )
             self.precomputed_H_b = self.precomputed_H_b.to(self.dev).detach()
@@ -134,7 +134,7 @@ class GS(nn.Module):
             init_phase,
             target_amp,
             self.num_iters,
-            self.prop_dist,
+            self.prop_distance,
             self.wavelength,
             self.feature_size,
             prop_model=self.prop_model,
@@ -149,7 +149,7 @@ class SGD(nn.Module):
 
     Class initialization parameters
     -------------------------------
-    :param prop_dist: propagation dist between SLM and target, in meters
+    :param prop_distance: propagation dist between SLM and target, in meters
     :param wavelength: the wavelength of interest, in meters
     :param feature_size: the SLM pixel pitch, in meters
     :param num_iters: the number of iteration, default 500
@@ -178,7 +178,7 @@ class SGD(nn.Module):
 
     def __init__(
         self,
-        prop_dist,
+        prop_distance,
         wavelength,
         feature_size,
         num_iters,
@@ -195,7 +195,7 @@ class SGD(nn.Module):
         super(SGD, self).__init__()
 
         # Setting parameters
-        self.prop_dist = prop_dist
+        self.prop_distance = prop_distance
         self.wavelength = wavelength
         self.feature_size = feature_size
         self.roi_res = roi_res
@@ -219,7 +219,7 @@ class SGD(nn.Module):
                 torch.empty(*init_phase.shape, dtype=torch.complex64),
                 self.feature_size,
                 self.wavelength,
-                self.prop_dist,
+                self.prop_distance,
                 return_H=True,
             )
             self.precomputed_H = self.precomputed_H.to(self.dev).detach()
@@ -230,7 +230,7 @@ class SGD(nn.Module):
             init_phase,
             target_amp,
             self.num_iters,
-            self.prop_dist,
+            self.prop_distance,
             self.wavelength,
             self.feature_size,
             roi_res=self.roi_res,
@@ -355,7 +355,7 @@ class PropPhysical(nn.Module):
             num_grab_images, True, calib_phase_mask, True,
         )
 
-        self.slm.set_show_time(params[Params.SLM_SHOW_TIME])  # TODO must come from caller
+        self.slm.set_show_time(default_params[Params.SLM_SHOW_TIME])  # TODO must come from caller
 
         # masking out dot pattern region for homography
         corrected_img_masked = captured_img[
@@ -447,8 +447,8 @@ class PropPhysical(nn.Module):
     def _transform_phase_mask(self, phase_mask):
         field = extend_to_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
-        prop_dist = params[Params.PROPAGATION_DISTANCE]
-        wavelength = params[Params.WAVELENGTH]
+        prop_distance = default_params[Params.PROPAGATION_DISTANCE]  # TODO must come from caller
+        wavelength = default_params[Params.WAVELENGTH]
         pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
         slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
@@ -458,7 +458,7 @@ class PropPhysical(nn.Module):
 
         # Transform the results to the hardware setting using a lens
         field = neural_holography_lensless_to_lens(
-            field, prop_dist, wavelength, slm_shape, pixel_pitch
+            field, prop_distance, wavelength, slm_shape, pixel_pitch
         )
 
         return quantize_phase_mask(field.angle())
