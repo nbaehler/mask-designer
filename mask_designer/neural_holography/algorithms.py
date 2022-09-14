@@ -334,7 +334,13 @@ def stochastic_gradient_descent(
 
         optimizer.step()
 
-        from mask_designer.utils import save_image, quantize_phase_mask  # TODO remove
+        # -----------------------------------------------------------------------------
+
+        from mask_designer.utils import (
+            save_image,
+            quantize_phase_mask,
+            # extend_to_field,
+        )  # TODO remove
         import datetime
 
         name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
@@ -342,6 +348,66 @@ def stochastic_gradient_descent(
             quantize_phase_mask(slm_phase.cpu().detach().numpy()[0, 0, :, :]),
             f"citl/snapshots/phase_{name}.png",
         )
+
+        # field = extend_to_field(slm_phase.cpu().detach())
+
+        # from mask_designer.simulate_prop import simulate_prop, neural_holography_asm
+
+        # propped_field = simulate_prop(
+        #     field, neural_holography_asm, prop_distance, wavelength, feature_size
+        # )
+
+        # from mask_designer.utils import normalize_mask, round_phase_mask_to_uint8
+
+        # name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+
+        # save_image(
+        #     round_phase_mask_to_uint8(
+        #         255 * normalize_mask(propped_field.abs())
+        #     ),  # TODO check this version using normalization and cap using quantile
+        #     f"citl/snapshots/sim_{name}.png",
+        # )
+
+        # -----------------------------------------------------------------------------
+
+        # from mask_designer.utils import (
+        #     save_image,
+        #     quantize_phase_mask,
+        #     extend_to_field,
+        # )  # TODO remove
+        # import datetime
+
+        # name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+        # save_image(
+        #     quantize_phase_mask(slm_phase.cpu().detach().numpy()[0, 0, :, :]),
+        #     f"citl/snapshots/phase_{name}.png",
+        # )
+
+        # field = extend_to_field(slm_phase.cpu().detach())
+
+        # from mask_designer.transform_fields import neural_holography_lensless_to_lens
+
+        # # Transform the results to the hardware setting using a lens
+        # field = neural_holography_lensless_to_lens(
+        #     field, prop_distance, wavelength, slm_phase.shape[2:], feature_size
+        # )
+
+        # from mask_designer.simulate_prop import simulate_prop, holoeye_fraunhofer
+
+        # propped_field = simulate_prop(field, holoeye_fraunhofer)
+
+        # from mask_designer.utils import normalize_mask, round_phase_mask_to_uint8
+
+        # name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+
+        # save_image(
+        #     round_phase_mask_to_uint8(
+        #         255 * normalize_mask(propped_field.abs())
+        #     ),  # TODO check this version using normalization and cap using quantile
+        #     f"citl/snapshots/sim_{name}.png",
+        # )
+
+        # -----------------------------------------------------------------------------
 
         # write to tensorboard / write phase image
         # Note that it takes 0.~ s for writing it to tensorboard

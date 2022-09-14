@@ -8,4 +8,5 @@ black -l 100 examples/**/*.py
 black -l 100 mask_designer/*.py
 black -l 100 mask_designer/**/*.py
 black -l 100 mask_designer/neural_holography/**/*.py
+black -l 100 mask_designer/misc/**/*.py
 black -l 100 tests/*.py

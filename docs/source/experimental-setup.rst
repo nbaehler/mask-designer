@@ -35,11 +35,7 @@ want to present the final version.
    :align: center
    :alt: Experimental setup
 
-
-
-
 And here a picture taking of it in the lab.
-
 
 .. image:: images/setup.jpg
    :target: images/setup.jpg
