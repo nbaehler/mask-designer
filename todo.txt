@@ -3,7 +3,7 @@ Must-have
 Code:
 - Fine tune calibration parameters
 - Fix the bug in the CITL SGD
-- CHange examples to be lensed or lensless
+- Change examples to be lensed or lensless
 - Increase ROI to the max by increasing distance to camera
 - Add docstrings and comments
 - Clean up todos etc.
@@ -18,7 +18,9 @@ Documentation:
 - How do you save a pattern in Pattern Generator
 - Adapt to lightweight CITL
 - Check that RST is equivalent to md and remove those
-- GIF of SGD
+- GIF of SGD phase and simulation
+- Is beam after concave lens diverging or less converging?
+- Why not just use convex lens and set propdistance accordingly?
 
 Nice-to-have
 ------------

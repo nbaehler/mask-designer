@@ -28,7 +28,12 @@ author = "Nicolas Bähler"
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.viewcode",
+    "sphinx_rtd_theme",
+]
 
 autoclass_content = "both"
 
@@ -44,6 +49,9 @@ source_suffix = {
     ".rst": "restructuredtext",
 }
 
+master_doc = "index"
+pygments_style = "default"
+
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -51,6 +59,28 @@ source_suffix = {
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
+html_theme_options = {
+    # 'analytics_id': 'G-XXXXXXXXXX',  #  Provided by Google in your dashboard
+    # 'analytics_anonymize_ip': False,
+    "logo_only": True,
+    # 'display_version': True,
+    # 'prev_next_buttons_location': 'bottom',
+    # 'style_external_links': False,
+    # 'vcs_pageview_mode': '',
+    # 'style_nav_header_background': 'white',
+    # # Toc options
+    # 'collapse_navigation': True,
+    # 'sticky_navigation': True,
+    "navigation_depth": 5,
+    # 'includehidden': True,
+    # 'titles_only': False
+}
+
+html_context = {}
+# html_logo = "demo/static/logo-wordmark-light.svg"
+html_show_sourcelink = True
+
+# htmlhelp_basename = slug
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

@@ -35,6 +35,7 @@ setuptools.setup(
             "tensorboard",
             "torch_tb_profiler",
             "sphinx-rtd-theme",
+            "docutils==0.16",
         ],
     },
 )

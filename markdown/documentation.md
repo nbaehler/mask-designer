@@ -423,8 +423,8 @@ Mathematically, we have that
 
 $$
 \begin{align}
-A &\approx (FT \circ S)(\phi_H) \coloneqq p_H(\phi_H) \\
-A &\approx (IS \circ FT \circ S \circ M \circ IFT \circ S)(\phi_N) \coloneqq p_N(\phi_N)\\
+A &\approx (FT \circ S)(\phi_H) :eqq p_H(\phi_H) \\
+A &\approx (IS \circ FT \circ S \circ M \circ IFT \circ S)(\phi_N) :eqq p_N(\phi_N)\\
 \end{align}
 $$
 
@@ -446,9 +446,9 @@ the other way around) we need to be able to transform the phase maps. We get
 
 $$
 \begin{align}
-\phi_N&=(IS \circ FT \circ S \circ M \circ IFT \circ IFT)(\phi_H) \coloneqq t_{H
+\phi_N&=(IS \circ FT \circ S \circ M \circ IFT \circ IFT)(\phi_H) :eqq t_{H
 \rightarrow N}(\phi_H) \\
-\phi_H&=(FT \circ FT \circ S \circ M^{-1} \circ IFT \circ S)(\phi_N) \coloneqq
+\phi_H&=(FT \circ FT \circ S \circ M^{-1} \circ IFT \circ S)(\phi_N) :eqq
 t_{N\rightarrow H}(\phi_H) \\
 \end{align}
 $$

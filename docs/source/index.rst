@@ -19,11 +19,13 @@ Indices and tables
 
 .. toctree::
    :hidden:
-   :maxdepth: 2
+   :maxdepth: 5
    :caption: Contents:
 
-   documentation.rst
-   Modules <modules.rst>
+   examples
+   theory
+   experimental-setup
+   Modules <modules>
 
 
 
