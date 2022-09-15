@@ -124,8 +124,11 @@ def train_model(
     prop_physical = PropPhysical(
         s,
         slm_settle_time,
+        slm_show_time,
         cam,
         roi,
+        prop_distance,
+        wavelength,
         channel,
         # range_row=(220, 1000),
         # range_col=(300, 1630),

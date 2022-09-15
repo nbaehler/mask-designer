@@ -20,7 +20,7 @@ from waveprop.util import ift2
 from mask_designer.utils import normalize_mask
 from mask_designer.wrapper import fftshift, prop_asm, propagate_field
 
-# TODO simulation results seem stretched in x direction compared to images!!!!!!!!!!!!!!!!!!!!!!!!
+# FIXME simulation results seem stretched in x direction compared to images!
 
 
 def holoeye_fraunhofer(field):
@@ -137,7 +137,7 @@ def waveprop_asm_np(field, prop_distance, wavelength, pixel_pitch):
         u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_distance,
     )
 
-    return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
+    return torch.flipud(torch.fliplr(torch.from_numpy(ift2(res, delta_f=1))))[None, None, :, :]
 
 
 def waveprop_fft_di(field, prop_distance, wavelength, pixel_pitch):
@@ -288,7 +288,7 @@ def waveprop_fresnel_conv(field, prop_distance, wavelength, pixel_pitch, device)
         u_in=field, wv=wavelength, d1=pixel_pitch[0], dz=prop_distance, device=device,
     )
 
-    return ift2(res, delta_f=1)[None, None, :, :]
+    return torch.flipud(torch.fliplr(ift2(res, delta_f=1)))[None, None, :, :]
 
 
 def waveprop_shifted_fresnel(field, prop_distance, wavelength, pixel_pitch):
@@ -312,7 +312,7 @@ def waveprop_shifted_fresnel(field, prop_distance, wavelength, pixel_pitch):
         u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_distance,
     )
 
-    return torch.from_numpy(ift2(res, delta_f=1))[None, None, :, :]
+    return torch.flipud(torch.fliplr(torch.from_numpy(ift2(res, delta_f=1))))[None, None, :, :]
 
 
 def waveprop_spherical(field, prop_distance, wavelength, pixel_pitch, device):
@@ -367,7 +367,7 @@ def plot_fields(field, propped_field, title):
     ax2.title.set_text("Amplitude on SLM")
     ax3.title.set_text("Phase after propagation to screen")
     ax4.title.set_text("Amplitude after propagation to screen")
-    ax1.imshow(normalize_mask(field.angle()), cmap="gray")  # TODO normalize?
+    ax1.imshow(normalize_mask(field.angle()), cmap="gray")
     ax2.imshow(normalize_mask(field.abs()), cmap="gray")
     ax3.imshow(normalize_mask(propped_field.angle()), cmap="gray")
     ax4.imshow(normalize_mask(propped_field.abs()), cmap="gray")

@@ -156,7 +156,7 @@ def main(
 
     name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
 
-    # print(  # TODO remove
+    # print(
     #     "propped_field.abs()",
     #     torch.min(propped_field.abs()).item(),
     #     torch.max(propped_field.abs()).item(),
@@ -200,8 +200,11 @@ def main(
     prop_physical = PropPhysical(
         s,
         slm_settle_time,
+        slm_show_time,
         cam,
-        roi_res=roi,
+        roi,
+        prop_distance,
+        wavelength,
         # channel,
         # range_row=(220, 1000),
         # range_col=(300, 1630),

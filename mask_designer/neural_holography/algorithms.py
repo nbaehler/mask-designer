@@ -149,8 +149,6 @@ def stochastic_gradient_descent(
     # phase at the slm plane
     slm_phase = init_phase.requires_grad_(True)
 
-    # temp = slm_phase.clone().detach()  # TODO remove
-
     # optimization variables and adam optimizer
     optimizer = optim.Adam([slm_phase], lr=lr)
 
@@ -163,19 +161,9 @@ def stochastic_gradient_descent(
     # Only needed for the simulation
     slm_amp = amp_mask.to(device)[None, None, :, :]
 
-    # print("Requires grad", slm_phase.requires_grad)
-
     # run the iterative algorithm
     for k in range(num_iters):
         optimizer.zero_grad()
-
-        # print(f"Diff phase {str(torch.sum((temp - slm_phase)**2).item())}")  # TODO remove
-
-        # print(f"Same {str(temp.equal(slm_phase))}")  # TODO remove
-
-        # print(f"Scale {str(s.item())}")  # TODO remove
-
-        # print("Requires grad", slm_phase.requires_grad)
 
         # forward propagation from the SLM plane to the target plane
         real, imag = utils.polar_to_rect(slm_amp, slm_phase)
@@ -198,36 +186,14 @@ def stochastic_gradient_descent(
         # crop roi
         recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
 
-        # print(  # TODO remove
-        #     "recon_amp",
-        #     torch.min(recon_amp).item(),
-        #     torch.max(recon_amp).item(),
-        #     torch.median(recon_amp).item(),
-        #     torch.mean(recon_amp).item(),
-        #     torch.quantile(recon_amp, 0.99).item(),
-        # )
-
         # camera-in-the-loop technique
         if prop_model.upper() == "PHYSICAL":
-            # print("Requires grad", slm_phase.requires_grad)
-
-            captured_amp = propagator(slm_phase)  # .detach()
-
-            # print("Requires grad", slm_phase.requires_grad)
-
-            # print(  # TODO remove
-            #     "captured_amp",
-            #     torch.min(captured_amp).item(),
-            #     torch.max(captured_amp).item(),
-            #     torch.median(captured_amp).item(),
-            #     torch.mean(captured_amp).item(),
-            #     torch.quantile(captured_amp, 0.99).item(),
-            # )
+            captured_amp = propagator(slm_phase)
 
             # use the gradient of proxy, replacing the amplitudes
             # captured_amp is assumed that its size already matches that of recon_amp
-            out_amp = recon_amp + (captured_amp - recon_amp).detach()
-            # out_amp = captured_amp.detach()  # TODO not enough?
+            out_amp = recon_amp + (captured_amp - recon_amp).detach()  # TODO strange expression
+            # out_amp = captured_amp.detach()
         else:
             out_amp = recon_amp
 
@@ -235,23 +201,8 @@ def stochastic_gradient_descent(
 
         # # camera-in-the-loop technique # TODO this version is better and should work
         # if prop_model.upper() == "PHYSICAL":
-        #     print("Requires grad", slm_phase.requires_grad)
-
-        #     out_amp = propagator(slm_phase)  # .detach()
-
-        #     print("Requires grad", slm_phase.requires_grad)
-
-        #     print(  # TODO remove
-        #         "out_amp",
-        #         torch.min(out_amp).item(),
-        #         torch.max(out_amp).item(),
-        #         torch.median(out_amp).item(),
-        #         torch.mean(out_amp).item(),
-        #         torch.quantile(out_amp, 0.99).item(),
-        #     )
+        #     out_amp = propagator(slm_phase)
         # else:
-        #     print("Requires grad", slm_phase.requires_grad)
-
         #     # forward propagation from the SLM plane to the target plane
         #     real, imag = utils.polar_to_rect(slm_amp, slm_phase)
         #     slm_field = torch.complex(real, imag)
@@ -273,59 +224,10 @@ def stochastic_gradient_descent(
         #     # crop roi
         #     recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
 
-        #     print(  # TODO remove
-        #         "recon_amp",
-        #         torch.min(recon_amp).item(),
-        #         torch.max(recon_amp).item(),
-        #         torch.median(recon_amp).item(),
-        #         torch.mean(recon_amp).item(),
-        #         torch.quantile(recon_amp, 0.99).item(),
-        #     )
-
         #     out_amp = recon_amp
-
-        # print(  # TODO remove
-        #     "out_amp",
-        #     torch.min(out_amp).item(),
-        #     torch.max(out_amp).item(),
-        #     torch.median(out_amp).item(),
-        #     torch.mean(out_amp).item(),
-        #     torch.quantile(out_amp, 0.99).item(),
-        # )
-
-        # print(  # TODO remove
-        #     "s * out_amp",
-        #     torch.min(s * out_amp).item(),
-        #     torch.max(s * out_amp).item(),
-        #     torch.median(s * out_amp).item(),
-        #     torch.mean(s * out_amp).item(),
-        #     torch.quantile(s * out_amp, 0.99).item(),
-        # )
-
-        # print(  # TODO remove
-        #     "target_amp",
-        #     torch.min(target_amp).item(),
-        #     torch.max(target_amp).item(),
-        #     torch.median(target_amp).item(),
-        #     torch.mean(target_amp).item(),
-        #     torch.quantile(target_amp, 0.99).item(),
-        # )
 
         # calculate loss and backprop
         lossValue = loss(s * out_amp, target_amp)
-
-        # print(f"Loss {(lossValue.item())}")  # TODO remove
-
-        # print("Is leaf", slm_phase.is_leaf)  # TODO remove
-
-        # slm_phase.retain_grad()
-        # slm_phase.requires_grad_(True)
-
-        # slm_phase.register_hook(
-        #     lambda d: print("Phase grad non zero", (torch.count_nonzero(d) > 0).item())
-        # )
-
-        # print("Requires grad", slm_phase.requires_grad)
 
         lossValue.backward()
 
@@ -333,87 +235,7 @@ def stochastic_gradient_descent(
         if slm_phase.grad is None:
             raise ValueError("Gradient is None!")
 
-        # print(
-        #     "Phase grad non zero", (torch.count_nonzero() > 0).item()
-        # )
-        # print("Scale grad", s.grad.data.item())
-
         optimizer.step()
-
-        # -----------------------------------------------------------------------------
-
-        # from mask_designer.utils import (
-        #     save_image,
-        #     quantize_phase_mask,
-        #     # extend_to_field,
-        # )  # TODO remove
-        # import datetime
-
-        # name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-        # save_image(
-        #     quantize_phase_mask(slm_phase.cpu().detach().numpy()[0, 0, :, :]),
-        #     f"citl/snapshots/phase_{name}.png",
-        # )
-
-        # field = extend_to_field(slm_phase.cpu().detach())
-
-        # from mask_designer.simulate_prop import simulate_prop, neural_holography_asm
-
-        # propped_field = simulate_prop(
-        #     field, neural_holography_asm, prop_distance, wavelength, feature_size
-        # )
-
-        # from mask_designer.utils import normalize_mask, round_phase_mask_to_uint8
-
-        # name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-
-        # save_image(
-        #     round_phase_mask_to_uint8(
-        #         255 * normalize_mask(propped_field.abs())
-        #     ),  # TODO check this version using normalization and cap using quantile
-        #     f"citl/snapshots/sim_{name}.png",
-        # )
-
-        # -----------------------------------------------------------------------------
-
-        # from mask_designer.utils import (
-        #     save_image,
-        #     quantize_phase_mask,
-        #     extend_to_field,
-        # )  # TODO remove
-        # import datetime
-
-        # name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-        # save_image(
-        #     quantize_phase_mask(slm_phase.cpu().detach().numpy()[0, 0, :, :]),
-        #     f"citl/snapshots/phase_{name}.png",
-        # )
-
-        # field = extend_to_field(slm_phase.cpu().detach())
-
-        # from mask_designer.transform_fields import neural_holography_lensless_to_lens
-
-        # # Transform the results to the hardware setting using a lens
-        # field = neural_holography_lensless_to_lens(
-        #     field, prop_distance, wavelength, slm_phase.shape[2:], feature_size
-        # )
-
-        # from mask_designer.simulate_prop import simulate_prop, holoeye_fraunhofer
-
-        # propped_field = simulate_prop(field, holoeye_fraunhofer)
-
-        # from mask_designer.utils import normalize_mask, round_phase_mask_to_uint8
-
-        # name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-
-        # save_image(
-        #     round_phase_mask_to_uint8(
-        #         255 * normalize_mask(propped_field.abs())
-        #     ),  # TODO check this version using normalization and cap using quantile
-        #     f"citl/snapshots/sim_{name}.png",
-        # )
-
-        # -----------------------------------------------------------------------------
 
         # write to tensorboard / write phase image
         # Note that it takes 0.~ s for writing it to tensorboard

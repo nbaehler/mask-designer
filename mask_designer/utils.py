@@ -45,24 +45,6 @@ def _m_to_cell_idx(val, cell_m):
     return int(val / cell_m)
 
 
-# def si2cell(val: np.ndarray, cell_m): # TODO unused, remove
-#     """
-#     Convert locations to cell index.
-
-#     author: Eric Bezzam,
-#     email: ebezzam@gmail.com,
-#     GitHub: https://github.com/ebezzam
-
-#     :param val: Locations in meters.
-#     :type val: :py:class:`~numpy.ndarray`
-#     :param cell_m: Dimension of cell in meters.
-#     :type cell_m: float
-#     :return: _description_ # TODO add description
-#     :rtype: _type_
-#     """
-#     return np.array(val // cell_m, dtype=int)
-
-
 def prepare_index_vals(key, pixel_pitch):
     """
     Convert indexing object in meters to indexing object in cell indices.
@@ -146,9 +128,7 @@ def load_image(path):
     dtype = img.dtype
 
     if issubclass(dtype.type, np.floating):
-        raise ValueError(
-            "Problematic image type."
-        )  # TODO check if this is correct, makes no sense when [0, 1]
+        raise ValueError("Problematic image type.")
 
     if len(img.shape) == 3:
         if img.shape[2] == 4:
@@ -160,7 +140,7 @@ def load_image(path):
     if issubclass(dtype.type, np.integer):
         img = img / np.iinfo(dtype).max
 
-    # img = normalize_mask(img) # TODO needed?
+    # img = normalize_mask(img) # TODO normalize?
 
     return round_phase_mask_to_uint8(img * 255)
 
@@ -174,14 +154,9 @@ def save_image(I, fname):
     :param fname: Valid image file (i.e. JPG, PNG, BMP, TIFF, etc.).
     :type fname: str, path-like
     """
-    # I_max = I.max()   # TODO needed ?
-    # I_max = 1 if np.isclose(I_max, 0) else I_max
 
-    # I_f = I / I_max  # float64
-    # I_u = np.uint8(255 * I_f)  # uint8
-
-    # if I.ndim == 3:
-    #     I = I.transpose(1, 2, 0)
+    if I.ndim == 3:
+        I = I.transpose(1, 2, 0)
 
     I_p = Image.fromarray(I)
     I_p.save(fname)
@@ -227,9 +202,7 @@ def normalize_mask(mask):
 
     minimum = np.min(mask)
 
-    # maximum = np.max(mask)
-
-    quantile = np.quantile(mask, 0.99)  # TODO do we need this?
+    quantile = np.quantile(mask, 0.99)
     mask[mask > quantile] = quantile
     maximum = quantile
 
@@ -243,9 +216,7 @@ def angularize_phase_mask(phase_mask):
     dtype = phase_mask.dtype
 
     if issubclass(dtype.type, np.floating):
-        raise ValueError(
-            "Problematic image type."
-        )  # TODO check if this is correct, makes no sense when [0, 1]
+        raise ValueError("Problematic image type.")
 
     if len(phase_mask.shape) == 4:
         phase_mask = phase_mask[0, 0, :, :]
@@ -254,7 +225,7 @@ def angularize_phase_mask(phase_mask):
 
     # epsilon = 1e-6  # TODO how to handle the wrap around at -pi/pi when in [0,1
     # ]?
-    # phase_mask = normalize_mask(phase_mask) # TODO needed?
+    # phase_mask = normalize_mask(phase_mask) # TODO normalize?
 
     phase_mask = torch.from_numpy(phase_mask).type(torch.FloatTensor)
     return (phase_mask / max_value) * (2 * np.pi) - np.pi
@@ -278,7 +249,7 @@ def quantize_phase_mask(phase_mask):
     new_phase_mask = phase_mask + np.pi
     new_phase_mask /= 2 * np.pi
 
-    # new_phase_mask = normalize_mask(new_phase_mask) # TODOneeded?
+    # new_phase_mask = normalize_mask(new_phase_mask) # TODO normalize?
 
     new_phase_mask *= 255.0
 

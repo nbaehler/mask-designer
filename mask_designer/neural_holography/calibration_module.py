@@ -130,9 +130,7 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
             ax4.set_title("Warped image with marked centers")
             ax4.imshow(captured_img_warp, cmap="gray")
 
-        name = (
-            str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-        )  # TODO remove
+        name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
         plt.savefig(f"citl/snapshots/sim_{name}_calib.png")
         # plt.show()
         plt.close()

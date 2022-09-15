@@ -26,21 +26,22 @@ from multiprocessing import Process
 from pathlib import Path
 
 import mask_designer.neural_holography.utils as utils
-import matplotlib.pyplot as plt
 import numpy as np
-import skimage.io
 import torch
 import torch.nn as nn
-from mask_designer.experimental_setup import Params, default_params, slm_device
+from mask_designer.experimental_setup import slm_device
 from mask_designer.neural_holography.algorithms import (
     gerchberg_saxton,
     stochastic_gradient_descent,
 )
 from mask_designer.neural_holography.calibration_module import Calibration
 from mask_designer.neural_holography.prop_asm import prop_asm
+
+# from mask_designer.transform_fields import neural_holography_lensless_to_lens # TODO Circular import
 from mask_designer.utils import (
     angularize_phase_mask,
     extend_to_field,
+    load_image,
     normalize_mask,
     quantize_phase_mask,
     round_phase_mask_to_uint8,
@@ -49,8 +50,10 @@ from mask_designer.utils import (
 from PIL import Image
 from slm_controller.hardware import SLMParam, slm_devices
 
-# from mask_designer.transform_fields import
-# transform_from_neural_holography_setting # TODO Circular import!
+# from mask_designer.simulate_prop import (  # TODO Circular import
+# holoeye_fraunhofer,
+# simulate_prop,
+# )
 
 
 class GS(nn.Module):
@@ -277,8 +280,11 @@ class PropPhysical(nn.Module):
         self,
         slm,
         slm_settle_time,
+        slm_show_time,
         cam,
         roi_res,
+        prop_distance,
+        wavelength,
         channel=1,
         num_circles=(9, 12),
         range_row=(0, 768),  # TODO adapt to capture roi in real image
@@ -294,6 +300,13 @@ class PropPhysical(nn.Module):
         # 2. Connect SLM
         self.slm = slm
         self.slm_settle_time = slm_settle_time
+        self.slm_show_time = slm_show_time
+
+        # 3. Set parameters
+        self.prop_distance = prop_distance
+        self.wavelength = wavelength
+        self.slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
+        self.pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
 
         # 3. Calibrate hardwares using homography
         calib_pattern_path = os.path.join(pattern_path, f'{("red", "green", "blue")[channel]}.png')
@@ -345,17 +358,13 @@ class PropPhysical(nn.Module):
         self.camera.set_correction(captured_blank)
 
         # supposed to be a grid pattern image for calibration
-        calib_phase_img = skimage.io.imread(
-            calibration_pattern_path
-        )  # TODO use function in utils to load
-        calib_phase_mask = np.mean(calib_phase_img[:, :, 0:3], axis=2)
-        calib_phase_mask = round_phase_mask_to_uint8(calib_phase_mask)
+        calib_phase_mask = load_image(calibration_pattern_path)
 
         captured_img = self._capture_and_average_intensities(
             num_grab_images, True, calib_phase_mask, True,
         )
 
-        self.slm.set_show_time(default_params[Params.SLM_SHOW_TIME])  # TODO must come from caller
+        self.slm.set_show_time(self.slm_show_time)
 
         # masking out dot pattern region for homography
         corrected_img_masked = captured_img[
@@ -370,8 +379,7 @@ class PropPhysical(nn.Module):
         if calib_success:
             print("   - Calibration succeeded")
         else:
-            # raise ValueError("   - Calibration failed") # TODO switch back to
-            # raise error
+            # raise ValueError("   - Calibration failed") # TODO switch back
             print("   - Calibration failed")
 
     def forward(self, slm_phase, num_grab_images=1):
@@ -388,35 +396,6 @@ class PropPhysical(nn.Module):
         captured_linear_np = self.capture_linear_intensity(
             slm_phase_8bit, num_grab_images=num_grab_images
         )
-
-        # print(  # TODO remove
-        #     "captured_linear_np",
-        #     np.min(captured_linear_np).item(),
-        #     np.max(captured_linear_np).item(),
-        #     np.median(captured_linear_np).item(),
-        #     np.mean(captured_linear_np).item(),
-        #     np.quantile(captured_linear_np, 0.99).item(),
-        # )
-
-        # # convert raw-16 linear intensity image into an amplitude tensor
-        # if len(captured_linear_np.shape) > 2:  # TODO do we need this?
-        #     captured_linear = (
-        #         torch.tensor(captured_linear_np, dtype=torch.float32)
-        #         .permute(2, 0, 1)
-        #         .unsqueeze(0)
-        #     )
-        #     captured_linear = captured_linear.to(slm_phase.device)
-        #     captured_linear = torch.sum(captured_linear, dim=1, keepdim=True)
-        # else:
-        #     captured_linear = (
-        #         torch.tensor(captured_linear_np, dtype=torch.float32)
-        #         .unsqueeze(0)
-        #         .unsqueeze(0)
-        #     )
-        #     captured_linear = captured_linear.to(slm_phase.device)
-
-        # return amplitude
-        # return torch.sqrt(captured_linear)
 
         return torch.tensor(normalize_mask(captured_linear_np), dtype=torch.float32)[
             None, None, :, :
@@ -447,18 +426,13 @@ class PropPhysical(nn.Module):
     def _transform_phase_mask(self, phase_mask):
         field = extend_to_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
-        prop_distance = default_params[Params.PROPAGATION_DISTANCE]  # TODO must come from caller
-        wavelength = default_params[Params.WAVELENGTH]
-        pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
-        slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
-
         from mask_designer.transform_fields import (
             neural_holography_lensless_to_lens,
-        )  # TODO move import up!!
+        )  # TODO Circular import
 
         # Transform the results to the hardware setting using a lens
         field = neural_holography_lensless_to_lens(
-            field, prop_distance, wavelength, slm_shape, pixel_pitch
+            field, self.prop_distance, self.wavelength, self.slm_shape, self.pixel_pitch,
         )
 
         return quantize_phase_mask(field.angle())
@@ -504,14 +478,12 @@ class PropPhysical(nn.Module):
 
             field = extend_to_field(angularize_phase_mask(phase_mask))[None, None, :, :]
 
-            from mask_designer.simulate_prop import (  # TODO move import up!!
+            from mask_designer.simulate_prop import (  # TODO Circular import
                 holoeye_fraunhofer,
                 simulate_prop,
             )
 
             propped_field = simulate_prop(field, holoeye_fraunhofer)
-
-            from mask_designer.utils import normalize_mask  # TODO move import up!!
 
             name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
 
