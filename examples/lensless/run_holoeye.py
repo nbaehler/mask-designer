@@ -38,7 +38,7 @@ from slm_controller.hardware import SLMDevices, SLMParam, slm_devices
     help="The propagation distance of the light in meters.",
     show_default=True,
 )
-def main(wavelength, prop_distance):  # TODO does not work yet
+def main(wavelength, prop_distance):
     # Set parameters
     pixel_pitch = slm_devices[slm_device][SLMParam.PIXEL_PITCH]
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]

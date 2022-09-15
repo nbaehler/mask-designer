@@ -134,6 +134,7 @@ def circle_detect(captured_img, num_circles, spacing, pad_pixels=(0.0, 0.0), sho
             str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
         )  # TODO remove
         plt.savefig(f"citl/snapshots/sim_{name}_calib.png")
+        # plt.show()
         plt.close()
 
     return found_dots, H

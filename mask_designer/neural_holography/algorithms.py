@@ -149,7 +149,7 @@ def stochastic_gradient_descent(
     # phase at the slm plane
     slm_phase = init_phase.requires_grad_(True)
 
-    temp = slm_phase.clone().detach()  # TODO remove
+    # temp = slm_phase.clone().detach()  # TODO remove
 
     # optimization variables and adam optimizer
     optimizer = optim.Adam([slm_phase], lr=lr)
@@ -163,19 +163,19 @@ def stochastic_gradient_descent(
     # Only needed for the simulation
     slm_amp = amp_mask.to(device)[None, None, :, :]
 
-    print("Requires grad", slm_phase.requires_grad)
+    # print("Requires grad", slm_phase.requires_grad)
 
     # run the iterative algorithm
     for k in range(num_iters):
         optimizer.zero_grad()
 
-        print(f"Diff phase {str(torch.sum((temp - slm_phase)**2).item())}")  # TODO remove
+        # print(f"Diff phase {str(torch.sum((temp - slm_phase)**2).item())}")  # TODO remove
 
-        print(f"Same {str(temp.equal(slm_phase))}")  # TODO remove
+        # print(f"Same {str(temp.equal(slm_phase))}")  # TODO remove
 
-        print(f"Scale {str(s.item())}")  # TODO remove
+        # print(f"Scale {str(s.item())}")  # TODO remove
 
-        print("Requires grad", slm_phase.requires_grad)
+        # print("Requires grad", slm_phase.requires_grad)
 
         # forward propagation from the SLM plane to the target plane
         real, imag = utils.polar_to_rect(slm_amp, slm_phase)
@@ -198,31 +198,31 @@ def stochastic_gradient_descent(
         # crop roi
         recon_amp = utils.crop_image(recon_amp, target_shape=roi_res, stacked_complex=False)
 
-        print(  # TODO remove
-            "recon_amp",
-            torch.min(recon_amp).item(),
-            torch.max(recon_amp).item(),
-            torch.median(recon_amp).item(),
-            torch.mean(recon_amp).item(),
-            torch.quantile(recon_amp, 0.99).item(),
-        )
+        # print(  # TODO remove
+        #     "recon_amp",
+        #     torch.min(recon_amp).item(),
+        #     torch.max(recon_amp).item(),
+        #     torch.median(recon_amp).item(),
+        #     torch.mean(recon_amp).item(),
+        #     torch.quantile(recon_amp, 0.99).item(),
+        # )
 
         # camera-in-the-loop technique
         if prop_model.upper() == "PHYSICAL":
-            print("Requires grad", slm_phase.requires_grad)
+            # print("Requires grad", slm_phase.requires_grad)
 
             captured_amp = propagator(slm_phase)  # .detach()
 
-            print("Requires grad", slm_phase.requires_grad)
+            # print("Requires grad", slm_phase.requires_grad)
 
-            print(  # TODO remove
-                "captured_amp",
-                torch.min(captured_amp).item(),
-                torch.max(captured_amp).item(),
-                torch.median(captured_amp).item(),
-                torch.mean(captured_amp).item(),
-                torch.quantile(captured_amp, 0.99).item(),
-            )
+            # print(  # TODO remove
+            #     "captured_amp",
+            #     torch.min(captured_amp).item(),
+            #     torch.max(captured_amp).item(),
+            #     torch.median(captured_amp).item(),
+            #     torch.mean(captured_amp).item(),
+            #     torch.quantile(captured_amp, 0.99).item(),
+            # )
 
             # use the gradient of proxy, replacing the amplitudes
             # captured_amp is assumed that its size already matches that of recon_amp
@@ -284,39 +284,39 @@ def stochastic_gradient_descent(
 
         #     out_amp = recon_amp
 
-        print(  # TODO remove
-            "out_amp",
-            torch.min(out_amp).item(),
-            torch.max(out_amp).item(),
-            torch.median(out_amp).item(),
-            torch.mean(out_amp).item(),
-            torch.quantile(out_amp, 0.99).item(),
-        )
+        # print(  # TODO remove
+        #     "out_amp",
+        #     torch.min(out_amp).item(),
+        #     torch.max(out_amp).item(),
+        #     torch.median(out_amp).item(),
+        #     torch.mean(out_amp).item(),
+        #     torch.quantile(out_amp, 0.99).item(),
+        # )
 
-        print(  # TODO remove
-            "s * out_amp",
-            torch.min(s * out_amp).item(),
-            torch.max(s * out_amp).item(),
-            torch.median(s * out_amp).item(),
-            torch.mean(s * out_amp).item(),
-            torch.quantile(s * out_amp, 0.99).item(),
-        )
+        # print(  # TODO remove
+        #     "s * out_amp",
+        #     torch.min(s * out_amp).item(),
+        #     torch.max(s * out_amp).item(),
+        #     torch.median(s * out_amp).item(),
+        #     torch.mean(s * out_amp).item(),
+        #     torch.quantile(s * out_amp, 0.99).item(),
+        # )
 
-        print(  # TODO remove
-            "target_amp",
-            torch.min(target_amp).item(),
-            torch.max(target_amp).item(),
-            torch.median(target_amp).item(),
-            torch.mean(target_amp).item(),
-            torch.quantile(target_amp, 0.99).item(),
-        )
+        # print(  # TODO remove
+        #     "target_amp",
+        #     torch.min(target_amp).item(),
+        #     torch.max(target_amp).item(),
+        #     torch.median(target_amp).item(),
+        #     torch.mean(target_amp).item(),
+        #     torch.quantile(target_amp, 0.99).item(),
+        # )
 
         # calculate loss and backprop
         lossValue = loss(s * out_amp, target_amp)
 
-        print(f"Loss {(lossValue.item())}")  # TODO remove
+        # print(f"Loss {(lossValue.item())}")  # TODO remove
 
-        print("Is leaf", slm_phase.is_leaf)  # TODO remove
+        # print("Is leaf", slm_phase.is_leaf)  # TODO remove
 
         # slm_phase.retain_grad()
         # slm_phase.requires_grad_(True)
@@ -325,29 +325,35 @@ def stochastic_gradient_descent(
         #     lambda d: print("Phase grad non zero", (torch.count_nonzero(d) > 0).item())
         # )
 
-        print("Requires grad", slm_phase.requires_grad)
+        # print("Requires grad", slm_phase.requires_grad)
 
         lossValue.backward()
 
-        print("Phase grad non zero", (torch.count_nonzero(slm_phase.grad.data) > 0).item())
-        print("Scale grad", s.grad.data.item())
+        # FIXME this is the case for the citl iterations, hence only s evolves ...
+        if slm_phase.grad is None:
+            raise ValueError("Gradient is None!")
+
+        # print(
+        #     "Phase grad non zero", (torch.count_nonzero() > 0).item()
+        # )
+        # print("Scale grad", s.grad.data.item())
 
         optimizer.step()
 
         # -----------------------------------------------------------------------------
 
-        from mask_designer.utils import (
-            save_image,
-            quantize_phase_mask,
-            # extend_to_field,
-        )  # TODO remove
-        import datetime
+        # from mask_designer.utils import (
+        #     save_image,
+        #     quantize_phase_mask,
+        #     # extend_to_field,
+        # )  # TODO remove
+        # import datetime
 
-        name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
-        save_image(
-            quantize_phase_mask(slm_phase.cpu().detach().numpy()[0, 0, :, :]),
-            f"citl/snapshots/phase_{name}.png",
-        )
+        # name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
+        # save_image(
+        #     quantize_phase_mask(slm_phase.cpu().detach().numpy()[0, 0, :, :]),
+        #     f"citl/snapshots/phase_{name}.png",
+        # )
 
         # field = extend_to_field(slm_phase.cpu().detach())
 
@@ -416,7 +422,5 @@ def stochastic_gradient_descent(
                 utils.write_sgd_summary(
                     out_amp, target_amp, k, writer=writer, s=s, prefix="test",
                 )
-
-    # print(torch.max(slm_phase), torch.min(slm_phase)) # TODO not in [-pi, pi]??
 
     return slm_phase

@@ -13,7 +13,10 @@ setuptools.setup(
     long_description_content_type="text/x-rst",
     url="https://github.com/nbaehler/mask-designer",
     packages=setuptools.find_packages(),
-    classifiers=["Programming Language :: Python :: 3", "Operating System :: OS Independent",],
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent",
+    ],  # TODO compare to slm-controller
     python_requires=">=3.9",
     install_requires=[
         "requests",

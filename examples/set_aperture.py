@@ -142,7 +142,7 @@ def main(shape, n_cells, rect_shape, center, vertical, device):
     if device_config[SLMParam.MONOCHROME]:
         slm.imshow(ap.grayscale_values)
     else:
-        slm.imshow(ap.values)  # TODO preprocessing must now happen here -> uint8 instead of float64
+        slm.imshow(ap.values)
 
 
 if __name__ == "__main__":

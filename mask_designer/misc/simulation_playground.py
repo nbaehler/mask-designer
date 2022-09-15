@@ -48,9 +48,7 @@ def main():
     holoeye_field = load_field()
 
     # Make it compliant with the data structure used in the project
-    unpacked_field = holoeye_field[
-        0, 0, :, :
-    ]  # TODO improve this data structure, for now only for one image and one channel!
+    unpacked_field = holoeye_field[0, 0, :, :]
 
     # --------------------------------------------------------------------------------------------
     # Holoeye

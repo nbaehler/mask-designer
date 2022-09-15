@@ -15,7 +15,12 @@ import click
 import torch
 from mask_designer.experimental_setup import Params, default_params, slm_device
 from mask_designer.prop_waveprop_asm import prop_waveprop_asm
-from mask_designer.simulate_prop import plot_fields, simulate_prop, waveprop_asm
+from mask_designer.simulate_prop import (
+    neural_holography_asm,
+    plot_fields,
+    simulate_prop,
+    waveprop_asm,
+)
 from mask_designer.utils import (
     extend_to_field,
     quantize_phase_mask,
@@ -104,13 +109,11 @@ def main(wavelength, prop_distance, roi, iterations):
 
     # Simulate the propagation in the lens setting and show the results
     unpacked_field = field[0, 0, :, :]
-    propped_field = (
-        simulate_prop(field, waveprop_asm, prop_distance, wavelength, pixel_pitch, device,)
-        .cpu()
-        .detach()
+    propped_field = simulate_prop(
+        field, neural_holography_asm, prop_distance, wavelength, pixel_pitch,
     )
     plot_fields(
-        unpacked_field, propped_field, "Neural Holography SGD with lens and waveprop ASM",
+        unpacked_field, propped_field, "Neural Holography SGD without lens and waveprop ASM",
     )
 
     # Quantize the fields angles, aka phase values, to a bit values

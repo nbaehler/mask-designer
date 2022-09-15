@@ -74,7 +74,8 @@ def rect_aperture(slm_shape, pixel_pitch, apert_dim, center=None):
             f"VirtualSLM dimensions {slm.dim}"
         )
     slm.at(
-        physical_coord=np.s_[top_left[0] : bottom_right[0], top_left[1] : bottom_right[1]], value=1,
+        physical_coord=np.s_[top_left[0] : bottom_right[0], top_left[1] : bottom_right[1]],
+        value=255,
     )
 
     return slm
@@ -118,7 +119,7 @@ def square_aperture(slm_shape, pixel_pitch, side, center=None):
     :param center: [Optional] center of aperture along (SLM) coordinates, indexing starts in top-left corner.
         Default is to place center of aperture at center of SLM., defaults to
         None # TODO improve
-    :type center: tuple(float), optional 
+    :type center: tuple(float), optional
     :return: VirtualSLM object with cells programmed to desired square aperture.
     :rtype: :py:class:`~mask_designer.virtual_slm.VirtualSLM`
     """
@@ -168,5 +169,5 @@ def circ_aperture(slm_shape, pixel_pitch, radius, center=None):
     )
     x2 = (i - center[0]) ** 2
     y2 = (j - center[1]) ** 2
-    slm[:] = x2 + y2 < radius ** 2
+    slm[:] = 255 * (x2 + y2 < radius ** 2)
     return slm

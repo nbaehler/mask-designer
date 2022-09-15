@@ -3,7 +3,7 @@ Theory
 
 .. contents:: Table of Contents
    :depth: 5
-.. :local:
+   :local:
 .. :backlinks: none
 
 Overview
@@ -27,8 +27,6 @@ Here an example of a SLM we support (via `slm-controller <https://github.com/ebe
 
    **Image Credit** [1]_
 
-
-[1]_ test
 
 It's a transmissive SLM and allows to modulate both amplitude and phase.
 Commonly SLMs, and also the Holoeye one, are based on Liquid Crystal Display
@@ -252,8 +250,8 @@ Set a mask using ``slm-controller``
    :alt: Schematic representation of the interactions between different components
 
 
-Perform phase retrieval (not CITL)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Perform phase retrieval (without CITL)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 .. image:: gifs/neural-holo.gif

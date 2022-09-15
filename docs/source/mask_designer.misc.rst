@@ -28,14 +28,6 @@ mask\_designer.misc.run\_holoeye\_big module
    :undoc-members:
    :show-inheritance:
 
-mask\_designer.misc.run\_holoeye\_lensless module
--------------------------------------------------
-
-.. automodule:: mask_designer.misc.run_holoeye_lensless
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 mask\_designer.misc.simulation\_playground module
 -------------------------------------------------
 

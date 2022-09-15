@@ -1,3 +1,3 @@
 #!/bin/bash
-sphinx-apidoc -o docs/source/ mask_designer/
+sphinx-apidoc -f -o docs/source/ mask_designer/
 sphinx-build docs/source docs/build

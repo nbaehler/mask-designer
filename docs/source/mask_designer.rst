@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   mask_designer.helpers
+   mask_designer.misc
    mask_designer.neural_holography
 
 Submodules

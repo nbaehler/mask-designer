@@ -22,7 +22,7 @@ Indices and tables
    :maxdepth: 5
    :caption: Contents:
 
-   examples
+   example-results
    theory
    experimental-setup
    pattern-generator

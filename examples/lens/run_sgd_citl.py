@@ -20,15 +20,14 @@ import click
 import torch
 from mask_designer import camera
 from mask_designer.experimental_setup import Params, default_params, slm_device
-from mask_designer.prop_waveprop_asm import prop_waveprop_asm, prop_waveprop_asm_lens
 from mask_designer.simulate_prop import holoeye_fraunhofer, simulate_prop
 from mask_designer.transform_fields import neural_holography_lensless_to_lens
 from mask_designer.utils import (
     extend_to_field,
     quantize_phase_mask,
     random_init_phase_mask,
-    save_image,
     round_phase_mask_to_uint8,
+    save_image,
 )
 from mask_designer.wrapper import SGD, ImageLoader, PropPhysical, prop_asm
 from slm_controller import slm
@@ -99,11 +98,6 @@ def main(
     slm_shape = slm_devices[slm_device][SLMParam.SLM_SHAPE]
 
     asm_propagator = prop_asm
-    # asm_propagator = prop_waveprop_asm # TODO check if this is correct
-    # asm_propagator = prop_waveprop_asm_lens
-
-    warm_start_iterations = 50  # TODO remove
-    citl_iterations = 5
 
     # Use GPU if detected in system
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -162,30 +156,24 @@ def main(
 
     name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
 
-    print(  # TODO remove
-        "propped_field.abs()",
-        torch.min(propped_field.abs()).item(),
-        torch.max(propped_field.abs()).item(),
-        torch.median(propped_field.abs()).item(),
-        torch.mean(propped_field.abs()).item(),
-        torch.quantile(propped_field.abs(), 0.99).item(),
-    )
-
-    # save_image( # TODO remove
-    #     propped_field.abs().numpy(), f"citl/snapshots/sim_{name}_warm_start.png",
+    # print(  # TODO remove
+    #     "propped_field.abs()",
+    #     torch.min(propped_field.abs()).item(),
+    #     torch.max(propped_field.abs()).item(),
+    #     torch.median(propped_field.abs()).item(),
+    #     torch.mean(propped_field.abs()).item(),
+    #     torch.quantile(propped_field.abs(), 0.99).item(),
     # )
 
     save_image(
-        round_phase_mask_to_uint8(
-            255 * normalize_mask(propped_field.abs())
-        ),  # TODO check this version using normalization and cap using quantile
+        round_phase_mask_to_uint8(255 * normalize_mask(propped_field.abs())),
         f"citl/snapshots/sim_{name}_warm_start.png",
     )
 
     # Quantize the fields angles, aka phase values, to a bit values
     phase = quantize_phase_mask(final_phase_sgd.angle())
 
-    BaseManager.register("HoloeyeSLM", slm.HoloeyeSLM)  # TODO shouldn't to needed to be shared
+    BaseManager.register("HoloeyeSLM", slm.HoloeyeSLM)
     BaseManager.register("IDSCamera", camera.IDSCamera)
 
     manager = BaseManager()
@@ -207,9 +195,7 @@ def main(
         final_res, f"citl/snapshots/phy_{name}_warm_start.png",
     )
 
-    warm_start_phase = warm_start_field.angle().to(
-        device
-    )  # TODO is in -1.0734256505966187 1.0754610300064087
+    warm_start_phase = warm_start_field.angle().to(device)
 
     prop_physical = PropPhysical(
         s,
@@ -249,14 +235,8 @@ def main(
 
     name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
 
-    # save_image( # TODO remove
-    #     propped_field.abs().numpy(), f"citl/snapshots/sim_{name}_final.png",
-    # )
-
     save_image(
-        round_phase_mask_to_uint8(
-            255 * normalize_mask(propped_field.abs())
-        ),  # TODO check this version using normalization and cap using quantile
+        round_phase_mask_to_uint8(255 * normalize_mask(propped_field.abs())),
         f"citl/snapshots/sim_{name}_final.png",
     )
 

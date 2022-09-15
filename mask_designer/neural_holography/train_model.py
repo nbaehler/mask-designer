@@ -286,7 +286,7 @@ def train_model(
             with torch.no_grad():
                 for k, idx in enumerate(idxs):
                     phase_8bit = utils.phasemap_8bit(
-                        phase_masks[k, np.newaxis, ...].cpu().detach(), inverted=True
+                        phase_masks[k, np.newaxis, ...].cpu().detach(), inverted=False
                     )
                     cv2.imwrite(os.path.join(phase_path, f"{idx}.png"), phase_8bit)
 
@@ -302,7 +302,7 @@ def train_model(
                     camera_amp.append(prop_physical(phase_mask))
                 camera_amp = torch.cat(camera_amp, 0)
 
-            camera_amp = utils.crop_image(  # TODO needed? Added instead of rescaling
+            camera_amp = utils.crop_image(
                 camera_amp, target_shape=roi, pytorch=True, stacked_complex=False,
             )
 

@@ -1,5 +1,5 @@
 """
-https://github.com/vsitzmann/pytorch_prototyping #TODO add as submodule?
+https://github.com/vsitzmann/pytorch_prototyping
 
 A number of custom pytorch modules with sane defaults that I find useful for
 model prototyping.

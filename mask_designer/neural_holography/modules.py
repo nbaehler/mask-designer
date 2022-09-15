@@ -382,23 +382,23 @@ class PropPhysical(nn.Module):
         :param num_grab_images:
         :return: A pytorch tensor shape of (1, 1, H, W)
         """
-        slm_phase_8bit = utils.phasemap_8bit(slm_phase, False)  # TODO True?
+        slm_phase_8bit = utils.phasemap_8bit(slm_phase, False)
 
         # display the pattern and capture linear intensity, after perspective transform
         captured_linear_np = self.capture_linear_intensity(
             slm_phase_8bit, num_grab_images=num_grab_images
         )
 
-        print(  # TODO remove
-            "captured_linear_np",
-            np.min(captured_linear_np).item(),
-            np.max(captured_linear_np).item(),
-            np.median(captured_linear_np).item(),
-            np.mean(captured_linear_np).item(),
-            np.quantile(captured_linear_np, 0.99).item(),
-        )
+        # print(  # TODO remove
+        #     "captured_linear_np",
+        #     np.min(captured_linear_np).item(),
+        #     np.max(captured_linear_np).item(),
+        #     np.median(captured_linear_np).item(),
+        #     np.mean(captured_linear_np).item(),
+        #     np.quantile(captured_linear_np, 0.99).item(),
+        # )
 
-        # # convert raw-16 linear intensity image into an amplitude tensor # TODO what is the difference?
+        # # convert raw-16 linear intensity image into an amplitude tensor
         # if len(captured_linear_np.shape) > 2:  # TODO do we need this?
         #     captured_linear = (
         #         torch.tensor(captured_linear_np, dtype=torch.float32)
@@ -416,7 +416,7 @@ class PropPhysical(nn.Module):
         #     captured_linear = captured_linear.to(slm_phase.device)
 
         # return amplitude
-        # return torch.sqrt(captured_linear) # TODO really?
+        # return torch.sqrt(captured_linear)
 
         return torch.tensor(normalize_mask(captured_linear_np), dtype=torch.float32)[
             None, None, :, :
@@ -515,14 +515,8 @@ class PropPhysical(nn.Module):
 
             name = str(datetime.datetime.now().time()).replace(":", "_").replace(".", "_")
 
-            # save_image( # TODO remove
-            #     propped_field.abs().numpy(), f"citl/snapshots/sim_{name}.png",
-            # )
-
             save_image(
-                round_phase_mask_to_uint8(
-                    255 * normalize_mask(propped_field.abs())
-                ),  # TODO check this version using normalization and cap using quantile
+                round_phase_mask_to_uint8(255 * normalize_mask(propped_field.abs())),
                 f"citl/snapshots/sim_{name}.png",
             )
 
