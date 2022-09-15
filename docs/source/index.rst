@@ -25,7 +25,7 @@ Indices and tables
    example-results
    theory
    experimental-setup
-   pattern-generator
+   software-tutorials
    Modules <modules>
 
 

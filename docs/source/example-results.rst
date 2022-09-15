@@ -5,8 +5,87 @@ On this page of the documentation we show images of results one can
 expect to obtain when running the code
 example provided with this repo.
 
+In ``examples`` are various example scripts that showcase the main features
+of this repository.
 
-.. TODO adapt example paths, repeat interfaces? bad practice
+First, activate the virtual environment:
+
+.. code-block:: sh
+
+   source mask_designer_env/bin/activate
+
+You can exit the virtual environment by running ``deactivate``.
+
+Lens examples
+^^^^^^^^^^^^^
+
+.. code-block:: sh
+
+   python examples/lens/run_gs.py
+
+.. image:: images/res_lens_gs_1.png
+   :target: images/res_lens_gs_1.png
+   :align: center
+   :alt: Lens GS 1
+
+.. image:: images/res_lens_gs_2.png
+   :target: images/res_lens_gs_2.png
+   :align: center
+   :alt: Lens GS 2
+
+.. code-block:: sh
+   
+   python examples/lens/run_holoeye.py
+
+.. image:: images/res_lens_holoeye_1.png
+   :target: images/res_lens_holoeye_1.png
+   :align: center
+   :alt: Lens Holoeye 1
+
+.. image:: images/res_lens_holoeye_2.png
+   :target: images/res_lens_holoeye_2.png
+   :align: center
+   :alt: Lens Holoeye 2
+
+.. code-block:: sh
+   
+   python examples/lens/run_sgd_citl.py
+
+.. image:: images/res_citl_sim_warm_start.png
+   :target: images/res_citl_sim_warm_start.png
+   :align: center
+   :alt: Lens SGD CITL
+
+.. image:: images/res_citl_phy_warm_start.png
+   :target: images/res_citl_phy_warm_start.png
+   :align: center
+   :alt: Lens SGD CITL
+
+.. image:: images/res_citl_phy_correction.png
+   :target: images/res_citl_phy_correction.png
+   :align: center
+   :alt: Lens SGD CITL
+
+.. image:: images/res_citl_phy_calib.png
+   :target: images/res_citl_phy_calib.png
+   :align: center
+   :alt: Lens SGD CITL
+
+.. image:: images/res_citl_sim_calib.png
+   :target: images/res_citl_sim_warm_start.png
+   :align: center
+   :alt: Lens SGD CITL
+
+.. image:: images/res_citl_sim_after.png
+   :target: images/res_citl_sim_after.png
+   :align: center
+   :alt: Lens SGD CITL
+
+.. image:: images/res_citl_phy_after.png
+   :target: images/res_citl_phy_after.png
+   :align: center
+   :alt: Lens SGD CITL
+
 
 .. code-block:: sh
 
@@ -58,3 +137,134 @@ example provided with this repo.
     File "C:\Users\baehl\workspaces\mask-designer\mask_designer\neural_holography\algorithms.py", line 338, in stochastic_gradient_descent
       raise ValueError("Gradient is None!")
   ValueError: Gradient is None!
+
+
+.. code-block:: sh
+   
+   python examples/lens/run_sgd_waveprop.py
+
+.. image:: images/res_lens_sgd_waveprop_1.png
+   :target: images/res_lens_sgd_waveprop_1.png
+   :align: center
+   :alt: Lens SGD Waveprop 1
+
+.. image:: images/res_lens_sgd_waveprop_2.png
+   :target: images/res_lens_sgd_waveprop_2.png
+   :align: center
+   :alt: Lens SGD Waveprop 2
+
+
+.. code-block:: sh
+   
+   python examples/lens/run_sgd.py
+
+.. image:: images/res_lens_sgd_1.png
+   :target: images/res_lens_sgd_1.png
+   :align: center
+   :alt: Lens SGD 1
+
+.. image:: images/res_lens_sgd_2.png
+   :target: images/res_lens_sgd_2.png
+   :align: center
+   :alt: Lens SGD 2
+
+
+Lensless examples
+^^^^^^^^^^^^^^^^^
+
+.. code-block:: sh
+   
+   python examples/lensless/run_gs.py
+
+.. image:: images/res_lensless_gs_1.png
+   :target: images/res_lensless_gs_1.png
+   :align: center
+   :alt: Lensless GS 1
+
+.. image:: images/res_lensless_gs_2.png
+   :target: images/res_lensless_gs_2.png
+   :align: center
+   :alt: Lensless GS 2
+
+
+.. code-block:: sh
+
+   python examples/lensless/run_holoeye.py
+   
+.. image:: images/res_lensless_holoeye_1.png
+   :target: images/res_lensless_holoeye_1.png
+   :align: center
+   :alt: Lensless Holoeye 1
+
+.. image:: images/res_lensless_holoeye_2.png
+   :target: images/res_lensless_holoeye_2.png
+   :align: center
+   :alt: Lensless Holoeye 2
+
+.. code-block:: sh
+   
+   python examples/lensless/run_sgd_waveprop.py
+
+.. image:: images/res_lensless_sgd_waveprop_1.png
+   :target: images/res_lensless_sgd_waveprop_1.png
+   :align: center
+   :alt: Lensless SGD Waveprop 1
+
+.. image:: images/res_lensless_sgd_waveprop_2.png
+   :target: images/res_lensless_sgd_waveprop_2.png
+   :align: center
+   :alt: Lensless SGD Waveprop 2
+
+
+.. code-block:: sh
+   
+   python examples/lensless/run_sgd.py
+
+.. image:: images/res_lensless_sgd_1.png
+   :target: images/res_lensless_sgd_1.png
+   :align: center
+   :alt: Lensless SGD 1
+
+.. image:: images/res_lensless_sgd_2.png
+   :target: images/res_lensless_sgd_2.png
+   :align: center
+   :alt: Lensless SGD 2
+
+
+Camera example
+^^^^^^^^^^^^^^
+
+.. code-block:: sh
+
+   python examples/ids_image_capture.py
+
+.. image:: images/res_cam_1.png
+   :target: images/res_cam_1.png
+   :align: center
+   :alt: Cam 1
+
+.. image:: images/res_cam_2.png
+   :target: images/res_cam_2.png
+   :align: center
+   :alt: Cam 2
+
+Aperture examples
+^^^^^^^^^^^^^^^^^
+
+.. code-block:: sh
+
+   python examples/set_aperture.py
+
+.. image:: images/res_plot_1.png
+   :target: images/res_plot_1.png
+   :align: center
+   :alt: Plot 1
+
+.. code-block:: sh
+
+   python examples/plot_aperture.py
+
+.. image:: images/res_set_1.png
+   :target: images/res_set_1.png
+   :align: center
+   :alt: Set 1

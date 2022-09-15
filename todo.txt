@@ -12,7 +12,7 @@ Documentation:
 - Extend with final setup, write down distances etc. -> important to right, lenses, distances, etc.
 - Update all the function names and interfaces
 - Add expected results of different algos, simulated and photos
-- How do you save a pattern in Pattern Generator
+- How do you save a pattern in Pattern Generator and IDS
 - Adapt to lightweight CITL
 - GIF of SGD phase and simulation
 - Is beam after concave lens diverging or less converging? -> diverging adapt

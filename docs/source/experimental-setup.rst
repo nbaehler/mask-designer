@@ -67,6 +67,27 @@ Hence, one can derive a formula for :math:`b`.
 
 with :math:`a=200-c` and :math:`170 < c < 200`.
 
+Practical considerations
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Add current measurements
+
+.. image:: images/slm_orientation.png
+   :target: images/slm_orientation.png
+   :align: center
+   :alt: SLM Orientation
+
+.. image:: images/concave_lens.jpg
+   :target: images/concave_lens.jpg
+   :align: center
+   :alt: Concave Lens
+
+.. image:: images/convex_lens.jpg
+   :target: images/convex_lens.jpg
+   :align: center
+   :alt: Convex Lens
+
+
 Incremental development of final setup
 --------------------------------------
 

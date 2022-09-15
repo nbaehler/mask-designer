@@ -180,12 +180,7 @@ def waveprop_direct_integration(field, prop_distance, wavelength, pixel_pitch):
     field = field[0, 0, :, :]
 
     res = direct_integration(
-        u_in=field.numpy(),
-        wv=wavelength,
-        d1=pixel_pitch[0],
-        dz=prop_distance,
-        x=[0],  # TODO wrong
-        y=[0],  # TODO wrong
+        u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_distance, x=[0], y=[0],
     )
 
     return torch.from_numpy(res)[None, None, :, :]
@@ -208,7 +203,7 @@ def waveprop_fresnel_one_step(field, prop_distance, wavelength, pixel_pitch):
     """
     field = field[0, 0, :, :]
 
-    res, _, _ = fresnel_one_step(  # TODO Too small
+    res, _, _ = fresnel_one_step(
         u_in=field.numpy(), wv=wavelength, d1=pixel_pitch[0], dz=prop_distance,
     )
 
