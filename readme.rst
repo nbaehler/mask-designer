@@ -10,6 +10,8 @@ incoherent light source.
    :local:
 .. :backlinks: none
 
+------------------------
+
 The main goal of the repository is to tackle the inverse problem of phase retrieval,
 i.e. mask design for SLMs.
 But it also allows to explore the forward problem by setting a phase
@@ -25,7 +27,7 @@ camera taking pictures of the resulting interference patterns at the target
 plane and then using this information to improve the designed mask iteratively.
 Finally, utility functions are provided so that masks designed by Holoeye's
 (closed-source) software or Neural Holography's code can be used
-interchangeably for different setup (as Holoeye and Neural Holography assume
+interchangeably for different setups (as Holoeye and Neural Holography assume
 different physical setups).
 
 If you wish to learn more about the theory behind this repository, the evolution
@@ -68,6 +70,11 @@ phase mask has been computed and to simulate the light propagation which is
 needed for different
 phase retrieval algorithms or propagation simulations. Note that those are still
 in development too.
+
+.. note::
+   The phase SLM implemented inside the ``slm-controller`` is actually only supported
+   on **Windows**. Holoeye does only provide an SDK for this OS which is used by the controller to
+   interface with the SLM.
 
 If you plan to use this code base more in depth you can install additional
 dependencies useful for development while the virtual environment is activated.
@@ -233,14 +240,9 @@ Partial coverage of the SLM with the laser beam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Another element which is important to account for is the portion of the SLM that
-is actually hit by the laser beam. Ideally, the laser beam would cover the
-entire SLM and hence all the pixels could be effectively used. But as in our
-case the circular laser beam does only hits pixels in a circle of radius 1cm
-around the center of the SLM. This setup actually "disables" the pixels which
-are not hit by the laser beam for any phase retrieval algorithm. Alternatively
-one could enlarge the laser beam (which requires some optical gear). To keep the
-optics simple we decided to reflect our setup with only partial coverage of the
-SLM. This behavior can be changed at any point by changing the ``amp_mask``
+is actually hit by the laser beam. To keep the
+optics simple we decided to reflect our setup with only partial,circular, coverage of the
+SLM by the laser. This behavior can be changed at any point by changing the ``amp_mask``
 variable in the ``mask_designer/experimental_setup.py`` script.
 
 For illustrative purposes, here an image of the part of the SLM that is hit by
@@ -310,6 +312,17 @@ You can exit the virtual environment by running ``deactivate``.
 Lens examples
 ^^^^^^^^^^^^^
 
+GS
+``````````
+
+This example script showcases the Gerchberg-Saxton algorithm implemented in
+Neural Holography. First, the simulate results of the phase and amplitude at
+both the SLM and the target plane are shown. Then, the phase mask is programmed
+onto the SLM and one can observe the resulting using the camera. Note that, the
+Neural Holography code is actually working in a lensless setting. After the
+iterative optimization, the phase mask is transformed to the lens setting using
+the appropriate method in ``mask_designer/transform_fields.py``.
+
 .. code-block:: sh
 
    python examples/lens/run_gs.py --help
@@ -323,9 +336,38 @@ Lens examples
      --iterations INTEGER        Number of iterations to run.  [default: 500]
      --help                      Show this message and exit.
 
+Holoeye
+``````````
+
+This example script loads a phase mask computed with Holoeye's SLM Pattern
+Generator and again shows first the simulated results and then programs it onto
+the SLM.
+
 .. code-block:: sh
    
    python examples/lens/run_holoeye.py
+
+SGD using CITL
+````````````````
+
+The CITL aspect makes this example script by far the most challenging one. At
+it's current state it isn't even working properly.
+
+Though the main ideas are fairly simple. First, normal SGD is used to compute a
+"warm start" phase mask which works just fine. Then, the script attempts to
+perform a calibration step which at the moment fails more often then not. It
+consists of loading a phase mask which corresponds to a grid of dots which
+should then be detected by a blob detector after applying several filters.
+Knowing the real center points of those dots and the ones detected by the blob
+detector distortions etc. can be corrected for. Next, the actually CITL is
+carried out. Instead of using SGD with simulated results in the computation of
+the loss and hence the gradients, those are computed from the actual amplitude
+pattern captured using the camera. At the moment, those gradients are ``None``
+and hence no real progress is made by using the CITL at all. This is a bug which
+needs fixing.
+
+Note that inside ``citl/snapshots`` intermediate results are saved as images,
+both captures and simulations. This directory is emptied at each run of the script.
 
 .. code-block:: sh
    
@@ -352,6 +394,12 @@ Lens examples
                                      10]
      --help                          Show this message and exit.
 
+SGD using waveprop
+```````````````````
+
+Similar to standard SGD, but uses the waveprop library for propagation. This
+changes the setting from lensless to lensed throughout the entire script and
+hence no transformation in needed at the end.
 
 .. code-block:: sh
    
@@ -368,6 +416,13 @@ Lens examples
                                  amplitude.  [default: 640, 880]
      --iterations INTEGER        Number of iterations to run.  [default: 500]
      --help                      Show this message and exit.
+
+SGD using Neural Holography's ASM
+```````````````````````````````````
+
+This example script uses the ASM implementation in Neural Holography which
+assumes no lenses. Thus, an adaquate transformation is needed after the
+optimization finished in order to be compatible with our physical setup.
 
 .. code-block:: sh
    
@@ -388,6 +443,12 @@ Lens examples
 Lensless examples
 ^^^^^^^^^^^^^^^^^
 
+GS
+````````````````````````
+
+The overall structure is the same, but the here we can use the resulting phase
+mask directly without applying any transformations.
+
 .. code-block:: sh
    
    python examples/lensless/run_gs.py --help
@@ -404,6 +465,12 @@ Lensless examples
      --iterations INTEGER        Number of iterations to run.  [default: 500]
      --help                      Show this message and exit.
 
+Holoeye
+````````````````````
+
+The only difference to the lensed version is that the resulting phase mask needs
+transforming to the lensless setting for it to be compatible.
+
 .. code-block:: sh
 
    python examples/lensless/run_holoeye.py --help
@@ -415,7 +482,13 @@ Lensless examples
      --prop_distance FLOAT  The propagation distance of the light in meters.
                             [default: 0.275]
      --help                 Show this message and exit.
-   
+
+SGD using waveprop
+````````````````````````
+
+Same goes for this script.
+
+
 .. code-block:: sh
    
    python examples/lensless/run_sgd_waveprop.py --help
@@ -431,6 +504,11 @@ Lensless examples
                                  amplitude.  [default: 640, 880]
      --iterations INTEGER        Number of iterations to run.  [default: 500]
      --help                      Show this message and exit.
+
+SGD using Neural Holography's ASM
+````````````````````````````````````
+
+Here on the other hand no transformation is needed.
 
 .. code-block:: sh
    
@@ -454,7 +532,14 @@ Camera example
 ^^^^^^^^^^^^^^
 
 This file illustrates how a camera, here the ``IDSCamera``, is instantiated and
-used to take a single image. The resulting image is then plotted to the screen.
+used to take a images. The resulting images are then plotted to the screen.
+
+First the ``exposure time`` ia changed and then :math:`4` images are taken in
+the bunch mode.
+
+In the second set of images the same is done, but instead the images are
+automatically clipped and scaled to match the SLM shape which comes in handy in
+the CITL approach for example.
 
 .. code-block:: sh
 
@@ -462,6 +547,9 @@ used to take a single image. The resulting image is then plotted to the screen.
 
 Aperture examples
 ^^^^^^^^^^^^^^^^^
+
+Setting an aperture
+````````````````````````````````````
 
 To set a defined aperture shape, check out the following script:
 
@@ -501,6 +589,9 @@ For a square aperture on the RGB device with a side length of 2 cells:
 
 You can preview an aperture with the following script. Note that it should be run on a machine with
 plotting capabilities, i.e. with ``matplotlib``.
+
+Plotting an aperture
+````````````````````````````````````
 
 .. code-block:: sh
 
@@ -552,11 +643,28 @@ that are accessible throughout the whole code base.
 Issues
 ------
 
-Currently, we aren't aware of any issues. If you should find any, please let us know.
+Here, we list all the features and script that are currently known to be buggy:
+
+1. ``examples/lens/run_sgd_citl.py``: The calibration is often failing and,
+   hence, needs some fine tuning. Maybe how we handle th 0th order is too
+   aggressive. Additionally, the
+   CITL is not progressing because the gradient computed using the captured
+   images are ``None`` for an unknown reason.
+2. Fix circular imports that require to import in the middle of some scripts
+3. Support/fix more methods from wavprop in ``mask_designer/simulated_prop.py``.
+4. Some simulation results seem stretched in x direction compared to images.
 
 Future work
 -----------
 
 Here, we list features and directions we want to explore in future work.
 
-1. Add support for the Raspberry Pi HQ Camera
+1. Add parameter for target amp image in example scripts.
+2. Add support for the Raspberry Pi HQ Camera.
+3. Add Tests.
+4. Host documentation on `ReadTheDocs <https://readthedocs.org/>`_.
+5. Use own dataloader.
+6. Clean up code structure, break ties with Neural Holography code.
+7. Get rid of 4D data structure ([None, None, :, :] etc.).
+8. (Fix parametric model of propagation).
+9. (Add DPAC algo back again and fix it: https://dl.acm.org/doi/10.1145/3072959.3073624).

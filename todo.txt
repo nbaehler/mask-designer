@@ -1,39 +1,10 @@
-Must-have
+TODO
 ---------
-Code:
-- Fine tune calibration parameters
-- Fix the bug in the CITL SGD
-- Add docstrings and comments
+- Add doc strings and comments
 - Clean up todos etc.
-- Fix circular imports
 - -> change branch of slm-controller to master
-
-Documentation:
-- Extend with final setup, write down distances etc. -> important to right, lenses, distances, etc.
 - Update all the function names and interfaces
-- Add expected results of different algos, simulated and photos
-- How do you save a pattern in Pattern Generator and IDS
-- Adapt to lightweight CITL
-- GIF of SGD phase and simulation
-- Is beam after concave lens diverging or less converging? -> diverging adapt
-
-Nice-to-have
-------------
-Code:
-- Enable waveprop propagator (done?)
-- Tests
-- Get rid of [None, None, :, :] etc.
-- Use own dataloader
-
-Documentation:
-
-Future
-------
-Code:
-- Parametric model of propagation, fix
-- Add Raspberry Pi cam
-- clean up code structure
-- DPAC algo: https://dl.acm.org/doi/10.1145/3072959.3073624
-
-Documentation:
-
+- Reread
+- Description for examples
+- Only phase slms here
+- We propagate field technically.

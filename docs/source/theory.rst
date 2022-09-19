@@ -81,11 +81,6 @@ on those devices. This problem is commonly called phase retrieval.
 Phase retrieval
 ^^^^^^^^^^^^^^^
 
-
-.. TODO only phase slms?
-
-
-
 This package is intended to provide different approaches to the inverse problem called phase
 retrieval, i.e. mask design for phase SLMs. So concretely, those algorithms aim to
 compute a phase mask that can be set on a SLM such that a given target image is
@@ -118,6 +113,29 @@ plane where one can observe the resulting image.
    :align: center
    :alt: Holoeye logo propagated
 
+Above results were computed using the Holoeye software. But when using SGD from
+Neural Holography for example one can observe the incremental progress of the
+optimization. Here an example of how the phase mask evolves for a lensless
+setting in :math:`200` iterations.
+
+.. image:: gifs/lensless_phase.gif
+   :target: gifs/lensless_phase.gif
+   :align: center
+   :alt: Phase
+
+And here the corresponding simulated resulting amplitude pattern at the target plane.
+
+.. image:: gifs/lensless_sim.gif
+   :target: gifs/lensless_sim.gif
+   :align: center
+   :alt: Amplitude
+
+Note the difference to a setting with a lens.
+
+.. image:: gifs/lens_sim.gif
+   :target: gifs/lens_sim.gif
+   :align: center
+   :alt: Amplitude
 
 To interact and control such SLM devices this package depends on a different
 package `slm-controller <https://github.com/ebezzam/slm-controller>`_ which is
@@ -225,14 +243,12 @@ about. Generally speaking, you require fewer iterations and hence get some speed
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 CITL adds physical propagation and the measurement of those results into the
-game. The idea is to compute a phase mask (for example with SGD), propagate
-it physically using a SLM, then measuring the resulting amplitudes on the target
-plane using a camera and finally using those observations to improve the phase
-map further before repeating these steps. So this approach is iterative.
-Additionally, it is technically the most challenging one. But as shown in the Neural
-Holography paper it performs better than all the other methods. At the current
-state of the project. the training of the CITL is functional but more work needs to be done in
-order to make it truly useable and testable.
+game. The idea is to replace the simulated results of the SGD by real measurement of the resulting amplitudes on the target
+plane using a camera and finally using those to compute the loss
+and update the phase mask. It is useful wo "warm start" the process by first
+computing a phase mask with the SGD and then using the CITL to improve the
+latter even further. Note that this method is technically the most challenging one. But as shown in the Neural
+Holography paper it performs better than all the other methods.
 
 Typical interactions between software and hardware
 --------------------------------------------------
@@ -317,12 +333,6 @@ summarize, we have those differences in propagation:
    :align: center
    :alt: Propagation
 
-
-
-.. TODO above, we propagate the field not only the phase mask
-
-
-
 Thus for the ``same target amplitude`` we obtain ``different phase maps`` where the
 difference is not explained with numerical variations.
 
@@ -374,10 +384,7 @@ as desired. In diagrammatic form we have the following situation:
 
 
 Both these transformations are implemented in
-``mask_designer/transform_fields.py``. Note that the wrapper
-``mask_designer/wrapper.py`` provides interfacing methods for Neural Holography phase retrieval
-algorithms that also handle the transformation to our setup which includes a
-convex lens.
+``mask_designer/transform_fields.py``.
 
 References
 ----------
