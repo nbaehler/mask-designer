@@ -2,7 +2,6 @@ TODO
 ---------
 - Add doc strings and comments
 - Clean up todos etc.
-- -> change branch of slm-controller to master
 - Update all the function names and interfaces
 - Reread
 - Description for examples
