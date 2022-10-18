@@ -142,7 +142,7 @@ def waveprop_asm_np(field, prop_distance, wavelength, pixel_pitch):
 
 def waveprop_fft_di(field, prop_distance, wavelength, pixel_pitch):
     """
-    _summary_ #TODO add those summaries
+    Fast Fourier Transform direct integration using waveprop.
 
     :param field: The field to be propagated
     :type field: torch.Tensor
@@ -164,7 +164,7 @@ def waveprop_fft_di(field, prop_distance, wavelength, pixel_pitch):
 
 def waveprop_direct_integration(field, prop_distance, wavelength, pixel_pitch):
     """
-    _summary_
+    Direct integration using waveprop.
 
     :param field: The field to be propagated
     :type field: torch.Tensor
@@ -188,7 +188,7 @@ def waveprop_direct_integration(field, prop_distance, wavelength, pixel_pitch):
 
 def waveprop_fresnel_one_step(field, prop_distance, wavelength, pixel_pitch):
     """
-    _summary_
+    Fresnel numerical computation with one FFT using waveprop.
 
     :param field: The field to be propagated
     :type field: torch.Tensor
@@ -212,7 +212,7 @@ def waveprop_fresnel_one_step(field, prop_distance, wavelength, pixel_pitch):
 
 def waveprop_fresnel_two_step(field, prop_distance, wavelength, pixel_pitch):
     """
-    _summary_
+    Fresnel numerical computation with two FFTs using waveprop.
 
     :param field: The field to be propagated
     :type field: torch.Tensor
@@ -236,7 +236,7 @@ def waveprop_fresnel_two_step(field, prop_distance, wavelength, pixel_pitch):
 
 def waveprop_fresnel_multi_step(field, prop_distance, wavelength, pixel_pitch):
     """
-    _summary_
+    Fresnel numerical computation with multiple FFTs using waveprop.
 
     :param field: The field to be propagated
     :type field: torch.Tensor
@@ -264,8 +264,8 @@ def waveprop_fresnel_multi_step(field, prop_distance, wavelength, pixel_pitch):
 
 def waveprop_fresnel_conv(field, prop_distance, wavelength, pixel_pitch, device):
     """
-    _summary_
-
+    Fresnel numerical computation via convolution with two FFTs using waveprop.
+    
     :param field: The field to be propagated
     :type field: torch.Tensor
     :param prop_distance: The propagation distance from the SLM to the target plane
@@ -288,7 +288,7 @@ def waveprop_fresnel_conv(field, prop_distance, wavelength, pixel_pitch, device)
 
 def waveprop_shifted_fresnel(field, prop_distance, wavelength, pixel_pitch):
     """
-    _summary_
+    Shifted Fresnel numerical computation using waveprop.
 
     :param field: The field to be propagated
     :type field: torch.Tensor
@@ -312,7 +312,8 @@ def waveprop_shifted_fresnel(field, prop_distance, wavelength, pixel_pitch):
 
 def waveprop_spherical(field, prop_distance, wavelength, pixel_pitch, device):
     """
-    _summary_
+    Propagation via spherical wavefront using waveprop.
+
 
     :param field: The field to be propagated
     :type field: torch.Tensor
@@ -335,6 +336,12 @@ def waveprop_spherical(field, prop_distance, wavelength, pixel_pitch, device):
 
 
 def plot_mask(mask):
+    """
+    Plot the mask to the screen.
+
+    :param mask: The mask to plot
+    :type mask: ndarray
+    """
     # Plot
     _, ax = plt.subplots()
     ax.imshow(mask, cmap="gray")

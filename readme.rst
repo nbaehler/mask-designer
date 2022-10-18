@@ -172,7 +172,7 @@ As mentioned earlier, cameras play a crucial role in the CITL-approach. Hence, a
 interface for such devices is needed. For now, the project only supports one
 real camera, the `Thorlabs
 DCC3260M <https://www.thorlabs.com/thorproduct.cfm?partnumber=DCC3260M>`_ and a
-dummy camera that either simply "takes" black snapshots or returns a image
+dummy camera that either simply "takes" white snapshots or returns a image
 which was set previously. The later device can be useful during
 development. In the future this list is going to be extended (for example with
 the `Raspberry Pi HQ Camera <https://www.adafruit.com/product/4561>`_), but here
@@ -181,7 +181,7 @@ is its current state.
 Supported cameras:
 
 
-* Dummy camera (artificial, returns synthetic pitch black or fixed images)
+* Dummy camera (artificial, returns synthetic white or fixed images)
 * `Thorlabs DCC3260M <https://www.thorlabs.com/thorproduct.cfm?partnumber=DCC3260M>`_
 
 Experimental setup
@@ -421,7 +421,7 @@ SGD using Neural Holography's ASM
 ```````````````````````````````````
 
 This example script uses the ASM implementation in Neural Holography which
-assumes no lenses. Thus, an adaquate transformation is needed after the
+assumes no lenses. Thus, an adequate transformation is needed after the
 optimization finished in order to be compatible with our physical setup.
 
 .. code-block:: sh

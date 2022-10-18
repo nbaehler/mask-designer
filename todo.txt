@@ -1,9 +1,0 @@
-TODO
----------
-- Add doc strings and comments
-- Clean up todos etc.
-- Update all the function names and interfaces
-- Reread
-- Description for examples
-- Only phase slms here
-- We propagate field technically.

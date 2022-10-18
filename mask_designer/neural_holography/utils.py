@@ -199,15 +199,15 @@ def pad_image(field, target_shape, pytorch=True, stacked_complex=True, padval=0,
     Padding is done such that when used with crop_image(), odd and even dimensions are
     handled correctly to properly undo the padding.
 
-    field: the field to be padded. May have as many leading dimensions as necessary
+    :param field: the field to be padded. May have as many leading dimensions as necessary
         (e.g., batch or channel dimensions)
-    target_shape: the 2D target output dimensions. If any dimensions are smaller
+    :param target_shape: the 2D target output dimensions. If any dimensions are smaller
         than field, no padding is applied
-    pytorch: if True, uses torch functions, if False, uses numpy
-    stacked_complex: for pytorch=True, indicates that field has a final dimension
+    :param pytorch: if True, uses torch functions, if False, uses numpy
+    :param stacked_complex: for pytorch=True, indicates that field has a final dimension
         representing real and imag
-    padval: the real number value to pad by
-    mode: padding mode for numpy or torch
+    :param padval: the real number value to pad by
+    :param mode: padding mode for numpy or torch
     """
     if pytorch and stacked_complex:
         size_diff = np.array(target_shape) - np.array(field.shape[-3:-1])

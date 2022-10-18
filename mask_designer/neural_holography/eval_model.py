@@ -14,7 +14,6 @@ Copyright (c) 2020, Stanford University
 All rights reserved.
 
 Refer to the LICENSE file for more information.
------
 
 $ python eval.py --channel=[0 or 1 or 2 or 3] --root_path=[some path]
 

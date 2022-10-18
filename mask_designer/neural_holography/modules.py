@@ -59,8 +59,6 @@ from slm_controller.hardware import SLMParam, slm_devices
 class GS(nn.Module):
     """Classical Gerchberg-Saxton algorithm
 
-    Class initialization parameters # TODO fix
-    -------------------------------
     :param prop_distance: propagation dist between SLM and target, in meters
     :param wavelength: the wavelength of interest, in meters
     :param feature_size: the SLM pixel pitch, in meters
@@ -71,16 +69,14 @@ class GS(nn.Module):
     :param propagator: propagator instance (function / pytorch module)
     :param device: torch.device
 
-    Usage # TODO fix
-    -----
     Functions as a pytorch module:
 
     >>> gs = GS(...)
     >>> final_phase = gs(target_amp, init_phase)
 
-    target_amp: amplitude at the target plane, with dimensions [batch, 1, height, width]
-    init_phase: initial guess of phase of phase-only slm
-    final_phase: optimized phase-only representation at SLM plane, same dimensions
+    :param target_amp: amplitude at the target plane, with dimensions [batch, 1, height, width]
+    :param init_phase: initial guess of phase of phase-only slm
+    :var final_phase: optimized phase-only representation at SLM plane, same dimensions
     """
 
     def __init__(
@@ -150,8 +146,6 @@ class GS(nn.Module):
 class SGD(nn.Module):
     """Proposed Stochastic Gradient Descent Algorithm using Auto-diff Function of PyTorch
 
-    Class initialization parameters # TODO fix
-    -------------------------------
     :param prop_distance: propagation dist between SLM and target, in meters
     :param wavelength: the wavelength of interest, in meters
     :param feature_size: the SLM pixel pitch, in meters
@@ -167,16 +161,14 @@ class SGD(nn.Module):
     :param writer: SummaryWrite instance for tensorboard
     :param device: torch.device
 
-    Usage # TODO fix
-    -----
     Functions as a pytorch module:
 
     >>> sgd = SGD(...)
     >>> final_phase = sgd(target_amp, init_phase)
 
-    target_amp: amplitude at the target plane, with dimensions [batch, 1, height, width]
-    init_phase: initial guess of phase of phase-only slm
-    final_phase: optimized phase-only representation at SLM plane, same dimensions
+    :param target_amp: amplitude at the target plane, with dimensions [batch, 1, height, width]
+    :param init_phase: initial guess of phase of phase-only slm
+    :var final_phase: optimized phase-only representation at SLM plane, same dimensions
     """
 
     def __init__(
@@ -254,8 +246,6 @@ class PropPhysical(nn.Module):
     and capture the diffraction image at the target plane,
     and then return warped image using pre-calibrated homography from instantiation.
 
-    Class initialization parameters # TODO fix
-    -------------------------------
     :param channel:
     :param slm_settle_time:
     :param roi_res:
@@ -265,15 +255,13 @@ class PropPhysical(nn.Module):
     :param pattern_path:
     :param calibration_preview:
 
-    Usage # TODO fix
-    -----
     Functions as a pytorch module:
 
     >>> prop_physical = PropPhysical(...)
     >>> captured_amp = prop_physical(slm_phase)
 
-    slm_phase: phase at the SLM plane, with dimensions [batch, 1, height, width]
-    captured_amp: amplitude at the target plane, with dimensions [batch, 1, height, width]
+    :param slm_phase: phase at the SLM plane, with dimensions [batch, 1, height, width]
+    :var captured_amp: amplitude at the target plane, with dimensions [batch, 1, height, width]
     """
 
     def __init__(
@@ -403,11 +391,11 @@ class PropPhysical(nn.Module):
 
     def capture_linear_intensity(self, slm_phase, num_grab_images):
         """
-        TODO complete doc
+        Capture images and average them. Then, crop the image to the ROI and apply perspective transform.
 
-        :param slm_phase:
-        :param num_grab_images:
-        :return:
+        :param slm_phase: phase at the SLM plane.
+        :param num_grab_images: number of images to average.
+        :return: Averaged captured image after perspective transform and crop.
         """
 
         captured_intensity_raw_avg = self._capture_and_average_intensities(

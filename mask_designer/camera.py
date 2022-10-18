@@ -101,7 +101,7 @@ class Camera:
 
         :param correction: New image used for correction, defaults to np.zeros(cam_devices[cam_device][CamParam.SHAPE], dtype=np.uint8)
         :type correction: ndarray, optional
-        :raises ValueError: _description_ #TODO improve
+        :raises ValueError: When the correction image is not of the same shape as the camera image.
         """
         if correction.shape != cam_devices[CamDevices.DUMMY.value][CamParam.SHAPE]:
             raise ValueError("The correction must have the same shape as the camera image")
@@ -112,22 +112,20 @@ class Camera:
 class DummyCamera(Camera):
     def __init__(self):
         """
-        Initializes the dummy camera returning only black images. # TODO update comments/documentation
+        Initializes the dummy camera returning only white images or always a fixed
+        image that can be set using the `use_image` method.
         """
         super().__init__()
 
         # Set height and width
         self._height, self._width = cam_devices[CamDevices.DUMMY.value][CamParam.SHAPE]
 
-        # Set frame count and exposure time
+        # Set and exposure time and correction
         self.set_exposure_time()
-
         self.set_correction()
 
         # Default image is just a white image
-        self._image = (
-            np.ones((self._height, self._width), dtype=np.uint8) * 255
-        )  # TODO change comments/documentation to white image (all 255)
+        self._image = np.ones((self._height, self._width), dtype=np.uint8) * 255
 
     def set_exposure_time(self, time=np.pi):
         """
@@ -138,7 +136,13 @@ class DummyCamera(Camera):
         """
         self._exposure_time = time
 
-    def use_image(self, path="citl/calibration/cali.png"):  # TODO documentation
+    def use_image(self, path="citl/calibration/cali.png"):
+        """
+        Use an image as the resulting image of the capture of the dummy camera.
+
+        :param path: Path to the image, defaults to "citl/calibration/cali.png"
+        :type path: str, optional
+        """
         image = load_image(path) - self._correction
         self._image = scale_image_to_shape(image, (self._height, self._width))
 
@@ -166,7 +170,7 @@ class DummyCamera(Camera):
 
 
 class IDSCamera(Camera):
-    # \file    mainwindow.py # TODO inspired by this, license??
+    # \file    mainwindow.py
     # \author  IDS Imaging Development Systems GmbH
     # \date    2021-01-15
     # \since   1.2.0
@@ -424,8 +428,8 @@ def create(device_key):
 
     :param device_key: Option from `CamDevices`.
     :type device_key: str
-    :return: _description_ #TODO improve
-    :rtype: _type_
+    :return: A `Camera` object.
+    :rtype: Camera
     """
     assert device_key in CamDevices.values()
 

@@ -139,7 +139,7 @@ citl/*
 !citl/data
 
 # Documentation
-docs/source/_*
+docs/source/_build
 
 .vscode
 .dccache
