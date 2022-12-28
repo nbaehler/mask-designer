@@ -2,8 +2,8 @@ mask-designer
 =============
 
 .. image:: https://readthedocs.org/projects/mask-designer/badge/?version=latest
-    :target: https://mask-designer.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
+   :target: https://mask-designer.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 Collection of techniques to design mask patterns, e.g. fixed apertures for
 amplitude masks and perform phase retrieval for determining a phase mask under an
