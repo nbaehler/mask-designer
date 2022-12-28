@@ -1,9 +1,9 @@
-mask-designer
-=============
-
 .. image:: https://readthedocs.org/projects/mask-designer/badge/?version=latest
    :target: https://mask-designer.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
+
+mask-designer
+=============
 
 Collection of techniques to design mask patterns, e.g. fixed apertures for
 amplitude masks and perform phase retrieval for determining a phase mask under an
@@ -34,11 +34,6 @@ Finally, utility functions are provided so that masks designed by Holoeye's
 interchangeably for different setups (as Holoeye and Neural Holography assume
 different physical setups).
 
-If you wish to learn more about the theory behind this repository, the evolution
-of our experimental setup, etc. please
-refer to the documentation hosted on readthedocs at `mask-designer <https://mask-designer.readthedocs.io/en/latest/>`_.
-
-
 Below is a schematic of how ``mask-designer`` would typically interact with
 other software and hardware components.
 
@@ -50,6 +45,13 @@ other software and hardware components.
 The interactions marked with *CITL* are only necessary for the CITL approach.
 You can find animated gif-files showing those interactions in more details in
 the documentation.
+
+Documentation
+-------------
+
+If you wish to learn more about the theory behind this repository, the evolution
+of our experimental setup, etc. please refer to the documentation hosted on
+readthedocs at `mask-designer <https://mask-designer.readthedocs.io/en/latest/>`_.
 
 Installation
 ------------
