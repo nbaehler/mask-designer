@@ -1,6 +1,10 @@
 mask-designer
 =============
 
+.. image:: https://readthedocs.org/projects/mask-designer/badge/?version=latest
+    :target: https://mask-designer.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 Collection of techniques to design mask patterns, e.g. fixed apertures for
 amplitude masks and perform phase retrieval for determining a phase mask under an
 incoherent light source.
@@ -32,7 +36,7 @@ different physical setups).
 
 If you wish to learn more about the theory behind this repository, the evolution
 of our experimental setup, etc. please
-refer to the documentation located at ``docs/``.
+refer to the documentation hosted on readthedocs at `mask-designer <https://mask-designer.readthedocs.io/en/latest/>`_.
 
 
 Below is a schematic of how ``mask-designer`` would typically interact with
