@@ -16,7 +16,7 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
-    ],  # TODO compare to slm-controller
+    ],
     python_requires=">=3.9",
     install_requires=[
         "requests",

@@ -36,7 +36,7 @@ refer to the documentation located at ``docs/``.
 Below is a schematic of how ``mask-designer`` would typically interact with
 other software and hardware components.
 
-.. image:: images/structure.svg
+.. image:: docs/source/images/structure.svg
    :target: images/structure.svg
    :align: center
    :alt: Structure
