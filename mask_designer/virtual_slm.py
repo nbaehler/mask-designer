@@ -70,10 +70,10 @@ class VirtualSLM:
         :param physical_coord: Physical coordinates to get/set VirtualSLM values.
         :type physical_coord: int, float, slice tuples
         :param value: [Optional] values to set, otherwise return values at
-            specified coordinates., defaults to None #TODO improve
+            specified coordinates. Defaults to None
         :type value: int, float, :py:class:`~numpy.ndarray`, optional
-        :return: _description_ #TODO improve
-        :rtype: _type_
+        :return: If getter is used, values at those coordinates
+        :rtype: ndarray
         """
         idx = prepare_index_vals(physical_coord, self._pixel_pitch)
         if value is None:
@@ -95,8 +95,8 @@ class VirtualSLM:
 
         :param show_tick_labels: Whether to show cell number along x- and y-axis, defaults to False
         :type show_tick_labels: bool, optional
-        :return: _description_ # TODO: add description
-        :rtype: _type_
+        :return: The axes of the plot.
+        :rtype: Axes
         """
         # prepare mask data for `imshow`, expects the input data array size to be (width, height, 3)
         Z = self.values.transpose(1, 2, 0)

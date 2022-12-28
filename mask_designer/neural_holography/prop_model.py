@@ -224,35 +224,31 @@ class PropModel(nn.Module):
     """Parameterized light transport model, propagates a SLM phase with multipart propagation, including
     learnable Zernike phase, source amplitude, and phase LUT corrections, etc....
 
-    Class initialization parameters # TODO fix
-    -------------------------------
-    distance: propagation dist between SLM and target, in meters, default 0.1
-    wavelength: the wavelength of interest, in meters, default 520e-9
-    feature_size: the SLM pixel pitch, in meters, default 6.4e-6
-    num_coeffs: number of Zernike basis function coeffs to learn, default 15
-    num_layers: number of layers in phase LUT correction convnet, default 5
-    num_features: number of features per layer of LUT convnet, default 32
-    num_output_feat: number of "attention" layers, per-pixel parameters, set 0 if not using. default 0
-    num_gaussians: number of Gaussians to use in source amp model, default 3
-    init_sigma: initial spread of Gaussians, in pixels, default 100
-    learn_dist: if True, makes distance a learnable parameter, default False
-    init_coeffs: initial value for Zernike coefficients
-    use_conv1d_mlp: if False, disable phase LUT correction, default True
-    norm: norm (e.g., nn.BatchNorm2d) to use in LUT convnet, default None
-    proptype: chooses the propagation operator ('ASM': propagation_ASM,
+    :param distance: propagation dist between SLM and target, in meters, default 0.1
+    :param wavelength: the wavelength of interest, in meters, default 520e-9
+    :param feature_size: the SLM pixel pitch, in meters, default 6.4e-6
+    :param num_coeffs: number of Zernike basis function coeffs to learn, default 15
+    :param num_layers: number of layers in phase LUT correction convnet, default 5
+    :param num_features: number of features per layer of LUT convnet, default 32
+    :param num_output_feat: number of "attention" layers, per-pixel parameters, set 0 if not using. default 0
+    :param num_gaussians: number of Gaussians to use in source amp model, default 3
+    :param init_sigma: initial spread of Gaussians, in pixels, default 100
+    :param learn_dist: if True, makes distance a learnable parameter, default False
+    :param init_coeffs: initial value for Zernike coefficients
+    :param use_conv1d_mlp: if False, disable phase LUT correction, default True
+    :param norm: norm (e.g., nn.BatchNorm2d) to use in LUT convnet, default None
+    :param proptype: chooses the propagation operator ('ASM': propagation_ASM,
         'fresnel': propagation_fresnel). Default ASM.
-    linear_conv: if True, pads for linear conv for propagation, default True
+    :param linear_conv: if True, pads for linear conv for propagation, default True
 
-    Usage # TODO fix
-    -----
     Functions as a pytorch module:
 
     >>> prop_model = PropModel(...)
     >>> output_complex = prop_model(slm_phase)
 
-    slm_phase: encoded phase-only representation at SLM plane , with dimensions
+    :param slm_phase: encoded phase-only representation at SLM plane , with dimensions
         [batch, 1, height, width]
-    output_complex: complex field at the target plane, with dimensions [batch,
+    :var output_complex: complex field at the target plane, with dimensions [batch,
         1, height, width, 2], where the final dimension is stacked real and
         imaginary values
     """

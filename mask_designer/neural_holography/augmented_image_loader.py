@@ -29,45 +29,41 @@ from skimage.transform import resize
 class ImageLoader:
     """Loads images a folder with augmentation for generator training
 
-    Class initialization parameters # TODO fix
-    -------------------------------
-    data_path: folder containing images
-    channel: color channel to load (0, 1, 2 for R, G, B, None for all 3),
+    :param data_path: folder containing images
+    :param channel: color channel to load (0, 1, 2 for R, G, B, None for all 3),
         default None
-    batch_size: number of images to pass each iteration, default 1
-    image_res: 2d dimensions to pad/crop the image to for final output, default
+    :param batch_size: number of images to pass each iteration, default 1
+    :param image_res: 2d dimensions to pad/crop the image to for final output, default
         (1080, 1920)
-    homography_res: 2d dims to scale the image to before final crop to image_res
+    :param homography_res: 2d dims to scale the image to before final crop to image_res
         for consistent resolutions (crops to preserve input aspect ratio),
         default (880, 1600)
-    shuffle: True to randomize image order across batches, default True
-    vertical_flips: True to augment with vertical flipping, default True
-    horizontal_flips: True to augment with horizontal flipping, default True
-    idx_subset: for the iterator, skip all but these images. Given as a list of
+    :param shuffle: True to randomize image order across batches, default True
+    :param vertical_flips: True to augment with vertical flipping, default True
+    :param horizontal_flips: True to augment with horizontal flipping, default True
+    :param idx_subset: for the iterator, skip all but these images. Given as a list of
         indices corresponding to sorted filename order. Forces shuffle=False and
         batch_size=1. Defaults to None to not subset at all.
-    crop_to_homography: if True, only crops the image instead of scaling to get
+    :param crop_to_homography: if True, only crops the image instead of scaling to get
         to target homography resolution, default False
 
-    Usage # TODO fix
-    -----
     To be used as an iterator:
 
     >>> image_loader = ImageLoader(...)
     >>> for ims, input_resolutions, filenames in image_loader:
     >>>     ...
 
-    ims: images in the batch after transformation and conversion to linear
+    :var ims: images in the batch after transformation and conversion to linear
         amplitude, with dimensions [batch, channel, height, width]
-    input_resolutions: list of length batch_size containing tuples of the
+    :var input_resolutions: list of length batch_size containing tuples of the
         original image height/width before scaling/cropping
-    filenames: list of input image filenames, without extension
+    :var filenames: list of input image filenames, without extension
 
     Alternatively, can be used to manually load a single image:
 
     >>> ims, input_resolutions, filenames = image_loader.load_image(idx)
 
-    idx: the index for the image to load, indices are alphabetical based on the
+    :param idx: the index for the image to load, indices are alphabetical based on the
         file path.
     """
 

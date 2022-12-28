@@ -11,8 +11,10 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
 
+.. * :ref:`search`
+
+-------------------------------
 
 .. include:: ../../README.rst
 
@@ -23,9 +25,9 @@ Indices and tables
    :caption: Contents:
 
    example-results
-   theory
+   software-tips
    experimental-setup
-   software-tutorials
+   theory
    Modules <modules>
 
 

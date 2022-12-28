@@ -18,8 +18,8 @@ def _cell_slice(_slice, cell_m):
     :type _slice: slice
     :param cell_m: Dimension of cell in meters.
     :type cell_m: float
-    :return: _description_ # TODO add description
-    :rtype: _type_
+    :return: The new slice
+    :rtype: slice
     """
     start = None if _slice.start is None else _m_to_cell_idx(_slice.start, cell_m)
     stop = _m_to_cell_idx(_slice.stop, cell_m) if _slice.stop is not None else None
@@ -39,8 +39,8 @@ def _m_to_cell_idx(val, cell_m):
     :type val: float
     :param cell_m: Dimension of cell in meters.
     :type cell_m: float
-    :return: _description_ # TODO add description
-    :rtype: _type_
+    :return: The cell index.
+    :rtype: int
     """
     return int(val / cell_m)
 
@@ -57,11 +57,12 @@ def prepare_index_vals(key, pixel_pitch):
     :type key: int, float, slice, or list
     :param pixel_pitch: Pixel pitch (height, width) in meters.
     :type pixel_pitch: tuple(float)
-    :raises ValueError: _description_ # TODO add description
-    :raises NotImplementedError: _description_
-    :raises ValueError: _description_
-    :return: _description_
-    :rtype: _type_
+    :raises ValueError: If the key is of the wrong type.
+    :raises NotImplementedError: If key is of size 3, individual channels can't
+        be indexed.
+    :raises ValueError: If the key has the wrong dimensions.
+    :return: The new indexing object.
+    :rtype: tuple[slice, int] | tuple[slice, slice] | tuple[slice, ...]
     """
     if isinstance(key, (float, int)):
         idx = slice(None), _m_to_cell_idx(key, pixel_pitch[0])
@@ -101,11 +102,11 @@ def rgb2gray(rgb, weights=None):
 
     :param rgb: (N_channel, N_height, N_width) image.
     :type rgb: :py:class:`~numpy.ndarray`
-    :param weights: [Optional] (3,) weights to convert from RGB to grayscale.,
-        defaults to None # TODO improve description
+    :param weights: [Optional] (3,) weights to convert from RGB to grayscale.
+        Defaults to None
     :type weights: :py:class:`~numpy.ndarray`, optional
-    :return: _description_ # TODO add description
-    :rtype: _type_
+    :return: Grayscale array.
+    :rtype: ndarray
     """
     if weights is None:
         weights = np.array([0.299, 0.587, 0.144])
@@ -119,7 +120,7 @@ def load_image(path):
 
     :param path: The path to the image
     :type path: str
-    :raises ValueError: _description_ # TODO add description
+    :raises ValueError: If the pixel values of the image are floats.
     :return: The image
     :rtype: numpy.ndarray
     """

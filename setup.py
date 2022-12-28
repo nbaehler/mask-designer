@@ -15,7 +15,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Operating System :: OS Independent",
+        "Operating System :: Windows. See README for more information.",
     ],
     python_requires=">=3.9",
     install_requires=[

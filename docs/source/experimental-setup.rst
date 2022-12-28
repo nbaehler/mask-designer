@@ -67,25 +67,61 @@ Hence, one can derive a formula for :math:`b`.
 
 with :math:`a=200-c` and :math:`170 < c < 200`.
 
+Measurements
+^^^^^^^^^^^^
+
+Note that only the distances between the SLM, both lenses and the photo sensor
+do actually matter. Here rough measurements of the important distances are given.
+
+* SLM to convex lens: 2.5cm
+* Convex lens to concave lens (:math:`c`): 18cm
+* Concave lens to photo sensor (:math:`b`): 7cm
+
+Partial coverage of the SLM with the laser beam
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Another element which is important to account for is the portion of the SLM that
+is actually hit by the laser beam. Ideally, the laser beam would cover the
+entire SLM and hence all the pixels could be effectively used. But as in our
+case the circular laser beam does only hit pixels in a circle of radius 1cm
+around the center of the SLM. This setup actually "disables" the pixels which
+are not hit by the laser beam for any phase retrieval algorithm. Alternatively
+one could enlarge the laser beam (which requires some optical gear). To keep the
+optics simple we decided to reflect our setup with only partial coverage of the
+SLM. This behavior can be changed at any point by changing the ``amp_mask``
+variable in the ``mask_designer/experimental_setup.py`` script.
+
+For illustrative purposes, here an image of the part of the SLM that is hit by
+laser.
+
+.. image:: images/amp_mask.png
+   :target: images/amp_mask.png
+   :align: center
+   :alt: Amplitude mask
+
 Practical considerations
 ^^^^^^^^^^^^^^^^^^^^^^^^
-
-Add current measurements
+Now, some important details that can improve that quality of the setup. First,
+the Holoeye SLM has a preferred orientation.
 
 .. image:: images/slm_orientation.png
    :target: images/slm_orientation.png
    :align: center
    :alt: SLM Orientation
 
-.. image:: images/concave_lens.jpg
-   :target: images/concave_lens.jpg
-   :align: center
-   :alt: Concave Lens
+Additionally, both the lenses we used in our setup have one planar side. Those
+should both face each other, i.e the curved side of the convex lens should face
+the SLM and the curved side of the concave lens should face the camera.
 
 .. image:: images/convex_lens.jpg
    :target: images/convex_lens.jpg
    :align: center
    :alt: Convex Lens
+
+.. image:: images/concave_lens.jpg
+   :target: images/concave_lens.jpg
+   :align: center
+   :alt: Concave Lens
 
 
 Incremental development of final setup
