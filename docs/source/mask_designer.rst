@@ -5,6 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    mask_designer.misc
    mask_designer.neural_holography
@@ -91,7 +92,6 @@ mask\_designer.wrapper module
    :members:
    :undoc-members:
    :show-inheritance:
-
 
 Module contents
 ---------------

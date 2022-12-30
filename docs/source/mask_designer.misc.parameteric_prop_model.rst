@@ -36,7 +36,6 @@ mask\_designer.misc.parameteric\_prop\_model.sim\_prop\_citl\_pred module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 

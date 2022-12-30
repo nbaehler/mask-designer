@@ -12,7 +12,6 @@ mask\_designer.neural\_holography.pytorch\_prototyping.pytorch\_prototyping modu
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 
