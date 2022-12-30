@@ -645,6 +645,7 @@ that are accessible throughout the whole code base.
 #. Add to factory method ``create`` in ``mask_designer/camera.py`` for a
    conveniently one-liner to instantiate an object of the new camera.
 
+
 Issues
 ------
 
