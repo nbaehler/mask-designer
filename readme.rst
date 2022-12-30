@@ -272,7 +272,7 @@ uses the `Angular spectrum
 method <https://en.wikipedia.org/wiki/Angular_spectrum_method>`_ (ASM). Currently,
 we make use of the ASM implementation by Neural Holography. However we plan to
 replace this implementation with the
-`waveprop <https://github.com/ebezzam/waveprop>`_ library, which provides
+`waveprop <https://pypi.org/project/waveprop/>`_ library, which provides
 support for Fraunhofer, ASM, and other propagation techniques.
 
 
