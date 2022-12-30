@@ -5,7 +5,6 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
 
    mask_designer.misc.parameteric_prop_model
 
@@ -35,6 +34,7 @@ mask\_designer.misc.simulation\_playground module
    :members:
    :undoc-members:
    :show-inheritance:
+
 
 Module contents
 ---------------

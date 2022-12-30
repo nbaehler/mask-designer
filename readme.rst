@@ -667,9 +667,8 @@ Here, we list features and directions we want to explore in future work.
 1. Add parameter for target amp image in example scripts.
 2. Add support for the Raspberry Pi HQ Camera.
 3. Add Tests.
-4. Host documentation on `ReadTheDocs <https://readthedocs.org/>`_.
-5. Use own dataloader.
-6. Clean up code structure, break ties with Neural Holography code.
-7. Get rid of 4D data structure ([None, None, :, :] etc.).
-8. (Fix parametric model of propagation).
-9. (Add DPAC algo back again and fix it: https://dl.acm.org/doi/10.1145/3072959.3073624).
+4. Use own dataloader.
+5. Clean up code structure, break ties with Neural Holography code.
+6. Get rid of 4D data structure ([None, None, :, :] etc.).
+7. (Fix parametric model of propagation).
+8. (Add DPAC algo back again and fix it: https://dl.acm.org/doi/10.1145/3072959.3073624).

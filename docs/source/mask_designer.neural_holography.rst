@@ -5,7 +5,6 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
 
    mask_designer.neural_holography.pytorch_prototyping
 
@@ -91,6 +90,7 @@ mask\_designer.neural\_holography.utils\_tensorboard module
    :members:
    :undoc-members:
    :show-inheritance:
+
 
 Module contents
 ---------------
