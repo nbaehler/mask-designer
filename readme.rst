@@ -1,9 +1,9 @@
+mask-designer
+=============
+
 .. image:: https://readthedocs.org/projects/mask-designer/badge/?version=latest
    :target: https://mask-designer.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
-
-mask-designer
-=============
 
 Collection of techniques to design mask patterns, e.g. fixed apertures for
 amplitude masks and perform phase retrieval for determining a phase mask under an
@@ -12,7 +12,6 @@ incoherent light source.
 .. contents:: Table of Contents
    :depth: 5
    :local:
-.. :backlinks: none
 
 ------------------------
 
@@ -67,9 +66,9 @@ The script will:
 
 #. Create a Python3 virtual environment called ``mask_designer_env``.
 #. Install Python dependencies in the virtual environment.
-#. Install both `slm-controller <https://github.com/ebezzam/slm-controller>`_ and
-   `waveprop <https://github.com/ebezzam/waveprop>`_ in setuptools “development mode”
+#. Install `slm-controller <https://github.com/ebezzam/slm-controller>`_ in setuptools “development mode”
    from GitHub directly.
+#. Install `waveprop <https://pypi.org/project/waveprop/>`_ from PyPI.
 
 This project is using those two repositories to program SLMs after the
 phase mask has been computed and to simulate the light propagation which is
