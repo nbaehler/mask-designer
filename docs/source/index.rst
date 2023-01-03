@@ -16,7 +16,7 @@ Indices and tables
 
 -------------------------------
 
-include:: /../../README.rst
+include:: /../../README.rst .. TODO add back in
 
 
 .. toctree::
