@@ -16,7 +16,7 @@ Welcome to mask-designer's documentation!
 
 .. -------------------------------
 
-.. include:: /../../README.rst
+.. TODO include:: /../../README.rst
 
 .. toctree::
    :hidden:
