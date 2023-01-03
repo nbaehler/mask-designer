@@ -28,7 +28,8 @@ Indices and tables
    software-tips
    experimental-setup
    theory
-   Modules <modules>
+   .. Modules <modules>
+   .. TODO check autoapi
 
 
 
