@@ -5,16 +5,16 @@
 
 Welcome to mask-designer's documentation!
 =========================================
+.. TODO add this back in!
 
-Indices and tables
-------------------
+.. Indices and tables
+.. ------------------
 
-* :ref:`genindex`
-* :ref:`modindex`
-
+.. * :ref:`genindex`
+.. * :ref:`modindex`
 .. * :ref:`search`
 
--------------------------------
+.. -------------------------------
 
 .. include:: /../../README.rst
 
