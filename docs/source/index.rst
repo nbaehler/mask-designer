@@ -16,7 +16,7 @@ Indices and tables
 
 -------------------------------
 
-.. include:: /../../README.rst
+include:: /../../README.rst
 
 
 .. toctree::
@@ -28,8 +28,9 @@ Indices and tables
    software-tips
    experimental-setup
    theory
-   .. Modules <modules>
-   .. TODO check autoapi
+
+.. Modules <modules>
+.. TODO check autoapi
 
 
 

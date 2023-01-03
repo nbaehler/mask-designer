@@ -13,7 +13,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../../"))
+sys.path.insert(0, os.path.abspath("../../mask_designer"))
 
 
 # -- Project information -----------------------------------------------------
@@ -29,7 +29,7 @@ author = "Nicolas Bähler"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    # "sphinx.ext.autodoc",
+    # "sphinx.ext.autodoc", # TODO add back
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
     "sphinx_rtd_theme",
