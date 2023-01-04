@@ -272,7 +272,7 @@ uses the `Angular spectrum
 method <https://en.wikipedia.org/wiki/Angular_spectrum_method>`_ (ASM). Currently,
 we make use of the ASM implementation by Neural Holography. However we plan to
 replace this implementation with the
-`waveprop <https://github.com/ebezzam/waveprop>`_ library, which provides
+`waveprop <https://pypi.org/project/waveprop/>`_ library, which provides
 support for Fraunhofer, ASM, and other propagation techniques.
 
 
@@ -644,6 +644,7 @@ that are accessible throughout the whole code base.
    camera (set parameters, take images, etc.).
 #. Add to factory method ``create`` in ``mask_designer/camera.py`` for a
    conveniently one-liner to instantiate an object of the new camera.
+
 
 Issues
 ------

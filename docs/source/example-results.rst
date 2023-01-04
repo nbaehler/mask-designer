@@ -45,7 +45,7 @@ Holoeye
 ^^^^^^^
 
 .. code-block:: sh
-   
+
    python examples/lens/run_holoeye.py
 
 The simulated results should be similar to the following:
@@ -66,7 +66,7 @@ SGD using CITL
 ^^^^^^^^^^^^^^
 
 .. code-block:: sh
-   
+
    python examples/lens/run_sgd_citl.py
 
 Here is the simulated result of the "warm start" phase which only runs normal SGD.
