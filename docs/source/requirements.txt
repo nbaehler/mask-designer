@@ -5,7 +5,7 @@ torch
 click
 numpy
 waveprop
-matplotlibpi
+matplotlib
 opencv-python
 scikit-image
 imageio
