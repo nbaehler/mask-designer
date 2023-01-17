@@ -6,16 +6,7 @@
 Welcome to mask-designer's documentation!
 =========================================
 
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
--------------------------------
-
-include:: README.rst
+.. include::  readme_stub.rst
 
 .. toctree::
    :hidden:
@@ -27,3 +18,13 @@ include:: README.rst
    experimental-setup
    theory
    Modules <modules>
+
+--------------------------------------------
+
+Indices and tables
+------------------
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
