@@ -33,6 +33,8 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
     "sphinx_rtd_theme",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
     "sphinx.ext.coverage",
 ]
 
