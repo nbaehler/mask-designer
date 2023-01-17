@@ -5,18 +5,17 @@
 
 Welcome to mask-designer's documentation!
 =========================================
-.. TODO add this back in!
 
-.. Indices and tables
-.. ------------------
+Indices and tables
+------------------
 
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
 
-.. -------------------------------
+-------------------------------
 
-.. TODO include:: /../../README.rst
+include:: /../../README.rst
 
 .. toctree::
    :hidden:
@@ -27,11 +26,4 @@ Welcome to mask-designer's documentation!
    software-tips
    experimental-setup
    theory
-
-.. Modules <modules>
-.. TODO check autoapi
-
-
-
-
-
+   Modules <modules>

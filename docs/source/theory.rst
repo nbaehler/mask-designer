@@ -4,7 +4,6 @@ Theory
 .. contents:: Table of Contents
    :depth: 5
    :local:
-.. :backlinks: none
 
 Overview
 --------
