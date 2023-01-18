@@ -37,7 +37,6 @@ Below is a schematic of how ``mask-designer`` would typically interact with
 other software and hardware components.
 
 .. image:: https://raw.githubusercontent.com/nbaehler/mask-designer/master/docs/source/images/structure.svg
-   :target: docs/source/images/structure.svg
    :align: center
    :alt: Structure
 
@@ -199,7 +198,6 @@ on how we converged to the setup below, please refer to documentation.
 
 
 .. image:: https://raw.githubusercontent.com/nbaehler/mask-designer/master/docs/source/images/setup.svg
-   :target: docs/source/images/setup.svg
    :align: center
    :alt: Experimental setup
 
@@ -254,7 +252,6 @@ For illustrative purposes, here an image of the part of the SLM that is hit by
 laser.
 
 .. image:: https://raw.githubusercontent.com/nbaehler/mask-designer/master/docs/source/images/amp_mask.png
-   :target: docs/source/images/amp_mask.png
    :align: center
    :alt: Amplitude mask
 
